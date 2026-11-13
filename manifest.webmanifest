@@ -1,0 +1,14 @@
+{
+  "name": "FundB Mining",
+  "short_name": "FundB",
+  "description": "FundB Mining community rewards prototype",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090909",
+  "theme_color": "#090909",
+  "icons": [
+    {"src":"assets/fundb-logo-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"assets/fundb-logo.png","sizes":"512x512","type":"image/png","purpose":"any"}
+  ]
+}

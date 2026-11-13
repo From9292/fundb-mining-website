@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090909"><meta name="google-adsense-account" content="ca-pub-9800579782167167">
+<meta name="description" content="FundB Mining — a demo points and community rewards prototype.">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="assets/fundb-logo.png">
+<title>FundB Mining | Version 2.0</title>
+<style>
+:root{--bg:#090909;--panel:#151515;--panel2:#101010;--gold:#e8b83e;--gold2:#ffdc79;--muted:#aaa;--line:#393226;--green:#76d6a0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#292012 0,#090909 48%);color:#f8f4e9;font:15px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{display:flex;align-items:center;gap:12px;padding:16px 18px 10px;max-width:980px;margin:auto}.logo{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--gold)}.brand{font-weight:900;font-size:21px}.sub{color:var(--gold);font-size:10px;letter-spacing:2px}
+main{max-width:980px;margin:auto;padding:8px 14px 38px}.notice{border:1px solid #6b5423;background:#241c0d;color:#f4d98c;border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.5;margin:8px 0 14px}
+.nav{display:flex;gap:7px;overflow:auto;padding:4px 0 12px;scrollbar-width:thin}.nav button{white-space:nowrap;background:#171717;color:#aaa;border:1px solid #393939;padding:10px 13px;border-radius:10px;font-weight:750}.nav button.active{background:#382b12;color:#ffdf87;border-color:#9a742b}
+section[hidden]{display:none!important}.card{background:linear-gradient(145deg,#1b1b1b,#101010);border:1px solid var(--line);border-radius:17px;padding:17px;margin:11px 0;box-shadow:0 10px 24px #0006}.eyebrow{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}.balance{font-size:38px;font-weight:900;color:var(--gold2);margin:4px 0}.unit{color:#c7b98f;font-size:12px}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+button,.btn{border:0;border-radius:11px;padding:12px 15px;font-weight:800;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}.primary{background:linear-gradient(135deg,#f8d778,#c28a1b);color:#171107}.secondary{background:#28231a;color:#f6d77f;border:1px solid #6b5423}.ghost{background:#202020;color:#eee;border:1px solid #444}button:disabled{opacity:.45;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat{background:#0c0c0c;border:1px solid #29251e;border-radius:12px;padding:13px}.stat strong{display:block;color:var(--gold2);font-size:19px;margin-top:5px}
+.progress{height:9px;border-radius:99px;background:#302b20;overflow:hidden;margin:12px 0}.bar{height:100%;background:linear-gradient(90deg,#a76d0b,#ffe28b);width:0%;transition:width .3s}
+h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;margin:0 0 6px}.muted{color:var(--muted);font-size:12px;line-height:1.55}
+input,textarea{width:100%;padding:12px;background:#090909;border:1px solid #504329;border-radius:10px;color:white;font-size:14px;margin:7px 0 12px}textarea{min-height:100px;resize:vertical}label{font-size:12px;color:#c8bd9f}
+.item{padding:13px 0;border-bottom:1px solid #302b22}.item:last-child{border:0}.pill{display:inline-block;border:1px solid #655027;color:#f3d37c;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:800}.disabled-note{opacity:.78}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.footer{text-align:center;color:#777;font-size:11px;padding:22px 5px}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#f3d37c;color:#171107;padding:11px 16px;border-radius:99px;font-weight:800;display:none;z-index:9;max-width:92%;text-align:center}
+@media(max-width:520px){.two{grid-template-columns:1fr}.balance{font-size:34px}}
+</style></head>
+<body>
+<header><img class="logo" src="assets/fundb-logo.png" alt="FundB logo"><div><div class="brand">FundB Mining</div><div class="sub">MINE • PARTICIPATE • GROW</div></div><span style="margin-left:auto" class="pill">V2.0 DEMO</span></header>
+<main>
+<div class="notice"><b>DEMO NOTICE:</b> This version stores demo points on this device. Points are not cryptocurrency, have no cash value and cannot be transferred or withdrawn. The 2028 token launch is a target only, not a promise. Appwrite email authentication is being connected. Demo points remain local until server-side rewards are completed.</div>
+<nav class="nav" aria-label="Main navigation">
+<button class="active" data-tab="home">Home</button><button data-tab="mining">Mining</button><button data-tab="wallet">Wallet</button><button data-tab="tasks">Tasks</button><button data-tab="inbox">Inbox</button><button data-tab="support">Support</button><button data-tab="referral">Referral</button><button data-tab="how">How it works</button><button data-tab="whitepaper">Whitepaper</button><button data-tab="account">Account</button>
+</nav>
+
+<section id="home">
+<div class="card"><div class="eyebrow">Your demo points balance</div><div class="balance" id="balance">0.00</div><div class="unit">FUND-B Points · demo only · not transferable</div><div class="progress"><div class="bar" id="progress"></div></div><div class="row"><span class="muted" id="mineStatus">Mining is locked</span><span class="muted" id="timeLeft">24:00:00</span></div><p class="muted" id="adStatus">Complete 10 verified rewarded ads to unlock a mining session. Ad provider connection required.</p><button class="primary" style="width:100%" onclick="showTab('mining')">Go to mining</button></div>
+<div class="grid"><div class="stat"><span class="eyebrow">Today's points</span><strong id="today">0.00</strong></div><div class="stat"><span class="eyebrow">Mining rate</span><strong>1 demo pt/hr</strong></div><div class="stat"><span class="eyebrow">Daily check-ins</span><strong id="streak">0</strong></div><div class="stat"><span class="eyebrow">Ad progress</span><strong id="adCount">0 / 10</strong></div></div>
+<div class="card"><h2>Welcome to FundB Mining</h2><p class="muted">A community rewards prototype designed around demo points, optional activities and a planned token ecosystem. Explore the sections to learn how the project is intended to work.</p></div>
+</section>
+
+<section id="mining" hidden>
+<div class="card"><h2>Unlock your 24-hour session</h2><p class="muted">The production app will use a certified rewarded-ad provider. Each ad must be genuinely completed and verified by the provider before progress is credited.</p>
+<div class="grid"><div class="stat"><span class="eyebrow">Verified ads</span><strong id="adCount2">0 / 10</strong></div><div class="stat"><span class="eyebrow">Required</span><strong>10 ads</strong></div></div><div class="progress"><div class="bar" id="adProgress"></div></div>
+<button class="secondary" style="width:100%" disabled>Rewarded ads — provider not connected</button><p class="muted">No ad is being shown or counted in this prototype. Do not use ordinary AdSense ads as incentivized ads; use a provider and ad format that expressly allow rewarded placements.</p>
+</div>
+<div class="card"><h2>Mining session</h2><div class="balance" id="miningBalance">0.00</div><div class="unit">FUND-B demo points</div><div class="progress"><div class="bar" id="progress2"></div></div><div class="row"><span class="muted" id="sessionLabel">No active session</span><span class="muted" id="timeLeft2">24:00:00</span></div><button class="primary" id="mineBtn" style="width:100%" disabled>Waiting for ad integration</button><p class="muted">Mining uses server-authoritative timestamps in production. This browser prototype cannot securely verify ad views or protect rewards across devices.</p></div>
+</section>
+
+<section id="wallet" hidden>
+<div class="card"><h2>FUND-B Wallet</h2><div class="balance" id="walletBalance">0.00</div><div class="unit">Demo points · no blockchain connection</div><div class="notice">Wallet functions are preview-only. No deposit address exists yet. Do not send cryptocurrency to an address shown elsewhere claiming to be your FundB wallet.</div>
+<div class="two"><button class="secondary" disabled>Receive address — coming soon</button><button class="secondary" disabled>Send / transfer — coming soon</button><button class="secondary" disabled>Withdraw — coming soon</button><button class="secondary" disabled>Transaction history — coming soon</button></div><p class="muted">A real wallet requires a selected blockchain, audited smart contract or custody provider, key management, transaction monitoring and applicable compliance checks.</p></div>
+</section>
+
+<section id="tasks" hidden>
+<div class="card"><h2>Community task centre</h2><p class="muted">Tasks will award points only after the required action is verified. The activities below are previews, not active reward offers.</p>
+<div class="item"><div class="row"><div><h3>Join official Telegram</h3><p class="muted">Follow project announcements and community updates.</p></div><span class="pill">+ points · TBD</span></div><button class="secondary" disabled>Official link not configured</button></div>
+<div class="item"><div class="row"><div><h3>Daily check-in</h3><p class="muted">Claim a demo check-in reward once per day on this device.</p></div><span class="pill">+10 demo pts</span></div><button class="primary" id="claimBtn">Claim daily check-in</button><p class="muted" id="claimStatus"></p></div>
+<div class="item"><div class="row"><div><h3>Share feedback privately</h3><p class="muted">Send honest product feedback. No positive public rating is required.</p></div><span class="pill">Feedback</span></div><button class="secondary" onclick="showTab('support')">Send feedback</button></div>
+<div class="item"><div class="row"><div><h3>Invite friends</h3><p class="muted">Share your demo referral code. Referral verification and bonuses are not active yet.</p></div><span class="pill">Coming soon</span></div><button class="secondary" onclick="showTab('referral')">View referral</button></div>
+</div></section>
+
+<section id="inbox" hidden><div class="card"><h2>Notifications & messages</h2><p class="muted">Project announcements and account messages will appear here when a notification backend is connected.</p><div class="item"><span class="pill">WELCOME</span><h3>Welcome to FundB Mining</h3><p class="muted">You are viewing the Version 2.0 prototype. Follow official project channels for verified updates. Never share your password or recovery phrase with support.</p></div><div class="item"><span class="pill">PROJECT UPDATE</span><h3>2028 target</h3><p class="muted">The token launch is a target subject to development, security, legal and market conditions. No value or listing is guaranteed.</p></div></div></section>
+
+<section id="support" hidden><div class="card"><h2>Customer care & feedback</h2><p class="muted">The support form is a front-end preview. Add a verified support email or ticket backend before publishing it.</p><label for="supportEmail">Your email (optional)</label><input id="supportEmail" type="email" placeholder="you@example.com"><label for="supportTopic">Subject</label><input id="supportTopic" placeholder="How can we help?"><label for="supportMsg">Message</label><textarea id="supportMsg" placeholder="Describe your question or feedback"></textarea><button class="primary" style="width:100%" onclick="toast('Support delivery is not connected yet. No message was sent.')">Submit support request</button><p class="muted">Official support email: not configured. Do not trust unofficial accounts asking for funds or wallet recovery phrases.</p></div></section>
+
+<section id="referral" hidden><div class="card"><h2>Invite friends</h2><p class="muted">Your local demo referral code. It does not yet track sign-ups or issue referral rewards.</p><div class="eyebrow">Your code</div><div class="balance" style="font-size:28px" id="refCode">FUNDB----</div><button class="secondary" id="copyBtn" style="width:100%">Copy referral code</button></div></section>
+
+<section id="how" hidden><div class="card"><h2>How FundB Mining works</h2><div class="item"><h3>1. Create and verify an account</h3><p class="muted">Register with email and password or Google sign-in once a secure authentication provider is connected.</p></div><div class="item"><h3>2. Complete rewarded ads</h3><p class="muted">Complete 10 eligible rewarded advertisements. The ad provider verifies each completion; ordinary ads must not be incentivized.</p></div><div class="item"><h3>3. Start a 24-hour session</h3><p class="muted">A verified session runs for 24 hours. The server records the start and end times so closing the app does not erase progress.</p></div><div class="item"><h3>4. Earn points and complete tasks</h3><p class="muted">Eligible activity is recorded in a secure ledger. Tasks are subject to verification and published rules.</p></div><div class="item"><h3>5. Token distribution preparation</h3><p class="muted">Before any token distribution, the project will publish eligibility, anti-fraud rules and the points-to-token formula. Points do not guarantee tokens.</p></div></div></section>
+
+<section id="whitepaper" hidden><div class="card"><h2>FUND-B Project Whitepaper</h2><span class="pill">VERSION 1.0 · NOVEMBER 2026</span><h3 style="margin-top:16px">1. Overview</h3><p class="muted">FundB Mining is a proposed community rewards platform. It begins with internal demo points and aims to explore a blockchain token ecosystem with a target launch in 2028. The launch and distribution are conditional, not guaranteed.</p><h3>2. Vision</h3><p class="muted">Build an accessible, transparent rewards community with clear rules, secure accounts and responsible growth.</p><h3>3. Participation</h3><p class="muted">The proposed experience includes account verification, qualifying rewarded ads, 24-hour reward sessions, daily activities and referrals. Reward rates and task eligibility will be published before production use.</p><h3>4. Points and token distinction</h3><p class="muted">FUND-B points are internal accounting units in the prototype. They are not cryptocurrency, cash, a deposit, or a promise of future tokens. A conversion formula has not been finalized.</p><h3>5. Wallet and blockchain</h3><p class="muted">A blockchain, token standard, contract address and wallet provider have not yet been selected. No deposits or withdrawals are enabled in this version.</p><h3>6. Distribution principles</h3><p class="muted">Any future allocation may consider verified participation, eligible points, task completion and anti-fraud review. Final allocation rules and any conversion ratio must be published before distribution.</p><h3>7. Roadmap</h3><p class="muted"><b>Nov 2026–Mar 2027:</b> product foundation and backend planning.<br><b>Apr–Sep 2027:</b> beta testing, ad-provider integration and community growth.<br><b>Oct 2027–Mar 2028:</b> tokenomics, blockchain design and legal review.<br><b>Apr–Jun 2028:</b> security audits, testnet and distribution simulations.<br><b>Jul–Dec 2028:</b> target launch and eligible distribution, only if ready.</p><h3>8. Security and compliance</h3><p class="muted">The production service intends to use secure authentication, server-side reward verification, anti-abuse monitoring, secure key management and independent security review. Availability may vary by jurisdiction.</p><h3>9. Sustainability</h3><p class="muted">Potential funding sources may include compliant advertising and disclosed ecosystem partnerships. No fixed rewards or returns are guaranteed.</p><h3>10. Risks</h3><p class="muted">The project may be delayed, changed or cancelled. Token value, liquidity, exchange listing and financial returns are not guaranteed. Users should not spend money based on expected future rewards.</p><h3>11. Contact and publication</h3><p class="muted">Official website, Telegram and support contacts must be published and verified by the project team before launch.</p><p class="muted"><b>FUND-B MINING — Building a Community. Rewarding Participation. Preparing for the Future.</b></p></div></section>
+
+<section id="account" hidden><div class="card"><h2>FundB account</h2><p class="muted">Secure email/password account powered by Appwrite. Use an email address you can access. Never share your password or verification code.</p><div id="authStatus" class="notice" role="status">Checking account connection…</div><div id="authForm"><label for="authName">Display name (for new accounts)</label><input id="authName" maxlength="40" autocomplete="name" placeholder="Your display name"><label for="authEmail">Email address</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"><button class="primary" id="registerBtn" type="button" style="width:100%">Create account</button><button class="secondary" id="loginBtn" type="button" style="width:100%;margin-top:9px">Sign in</button><button class="ghost" id="resetPasswordBtn" type="button" style="width:100%;margin-top:9px">Send password reset email</button></div><div id="signedInPanel" hidden><p id="accountDetails" class="muted"></p><button class="secondary" id="logoutBtn" type="button" style="width:100%">Sign out</button></div><p class="muted">Account registration and sign-in use Appwrite authentication. The cloud profile below reads your saved profile; rewards are not enabled yet.</p></div><div class="card"><h2>Saved FundB cloud profile</h2><p class="muted">This information is loaded from your existing Appwrite profile after sign-in. It is separate from local demo points.</p><div class="eyebrow">Saved FundB Points</div><div class="balance" id="cloudPoints">—</div><div class="grid"><div class="stat"><span class="eyebrow">Referral code</span><strong id="cloudReferral">—</strong></div><div class="stat"><span class="eyebrow">Total referrals</span><strong id="cloudReferrals">—</strong></div></div><p class="muted" id="cloudProfileStatus" role="status">Sign in to load your saved profile.</p><button class="secondary" id="refreshCloudProfileBtn" type="button" style="width:100%">Refresh saved profile</button></div></div><div class="card"><h2>Local demo profile</h2><label for="username">Display name</label><input id="username" maxlength="30" placeholder="Display name"><button class="secondary" id="saveName">Save display name</button><p class="muted" id="profileStatus">Saved on this device only.</p><hr style="border-color:#302b22;margin:18px 0"><button class="ghost" id="resetBtn">Reset demo data</button></div></section>
+<div class="footer">FundB Mining V2.0 prototype · Demo points only · No real mining, token or payouts</div>
+</main><div id="toast" role="status" aria-live="polite"></div>
+<script>
+const KEY='fundb_demo_v2',SESSION=86400000,RATE=1,$=id=>document.getElementById(id);
+const newCode=()=>'FUNDB-'+Math.random().toString(36).slice(2,7).toUpperCase();
+function fresh(){return{points:0,today:0,day:new Date().toDateString(),start:0,end:0,claimed:'',streak:0,code:newCode(),name:'',adCount:0}}
+let state;
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function load(){try{state=JSON.parse(localStorage.getItem(KEY))||fresh()}catch{state=fresh()}state.adCount=0; if(!state.code)state.code=newCode();if(state.day!==new Date().toDateString()){state.day=new Date().toDateString();state.today=0}save()}
+function toast(s){let t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',2600)}
+function active(){return !!state.start&&Date.now()<state.end}
+function accrued(){return active()?Math.max(0,(Date.now()-state.start)/3600000*RATE):0}
+function settle(){if(state.start&&Date.now()>=state.end){state.points+=24;state.today+=24;state.start=0;state.end=0;save();toast('24 demo points added. Session complete.')}}
+function showTab(id){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('main section').forEach(s=>s.hidden=s.id!==id);window.scrollTo({top:0,behavior:'smooth'})}
+window.showTab=showTab;
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function render(){settle();let a=active(),earned=accrued(),total=state.points+earned,pct=a?Math.min(100,(Date.now()-state.start)/SESSION*100):0;
+['balance','miningBalance','walletBalance'].forEach(id=>$(id).textContent=total.toFixed(2));$('today').textContent=(state.today+earned).toFixed(2);$('streak').textContent=state.streak;$('refCode').textContent=state.code;$('adCount').textContent='0 / 10';$('adCount2').textContent='0 / 10';$('adProgress').style.width='0%';
+$('mineStatus').textContent=a?'24-hour demo session active':'Mining is locked';$('sessionLabel').textContent=a?'Demo session active':'No active session';$('mineBtn').disabled=true;$('mineBtn').textContent=a?'Session running':'Ad provider not connected';$('progress').style.width=pct+'%';$('progress2').style.width=pct+'%';
+let ms=a?state.end-Date.now():SESSION,h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),clock=[h,m,s].map(v=>String(v).padStart(2,'0')).join(':');$('timeLeft').textContent=clock;$('timeLeft2').textContent=clock;
+$('claimBtn').disabled=state.claimed===new Date().toDateString();$('claimStatus').textContent=$('claimBtn').disabled?'Already claimed today.':'Available once per day on this device.';$('username').value=state.name||''}
+$('claimBtn').onclick=()=>{let d=new Date().toDateString();if(state.claimed===d)return;state.points+=10;state.today+=10;state.claimed=d;state.streak+=1;save();render();toast('10 demo points claimed')};
+$('copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(state.code);toast('Referral code copied')}catch{toast('Referral code: '+state.code)}};
+$('saveName').onclick=()=>{state.name=$('username').value.trim().slice(0,30);save();$('profileStatus').textContent='Display name saved on this device.';toast('Profile saved')};
+$('resetBtn').onclick=()=>{if(confirm('Reset all local FundB demo data?')){state=fresh();save();render();toast('Demo data reset')}};
+load();render();setInterval(render,1000);
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+<script type="module">
+import { Client, Account, ID } from 'https://cdn.jsdelivr.net/npm/appwrite@17.0.0/+esm';
+const APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
+const APPWRITE_PROJECT_ID = '6aedc1580001af2161b0';
+const client = new Client().setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID);
+const account = new Account(client);
+const byId = id => document.getElementById(id);
+const status = (message, bad=false) => { const el=byId('authStatus'); if(el){el.textContent=message;el.style.borderColor=bad?'#9b4545':'#6b5423';} };
+const syncCloudProfile = async () => {
+  const cloudStatus = byId('cloudProfileStatus');
+  try {
+    cloudStatus.textContent = 'Loading your saved FundB profile…';
+    const jwtResult = await account.createJWT();
+    const response = await fetch('https://starter-function-cpbk.nyc.appwrite.run/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Appwrite-User-JWT': jwtResult.jwt
+      },
+      body: JSON.stringify({})
+    });
+    const result = await response.json();
+    if (!response.ok || !result.ok || !result.profile) {
+      const detail = result.message || `Profile request failed (${response.status}).`;
+      throw new Error(detail);
+    }
+    byId('cloudPoints').textContent = Number(result.profile.points || 0).toFixed(2);
+    byId('cloudReferral').textContent = result.profile.referralCode || 'Not assigned';
+    byId('cloudReferrals').textContent = String(result.profile.totalReferrals || 0);
+    cloudStatus.textContent = 'Saved cloud profile loaded. Reward earning is not enabled yet.';
+  } catch (err) {
+    cloudStatus.textContent = `Cloud profile could not load: ${err?.message || 'Please try again.'}`;
+  }
+};
+const showSignedIn = user => {
+  byId('authForm').hidden=true; byId('signedInPanel').hidden=false;
+  byId('accountDetails').textContent=`Signed in as ${user.name || 'FundB member'} · ${user.email}`;
+  status('Your FundB account is connected.');
+  syncCloudProfile();
+};
+const showSignedOut = () => { byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
+const getError = e => e?.message || 'Something went wrong. Please try again.';
+try { const user=await account.get(); showSignedIn(user); }
+catch(e){ showSignedOut(); status('Appwrite is ready. Create an account or sign in.', false); }
+byId('registerBtn').addEventListener('click', async()=>{
+  const name=byId('authName').value.trim(); const email=byId('authEmail').value.trim(); const password=byId('authPassword').value;
+  if(!name || !email || password.length<8){status('Enter your display name, a valid email and a password of at least 8 characters.',true);return;}
+  try { status('Creating your secure account…'); await account.create({userId:ID.unique(),email,password,name}); await account.createEmailPasswordSession({email,password}); const user=await account.get(); showSignedIn(user); byId('authPassword').value=''; }
+  catch(e){status(getError(e),true);}
+});
+byId('loginBtn').addEventListener('click', async()=>{
+  const email=byId('authEmail').value.trim(); const password=byId('authPassword').value;
+  if(!email || !password){status('Enter your email and password to sign in.',true);return;}
+  try {status('Signing in…'); await account.createEmailPasswordSession({email,password}); const user=await account.get(); showSignedIn(user); byId('authPassword').value='';}
+  catch(e){status(getError(e),true);}
+});
+byId('refreshCloudProfileBtn').addEventListener('click', syncCloudProfile);
+byId('logoutBtn').addEventListener('click', async()=>{try{await account.deleteSession({sessionId:'current'});showSignedOut();status('You have signed out.');}catch(e){status(getError(e),true);}});
+byId('resetPasswordBtn').addEventListener('click', async()=>{
+  const email=byId('authEmail').value.trim(); if(!email){status('Enter your email address first.',true);return;}
+  try{await account.createRecovery({email,url:location.origin+location.pathname});status('Password reset email requested. Check your inbox and spam folder.');}catch(e){status(getError(e),true);}
+});
+</script></body></html>
