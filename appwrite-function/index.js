@@ -1,4 +1,5 @@
-const sdk = require('node-appwrite');
+const https = require('https');
+const { URL } = require('url');
 
 const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const DATABASE_ID = process.env.FUNDB_DATABASE_ID || 'fundB_database';
@@ -17,6 +18,40 @@ function responseHeaders(origin) {
 
 function json(res, statusCode, payload, origin) {
   return res.json(payload, statusCode, responseHeaders(origin));
+}
+
+function appwriteRequest(path, method, headers, body) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(path, API_ENDPOINT);
+    const payload = body === undefined ? null : Buffer.from(JSON.stringify(body));
+    const request = https.request(url, {
+      method,
+      headers: {
+        ...headers,
+        ...(payload ? { 'Content-Type': 'application/json', 'Content-Length': String(payload.length) } : {})
+      },
+      timeout: 15000
+    }, response => {
+      let raw = '';
+      response.setEncoding('utf8');
+      response.on('data', chunk => { raw += chunk; });
+      response.on('end', () => {
+        let data = {};
+        try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = { message: raw }; }
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          const err = new Error(data.message || ('Appwrite returned HTTP ' + response.statusCode));
+          err.statusCode = response.statusCode;
+          err.type = data.type;
+          return reject(err);
+        }
+        resolve(data);
+      });
+    });
+    request.on('timeout', () => request.destroy(new Error('Appwrite request timed out')));
+    request.on('error', reject);
+    if (payload) request.write(payload);
+    request.end();
+  });
 }
 
 function makeReferralCode(userId) {
@@ -42,34 +77,30 @@ module.exports = async ({ req, res, log, error }) => {
       return json(res, 401, { ok: false, message: 'Authentication request is missing: ' + missing.join(', ') + '. Please retry from the signed-in FundB website.' }, origin);
     }
 
-    // Verify the caller's identity with their own short-lived Appwrite JWT.
-    const userClient = new sdk.Client()
-      .setEndpoint(API_ENDPOINT)
-      .setProject(PROJECT_ID)
-      .setJWT(jwt);
-    const user = await new sdk.Account(userClient).get();
-
-    // Use the function's short-lived key only after identity is verified.
-    // Never accept a userId supplied by the browser.
-    const adminClient = new sdk.Client()
-      .setEndpoint(API_ENDPOINT)
-      .setProject(PROJECT_ID)
-      .setKey(functionKey);
-    const tablesDB = new sdk.TablesDB(adminClient);
-
-    const found = await tablesDB.listRows({
-      databaseId: DATABASE_ID,
-      tableId: PROFILE_TABLE_ID,
-      queries: [sdk.Query.equal('userId', [user.$id]), sdk.Query.limit(1)]
+    // Verify the user's short-lived JWT using Appwrite's Account REST endpoint.
+    const user = await appwriteRequest('/account', 'GET', {
+      'X-Appwrite-Project': PROJECT_ID,
+      'X-Appwrite-JWT': jwt
     });
 
-    let profile = found.rows[0];
+    // Use the function's server-side key only after verifying the caller.
+    const tablePath = '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
+      '/tables/' + encodeURIComponent(PROFILE_TABLE_ID) + '/rows';
+    const queryList = [
+      { method: 'equal', attribute: 'userId', values: [user.$id] },
+      { method: 'limit', values: [1] }
+    ];
+    const queryString = queryList.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+    const adminHeaders = {
+      'X-Appwrite-Project': PROJECT_ID,
+      'X-Appwrite-Key': functionKey
+    };
+    const found = await appwriteRequest(tablePath + '?' + queryString, 'GET', adminHeaders);
+
+    let profile = (found.rows || [])[0];
     if (!profile) {
       try {
-        // A stable row ID prevents duplicate profile creation if two requests arrive together.
-        profile = await tablesDB.createRow({
-          databaseId: DATABASE_ID,
-          tableId: PROFILE_TABLE_ID,
+        profile = await appwriteRequest(tablePath, 'POST', adminHeaders, {
           rowId: user.$id,
           data: {
             userId: user.$id,
@@ -79,12 +110,7 @@ module.exports = async ({ req, res, log, error }) => {
         });
         log('Created initial FundB profile for authenticated user.');
       } catch (createError) {
-        // A simultaneous request may have created the same stable row first.
-        profile = await tablesDB.getRow({
-          databaseId: DATABASE_ID,
-          tableId: PROFILE_TABLE_ID,
-          rowId: user.$id
-        });
+        profile = await appwriteRequest(tablePath + '/' + encodeURIComponent(user.$id), 'GET', adminHeaders);
         if (!profile) throw createError;
       }
     }
