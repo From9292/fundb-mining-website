@@ -3,9 +3,20 @@ const sdk = require('node-appwrite');
 const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const DATABASE_ID = process.env.FUNDB_DATABASE_ID || 'fundB_database';
 const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || '6aedcd650007f44a070f';
+const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
+const ALLOWED_ORIGIN = process.env.FUNDB_ALLOWED_ORIGIN || '*';
 
-function json(res, statusCode, payload) {
-  return res.json(payload, statusCode);
+function responseHeaders(origin) {
+  return {
+    'Access-Control-Allow-Origin': ALLOWED_ORIGIN === '*' ? '*' : (origin === ALLOWED_ORIGIN ? origin : ALLOWED_ORIGIN),
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Appwrite-User-JWT',
+    'Vary': 'Origin'
+  };
+}
+
+function json(res, statusCode, payload, origin) {
+  return res.json(payload, statusCode, responseHeaders(origin));
 }
 
 function makeReferralCode(userId) {
@@ -14,19 +25,23 @@ function makeReferralCode(userId) {
 
 module.exports = async ({ req, res, log, error }) => {
   try {
+    const origin = req.headers.origin || '';
+    if (req.method === 'OPTIONS') {
+      return res.text('', 204, responseHeaders(origin));
+    }
     if (req.method !== 'POST') {
-      return json(res, 405, { ok: false, message: 'Method not allowed.' });
+      return json(res, 405, { ok: false, message: 'Method not allowed.' }, origin);
     }
 
     const jwt = req.headers['x-appwrite-user-jwt'];
     const functionKey = req.headers['x-appwrite-key'];
     if (!PROJECT_ID || !jwt || !functionKey) {
-      return json(res, 401, { ok: false, message: 'Please sign in to your FundB account.' });
+      return json(res, 401, { ok: false, message: 'Please sign in to your FundB account.' }, origin);
     }
 
     // Verify the caller's identity with their own short-lived Appwrite JWT.
     const userClient = new sdk.Client()
-      .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+      .setEndpoint(API_ENDPOINT)
       .setProject(PROJECT_ID)
       .setJWT(jwt);
     const user = await new sdk.Account(userClient).get();
@@ -47,17 +62,28 @@ module.exports = async ({ req, res, log, error }) => {
 
     let profile = found.rows[0];
     if (!profile) {
-      profile = await tablesDB.createRow({
-        databaseId: DATABASE_ID,
-        tableId: PROFILE_TABLE_ID,
-        rowId: sdk.ID.unique(),
-        data: {
-          userId: user.$id,
-          points: 0,
-          referralCode: makeReferralCode(user.$id)
-        }
-      });
-      log('Created initial FundB profile for authenticated user.');
+      try {
+        // A stable row ID prevents duplicate profile creation if two requests arrive together.
+        profile = await tablesDB.createRow({
+          databaseId: DATABASE_ID,
+          tableId: PROFILE_TABLE_ID,
+          rowId: user.$id,
+          data: {
+            userId: user.$id,
+            points: 0,
+            referralCode: makeReferralCode(user.$id)
+          }
+        });
+        log('Created initial FundB profile for authenticated user.');
+      } catch (createError) {
+        // A simultaneous request may have created the same stable row first.
+        profile = await tablesDB.getRow({
+          databaseId: DATABASE_ID,
+          tableId: PROFILE_TABLE_ID,
+          rowId: user.$id
+        });
+        if (!profile) throw createError;
+      }
     }
 
     return json(res, 200, {
@@ -68,9 +94,9 @@ module.exports = async ({ req, res, log, error }) => {
         totalReferrals: Number(profile.totalReferrals || 0)
       },
       rewardsEnabled: false
-    });
+    }, origin);
   } catch (err) {
     error('FundB profile API error: ' + (err && err.message ? err.message : 'Unknown error'));
-    return json(res, 500, { ok: false, message: 'The FundB profile could not be loaded. Please try again.' });
+    return json(res, 500, { ok: false, message: 'The FundB profile could not be loaded. Please try again.' }, req.headers.origin || '');
   }
 };
