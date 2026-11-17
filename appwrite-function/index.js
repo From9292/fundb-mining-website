@@ -109,7 +109,8 @@ module.exports = async ({ req, res, log, error }) => {
           data: {
             userId: user.$id,
             points: 0,
-            referralCode: makeReferralCode(user.$id)
+            referralCode: makeReferralCode(user.$id),
+            total_referrals: 0
           }
         });
         log('Created initial FundB profile for authenticated user.');
@@ -141,7 +142,7 @@ module.exports = async ({ req, res, log, error }) => {
       profile: {
         points: Number(profile.points || 0),
         referralCode: profile.referralCode || 'Not assigned',
-        totalReferrals: Number(profile.totalReferrals || 0)
+        totalReferrals: Number(profile.total_referrals ?? profile.totalReferrals ?? 0)
       },
       rewardsEnabled: false
     }, origin);
