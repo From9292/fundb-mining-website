@@ -185,7 +185,7 @@ const syncCloudProfile = async () => {
       functionId: FUNDB_FUNCTION_ID,
       body: JSON.stringify({}),
       async: false,
-      path: '/',
+      xpath: '/',
       method: 'POST'
     });
     const result = execution.responseBody ? JSON.parse(execution.responseBody) : {};
