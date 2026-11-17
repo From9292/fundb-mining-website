@@ -53,6 +53,7 @@ input,textarea,select{border-radius:14px!important}
 
 </style></head>
 <body>
+<div role="status" style="margin:12px auto;max-width:1100px;padding:12px 16px;border:1px solid #9b7b35;border-radius:12px;background:#17130a;color:#f1d58a;font-size:14px;line-height:1.5">FundB is currently in preview mode. Mining rewards, daily claims, ad rewards, referrals and withdrawals are not active. Displayed wallet balances are not withdrawable funds.</div>
 <header><img class="logo" src="assets/fundb-logo.png" alt="FundB logo"><div><div class="brand">FundB Mining</div><div class="sub">MINE • PARTICIPATE • GROW</div></div><span style="margin-left:auto" class="pill">V2.2 COMMUNITY EDITION</span></header>
 <main>
 <div class="notice"><b>FUNDB POINTS NOTICE:</b> FundB Points are participation points in this preview, not cryptocurrency, cash, shares or a guaranteed airdrop. The planning illustration of 10 FundB Points = $2 is not a market price, redemption promise or guaranteed token conversion. Points and eligible airdrop allocations will require published rules, server verification and a confirmed token launch. Some community features are previews until their secure services are connected.</div>
@@ -140,18 +141,18 @@ let state;
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function load(){try{state=JSON.parse(localStorage.getItem(KEY))||fresh()}catch{state=fresh()}state.adCount=0; if(!state.code)state.code=newCode();if(state.day!==new Date().toDateString()){state.day=new Date().toDateString();state.today=0}save()}
 function toast(s){let t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',2600)}
-function active(){return !!state.start&&Date.now()<state.end}
-function accrued(){return active()?Math.max(0,(Date.now()-state.start)/3600000*RATE):0}
-function settle(){if(state.start&&Date.now()>=state.end){state.points+=24;state.today+=24;state.start=0;state.end=0;save();toast('24 FundB Points added. Session complete.')}}
+function active(){return false}
+function accrued(){return 0}
+function settle(){if(state.start){state.start=0;state.end=0;save()}}
 function showTab(id){document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('main section').forEach(s=>s.hidden=s.id!==id);window.scrollTo({top:0,behavior:'smooth'})}
 window.showTab=showTab;
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
-function render(){settle();let a=active(),earned=accrued(),total=state.points+earned,pct=a?Math.min(100,(Date.now()-state.start)/SESSION*100):0;
-['balance','miningBalance','walletBalance'].forEach(id=>$(id).textContent=total.toFixed(2));$('today').textContent=(state.today+earned).toFixed(2);$('streak').textContent=state.streak;$('refCode').textContent=state.code;$('adCount').textContent='0 / 10';$('adCount2').textContent='0 / 10';$('adProgress').style.width='0%';
+function render(){settle();let a=false,earned=0,total=0,pct=0;
+['balance','miningBalance','walletBalance'].forEach(id=>$(id).textContent=total.toFixed(2));$('today').textContent='0.00';$('streak').textContent=state.streak;$('refCode').textContent=state.code;$('adCount').textContent='0 / 10';$('adCount2').textContent='0 / 10';$('adProgress').style.width='0%';
 $('mineStatus').textContent=a?'24-hour session preview active':'Mining is locked';$('sessionLabel').textContent=a?'Session preview active':'No active session';$('mineBtn').disabled=true;$('mineBtn').textContent=a?'Session running':'Ad provider not connected';$('progress').style.width=pct+'%';$('progress2').style.width=pct+'%';
 let ms=a?state.end-Date.now():SESSION,h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),clock=[h,m,s].map(v=>String(v).padStart(2,'0')).join(':');$('timeLeft').textContent=clock;$('timeLeft2').textContent=clock;
-$('claimBtn').disabled=state.claimed===new Date().toDateString();$('claimStatus').textContent=$('claimBtn').disabled?'Already claimed today.':'Available once per day on this device.';$('username').value=state.name||''}
-$('claimBtn').onclick=()=>{let d=new Date().toDateString();if(state.claimed===d)return;state.points+=10;state.today+=10;state.claimed=d;state.streak+=1;save();render();toast('10 FundB Points claimed')};
+$('claimBtn').disabled=true;$('claimStatus').textContent='Daily rewards are paused until secure server-side reward verification is enabled.';$('username').value=state.name||''}
+$('claimBtn').onclick=()=>toast('Daily rewards are not active yet. Please check back after secure rewards are enabled.');
 $('copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(state.code);toast('Referral code copied')}catch{toast('Referral code: '+state.code)}};
 $('saveName').onclick=()=>{state.name=$('username').value.trim().slice(0,30);save();$('profileStatus').textContent='Display name saved on this device.';toast('Profile saved')};
 $('resetBtn').onclick=()=>{if(confirm('Reset all local FundB Points data?')){state=fresh();save();render();toast('FundB preview data reset')}};
