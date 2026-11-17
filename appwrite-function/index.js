@@ -33,10 +33,10 @@ module.exports = async ({ req, res, log, error }) => {
       return json(res, 405, { ok: false, message: 'Method not allowed.' }, origin);
     }
 
-    const jwt = req.headers['x-appwrite-user-jwt'];
+    const jwt = req.headers['x-appwrite-user-jwt'] || (req.bodyJson && (req.bodyJson.userJwt || req.bodyJson.jwt));
     const functionKey = req.headers['x-appwrite-key'];
     // Log presence only. Never log JWTs or API keys.
-    log('Auth diagnostics: ' + JSON.stringify({ projectConfigured: Boolean(PROJECT_ID), userJwtPresent: Boolean(jwt), functionKeyPresent: Boolean(functionKey), headerNames: Object.keys(req.headers || {}) }));
+    log('Auth diagnostics: ' + JSON.stringify({ projectConfigured: Boolean(PROJECT_ID), userJwtPresent: Boolean(jwt), functionKeyPresent: Boolean(functionKey), jwtSource: req.headers['x-appwrite-user-jwt'] ? 'header' : (jwt ? 'request-body' : 'missing'), headerNames: Object.keys(req.headers || {}) }));
     if (!PROJECT_ID || !jwt || !functionKey) {
       const missing = [!PROJECT_ID && 'project configuration', !jwt && 'user JWT header', !functionKey && 'function key header'].filter(Boolean);
       return json(res, 401, { ok: false, message: 'Authentication request is missing: ' + missing.join(', ') + '. Please retry from the signed-in FundB website.' }, origin);
