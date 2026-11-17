@@ -1,0 +1,24 @@
+name: FundB code checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, fundb-production-hardening]
+
+jobs:
+  appwrite-function:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Appwrite function dependencies
+        run: npm install --prefix appwrite-function --ignore-scripts --no-audit --no-fund
+      - name: Check function syntax
+        run: node --check appwrite-function/index.js
+      - name: Verify function module loads
+        run: node -e "require('./appwrite-function/index.js')"
