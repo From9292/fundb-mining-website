@@ -49,7 +49,7 @@ module.exports = async ({ req, res, log, error }) => {
     // Use the function's short-lived key only after identity is verified.
     // Never accept a userId supplied by the browser.
     const adminClient = new sdk.Client()
-      .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+      .setEndpoint(API_ENDPOINT)
       .setProject(PROJECT_ID)
       .setKey(functionKey);
     const tablesDB = new sdk.TablesDB(adminClient);
