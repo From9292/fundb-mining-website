@@ -99,7 +99,18 @@ module.exports = async ({ req, res, log, error }) => {
       rewardsEnabled: false
     }, origin);
   } catch (err) {
-    error('FundB profile API error: ' + (err && err.message ? err.message : 'Unknown error'));
-    return json(res, 500, { ok: false, message: 'The FundB profile could not be loaded. Please try again.' }, req.headers.origin || '');
+    // Capture the network failure reason without logging credentials or JWTs.
+    const diagnostic = {
+      name: err && err.name,
+      message: err && err.message,
+      causeName: err && err.cause && err.cause.name,
+      causeCode: err && err.cause && err.cause.code,
+      causeMessage: err && err.cause && err.cause.message,
+      stack: err && err.stack ? String(err.stack).split('\\n').slice(0, 8).join(' | ') : undefined,
+      endpointConfigured: Boolean(API_ENDPOINT),
+      projectConfigured: Boolean(PROJECT_ID)
+    };
+    error('FundB profile API diagnostic: ' + JSON.stringify(diagnostic));
+    return json(res, 500, { ok: false, message: 'The FundB profile service could not reach Appwrite. Diagnostic details are recorded in the function execution logs.' }, req.headers.origin || '');
   }
 };
