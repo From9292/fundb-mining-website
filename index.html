@@ -181,13 +181,13 @@ const syncCloudProfile = async () => {
     cloudStatus.textContent = 'Loading your saved FundB profile…';
     // Invoke through the signed-in Appwrite Client SDK. Appwrite automatically
     // attaches the authenticated session and injects the function's ephemeral key.
-    const execution = await functions.createExecution({
-      functionId: FUNDB_FUNCTION_ID,
-      body: JSON.stringify({}),
-      async: false,
-      xpath: '/',
-      method: 'POST'
-    });
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({}),
+      false,
+      '/',
+      'POST'
+    );
     const result = execution.responseBody ? JSON.parse(execution.responseBody) : {};
     if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok || !result.profile) {
       throw new Error(result.message || `Profile request failed (${execution.responseStatusCode || 'no response'}).`);
