@@ -151,7 +151,7 @@ function render(){settle();let a=false,earned=0,total=0,pct=0;
 ['balance','miningBalance','walletBalance'].forEach(id=>$(id).textContent=total.toFixed(2));$('today').textContent='0.00';$('streak').textContent=state.streak;$('refCode').textContent=state.code;$('adCount').textContent='0 / 10';$('adCount2').textContent='0 / 10';$('adProgress').style.width='0%';
 $('mineStatus').textContent=a?'24-hour session preview active':'Mining is locked';$('sessionLabel').textContent=a?'Session preview active':'No active session';$('mineBtn').disabled=true;$('mineBtn').textContent=a?'Session running':'Ad provider not connected';$('progress').style.width=pct+'%';$('progress2').style.width=pct+'%';
 let ms=a?state.end-Date.now():SESSION,h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),clock=[h,m,s].map(v=>String(v).padStart(2,'0')).join(':');$('timeLeft').textContent=clock;$('timeLeft2').textContent=clock;
-$('claimBtn').disabled=true;$('claimStatus').textContent='Daily rewards are paused until secure server-side reward verification is enabled.';$('username').value=state.name||''}
+$('claimBtn').disabled=true;$('claimStatus').textContent='Daily rewards are paused until secure server-side reward verification is enabled.'}
 $('claimBtn').onclick=()=>toast('Daily rewards are not active yet. Please check back after secure rewards are enabled.');
 $('copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(state.code);toast('Referral code copied')}catch{toast('Referral code: '+state.code)}};
 $('saveName').onclick=()=>{state.name=$('username').value.trim().slice(0,30);save();$('profileStatus').textContent='Display name saved on this device.';toast('Profile saved')};
@@ -162,7 +162,7 @@ function postCommunity(){const box=$('communityPost');const value=box.value.trim
 let quizLevel=1;function nextQuiz(){if(quizLevel>=100){toast('You reached the end of the sample level preview');return}quizLevel++;$('quizLevel').textContent='Level '+quizLevel+' of 100';$('quizBar').style.width=quizLevel+'%';$('quizStatus').textContent='Sample progress saved for this page only. No FundB Points were credited. Verified quiz rewards require the secure rewards service.'}
 try{const savedLanguage=localStorage.getItem('fundb_media_language');if(savedLanguage){$('mediaLanguage').value=savedLanguage;$('chosenLanguage').textContent=savedLanguage;$('mediaInside').hidden=false;$('mediaLanguageStatus').textContent='Saved language: '+savedLanguage}}catch(e){}
 
-load();render();setInterval(render,1000);
+load();$('username').value=state.name||'';render();setInterval(render,1000);
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 <script type="module">
@@ -203,6 +203,7 @@ const syncCloudProfile = async () => {
 const showSignedIn = user => {
   byId('authForm').hidden=true; byId('signedInPanel').hidden=false;
   byId('accountDetails').textContent=`Signed in as ${user.name || 'FundB member'} · ${user.email}`;
+  if (!byId('username').value.trim()) byId('username').value = user.name || '';
   status('Your FundB account is connected.');
   syncCloudProfile();
 };
@@ -223,6 +224,25 @@ byId('loginBtn').addEventListener('click', async()=>{
   catch(e){status(getError(e),true);}
 });
 byId('refreshCloudProfileBtn').addEventListener('click', syncCloudProfile);
+byId('saveName').addEventListener('click', async()=>{
+  const name = byId('username').value.trim().slice(0,30);
+  const profileStatus = byId('profileStatus');
+  if (!name) {
+    profileStatus.textContent = 'Enter a display name before saving.';
+    byId('username').focus();
+    return;
+  }
+  try {
+    const user = await account.get();
+    await account.updateName(name);
+    byId('accountDetails').textContent = `Signed in as ${name} · ${user.email}`;
+    profileStatus.textContent = 'Display name saved to your FundB account and this device.';
+    status('Your FundB account is connected.');
+    toast('Display name saved to your account');
+  } catch (err) {
+    profileStatus.textContent = `Could not save to your FundB account: ${getError(err)}. Your device copy may still be saved.`;
+  }
+});
 byId('logoutBtn').addEventListener('click', async()=>{try{await account.deleteSession('current');showSignedOut();status('You have signed out.');}catch(e){status(getError(e),true);}});
 byId('resetPasswordBtn').addEventListener('click', async()=>{
   const email=byId('authEmail').value.trim(); if(!email){status('Enter your email address first.',true);return;}
