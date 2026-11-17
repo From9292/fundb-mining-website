@@ -114,7 +114,24 @@ module.exports = async ({ req, res, log, error }) => {
         });
         log('Created initial FundB profile for authenticated user.');
       } catch (createError) {
-        profile = await appwriteRequest(tablePath + '/' + encodeURIComponent(user.$id), 'GET', adminHeaders);
+        // Preserve the real row-creation error. Looking up the requested row ID
+        // here can produce a second 404 and hide the reason the POST failed.
+        log('FundB profile row creation failed: ' + JSON.stringify({
+          statusCode: createError && createError.statusCode,
+          type: createError && createError.type,
+          message: createError && createError.message
+        }));
+
+        // A concurrent request may have created the profile after our first
+        // query. Only retry the userId query for a duplicate-row response.
+        if (createError && (createError.statusCode === 409 || createError.type === 'row_already_exists')) {
+          const retry = await appwriteRequest(tablePath + '?' + queryString, 'GET', adminHeaders);
+          profile = (retry.rows || [])[0];
+          if (profile) {
+            log('Found FundB profile created by a concurrent request.');
+          }
+        }
+
         if (!profile) throw createError;
       }
     }
