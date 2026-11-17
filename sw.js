@@ -1,4 +1,4 @@
-const CACHE='fundb-mining-v2-2-1';
+const CACHE='fundb-mining-v2-5-0';
 const FILES=['./','./index.html','./manifest.webmanifest','./assets/fundb-logo.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))));
