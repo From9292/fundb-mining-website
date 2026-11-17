@@ -35,8 +35,11 @@ module.exports = async ({ req, res, log, error }) => {
 
     const jwt = req.headers['x-appwrite-user-jwt'];
     const functionKey = req.headers['x-appwrite-key'];
+    // Log presence only. Never log JWTs or API keys.
+    log('Auth diagnostics: ' + JSON.stringify({ projectConfigured: Boolean(PROJECT_ID), userJwtPresent: Boolean(jwt), functionKeyPresent: Boolean(functionKey), headerNames: Object.keys(req.headers || {}) }));
     if (!PROJECT_ID || !jwt || !functionKey) {
-      return json(res, 401, { ok: false, message: 'Please sign in to your FundB account.' }, origin);
+      const missing = [!PROJECT_ID && 'project configuration', !jwt && 'user JWT header', !functionKey && 'function key header'].filter(Boolean);
+      return json(res, 401, { ok: false, message: 'Authentication request is missing: ' + missing.join(', ') + '. Please retry from the signed-in FundB website.' }, origin);
     }
 
     // Verify the caller's identity with their own short-lived Appwrite JWT.
