@@ -24,8 +24,8 @@ function appwriteRequest(path, method, headers, body) {
   return new Promise((resolve, reject) => {
     // Preserve Appwrite's required /v1 base path. A leading slash passed
     // directly to new URL() would silently discard /v1 and call the wrong URL.
-    const base = API_ENDPOINT.replace(/\\/+$/, '');
-    const route = String(path || '').replace(/^\\/+/, '');
+    const base = API_ENDPOINT.replace(/\/+$/, '');
+    const route = String(path || '').replace(/^\/+/, '');
     const url = new URL(base + '/' + route);
     const payload = body === undefined ? null : Buffer.from(JSON.stringify(body));
     const request = https.request(url, {
