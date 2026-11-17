@@ -222,7 +222,7 @@ byId('loginBtn').addEventListener('click', async()=>{
   catch(e){status(getError(e),true);}
 });
 byId('refreshCloudProfileBtn').addEventListener('click', syncCloudProfile);
-byId('logoutBtn').addEventListener('click', async()=>{try{await account.deleteSession({sessionId:'current'});showSignedOut();status('You have signed out.');}catch(e){status(getError(e),true);}});
+byId('logoutBtn').addEventListener('click', async()=>{try{await account.deleteSession('current');showSignedOut();status('You have signed out.');}catch(e){status(getError(e),true);}});
 byId('resetPasswordBtn').addEventListener('click', async()=>{
   const email=byId('authEmail').value.trim(); if(!email){status('Enter your email address first.',true);return;}
   try{await account.createRecovery(email,location.origin+location.pathname);status('Password reset email requested. Check your inbox and spam folder.');}catch(e){status(getError(e),true);}
