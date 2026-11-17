@@ -1,22 +1,50 @@
-# FundB Mining V2.1 + FundB Media preview
+# FundB Mining — V2.2 Community Preview
 
-This package upgrades the existing FundB Mining V2.0 HTML source while preserving the existing Appwrite endpoint/project ID and authentication integration.
+FundB Mining is a mobile-friendly web app prototype. This repository contains the front-end site and the Appwrite profile API source.
 
-## Included in this upgrade
-- FundB Points wording and refreshed welcome copy
-- Proposed 10 FundB Points = $2 planning illustration, clearly marked non-cash/non-redeemable
-- Expanded project whitepaper and conditional community airdrop explanation
-- FundB Media language gate, local community-post preview, 100-level quiz progress preview, games/stream/call sections
-- Revenue strategy: compliant ads, sponsorships, optional memberships, creator subscriptions/gifts and ticketed events
-- Official Telegram and support email links
+## Version labels
 
-## Important: prototype limitations
-The Media UI is a front-end preview. Global chat, friends, multiplayer games, live streaming, one-hour verified streaming rewards, audio/video calls, AI translation, payments, creator payouts and server-side FundB Points rewards are NOT connected. The preview does not issue the proposed 20-point game or 35-point streaming rewards. These require secure backend services, real-time infrastructure, provider integrations, moderation, payment configuration and server-side anti-fraud verification.
+- **App interface:** V2.2 Community Edition (the label shown in the current page header).
+- **Service-worker cache:** V2.5.0 (a cache invalidation version; it is not the app feature version).
+- **Appwrite profile API:** package version 1.1.0.
 
-The proposed $2 reference is not a guaranteed price or cash value. A future airdrop, token launch, conversion ratio, exchange listing or reward amount is not guaranteed.
+These version numbers refer to different parts of the project and must not be treated as interchangeable.
 
-## Deployment
-Upload `FundB_Mining_V2.1_Media_Upgrade.html` as `index.html` in your existing Netlify site, keeping your existing `assets/` folder, `manifest.webmanifest`, and `sw.js` alongside it. The original file's Appwrite project ID and endpoint are preserved. Test registration/login after deployment.
+## Repository layout
 
-## Revenue compliance
-Do not reward users for clicking or viewing ordinary AdSense ads. Use only ad formats/providers that explicitly permit incentivized rewarded placements. Keep non-incentivized ads separate from point earning. Configure payment, tax, creator verification, refund and user terms before accepting money.
+- `index.html` — app interface and Appwrite email/password authentication.
+- `manifest.webmanifest` — installable web-app metadata.
+- `sw.js` — service worker and static asset cache.
+- `assets/` — FundB branding.
+- `appwrite-function/` — Node.js source for the existing FundB Rewards API function.
+
+## Current project status
+
+The interface is a preview, not a live earning or payment platform. Browser-only mining credits and daily local claims are disabled. The app must not describe preview points as cash, cryptocurrency, or withdrawable funds.
+
+The Appwrite profile function verifies a signed-in account and loads or initializes a zero-point profile. It does not yet issue rewards. The following are not production-enabled:
+
+- Rewarded advertisements and server-verified ad callbacks
+- Mining sessions and server-authoritative reward calculations
+- Daily rewards and task completion credits
+- Referral attribution, fraud checks and referral bonuses
+- Wallet transfers, withdrawals, token issuance or exchange conversion
+- Customer support ticketing, notifications and global moderation
+
+Do not promise users earnings, guaranteed token value, or withdrawals until those services have been implemented, tested, and approved for launch.
+
+## Deployment notes
+
+The Cloudflare Pages site is connected to this repository. Work on `fundb-production-hardening` is a development preview and should be reviewed before merging into `main`.
+
+The Appwrite function source is separate from the static Pages deployment. Use the existing Appwrite function **FundB Rewards API**; configure its root directory as `appwrite-function`, entrypoint as `index.js`, build command as `npm install`, and grant only the required dynamic API key scopes (`rows.read`, `rows.write`). The function's `userId` profile attribute must be indexed. Do not create a duplicate project, database, or profile table.
+
+Never store Appwrite API keys, user passwords, session tokens, or JWTs in this repository. Configure secrets and allowed website origin in the Appwrite Console.
+
+## Advertising compliance
+
+Do not incentivize users to view or click ordinary AdSense ads. If points are later offered for ads, use only a provider and rewarded-ad format that explicitly permit incentivized rewards and verify the reward server-side. Keep ordinary non-incentivized ads separate.
+
+## Release checklist
+
+Before a public earning launch, complete server-side transaction ledgering, idempotency, rate limiting, abuse prevention, ad-provider verification, referral verification, wallet reconciliation, payout-provider integration, privacy/terms, support procedures, and end-to-end testing.
