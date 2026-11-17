@@ -184,7 +184,7 @@ const syncCloudProfile = async () => {
         'Content-Type': 'application/json',
         'X-Appwrite-User-JWT': jwtResult.jwt
       },
-      body: JSON.stringify({})
+      body: JSON.stringify({ userJwt: jwtResult.jwt })
     });
     const result = await response.json();
     if (!response.ok || !result.ok || !result.profile) {
