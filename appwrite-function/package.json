@@ -1,0 +1,9 @@
+{
+  "name": "fundb-rewards-api",
+  "version": "2.1.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": { "start": "node index.js" },
+  "dependencies": { "node-appwrite": "^21.1.0" }
+}
