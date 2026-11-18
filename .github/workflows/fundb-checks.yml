@@ -78,4 +78,21 @@ jobs:
           if "Access-Control-Allow-Origin'] = '*'" in source:
               raise SystemExit("Wildcard CORS is not permitted")
           print("Cryptographic referral codes and exact-origin CORS checks passed")
+
+      - name: Verify referral attribution is explicit and idempotent
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          frontend = Path("index.html").read_text(encoding="utf-8")
+          backend = Path("appwrite-function/index.js").read_text(encoding="utf-8")
+          if "referralCodeOverride || referralFromUrl" in frontend:
+              raise SystemExit("A login or profile refresh could silently submit a stale referral code")
+          if "String(referralCodeOverride || '').trim().toUpperCase()" not in frontend:
+              raise SystemExit("Referral code must be passed explicitly by the registration flow")
+          if "eligibleReferrer.$id) + '/total_referrals/increment'" in backend:
+              raise SystemExit("Existing-profile referral attribution must not blindly increment counters")
+          if "Reconciled inviter referral counter after saving existing-profile attribution" not in backend:
+              raise SystemExit("Missing idempotent referral counter reconciliation")
+          print("Referral submission is explicit and existing-profile counts are idempotent")
+          PY
           PY
