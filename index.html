@@ -173,9 +173,9 @@ const client = new Client().setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_P
 const account = new Account(client);
 const functions = new Functions(client);
 const FUNDB_FUNCTION_ID = 'FundBRewardsAPI';
-const referralFromUrl = (new URLSearchParams(location.search).get('ref') || '').trim().toUpperCase();
-if (referralFromUrl && /^[A-Z0-9]{10}$/.test(referralFromUrl)) byId('signupReferralCode').value = referralFromUrl;
 const byId = id => document.getElementById(id);
+const referralFromUrl = (new URLSearchParams(location.search).get('ref') || '').trim().toUpperCase();
+if (referralFromUrl && /^FB[A-Z0-9]{8}$/.test(referralFromUrl)) byId('signupReferralCode').value = referralFromUrl;
 const status = (message, bad=false) => { const el=byId('authStatus'); if(el){el.textContent=message;el.style.borderColor=bad?'#9b4545':'#6b5423';} };
 const syncCloudProfile = async () => {
   const cloudStatus = byId('cloudProfileStatus');
