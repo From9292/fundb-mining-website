@@ -179,7 +179,7 @@ if (referralFromUrl && /^FB[A-Z0-9]{8}$/.test(referralFromUrl)) byId('signupRefe
 const status = (message, bad=false) => { const el=byId('authStatus'); if(el){el.textContent=message;el.style.borderColor=bad?'#9b4545':'#6b5423';} };
 const syncCloudProfile = async (referralCodeOverride = '') => {
   const cloudStatus = byId('cloudProfileStatus');
-  const referralCode = String(referralCodeOverride || referralFromUrl || byId('signupReferralCode')?.value || '').trim().toUpperCase();
+  const referralCode = String(referralCodeOverride || '').trim().toUpperCase();
   try {
     cloudStatus.textContent = 'Loading your saved FundB profile…';
     // Invoke through the signed-in Appwrite Client SDK. Appwrite automatically
