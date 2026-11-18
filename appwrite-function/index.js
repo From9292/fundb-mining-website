@@ -107,6 +107,8 @@ module.exports = async ({ req, res, log, error }) => {
       requestBody = {};
     }
     const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase();
+    const validReferralCodeSubmitted = /^FB[A-Z0-9]{8}$/.test(submittedReferralCode);
+    log('Referral request diagnostics: ' + JSON.stringify({ bodyParsed: Boolean(req.bodyJson || req.body), referralCodeSubmitted: Boolean(submittedReferralCode), referralCodeFormatValid: validReferralCodeSubmitted }));
 
     // Use the function's server-side key only after verifying the caller.
     const tablePath = '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
@@ -123,6 +125,11 @@ module.exports = async ({ req, res, log, error }) => {
     const found = await appwriteRequest(tablePath + '?' + queryString, 'GET', adminHeaders);
 
     let profile = (found.rows || [])[0];
+    if (profile) {
+      log('Existing FundB profile found; no new referral attribution attempted.');
+    } else {
+      log('No existing FundB profile found; attempting first-time profile creation.');
+    }
     if (!profile) {
       try {
         let referrer = null;
@@ -135,6 +142,9 @@ module.exports = async ({ req, res, log, error }) => {
           const referralMatches = await appwriteRequest(tablePath + '?' + referralQueryString, 'GET', adminHeaders);
           const candidate = (referralMatches.rows || [])[0];
           if (candidate && candidate.userId && candidate.userId !== user.$id) referrer = candidate;
+          log('Referral lookup result: ' + JSON.stringify({ matchingReferrerFound: Boolean(referrer), selfReferralRejected: Boolean(candidate && candidate.userId === user.$id) }));
+        } else {
+          log('No valid referral code was submitted for first-time profile creation.');
         }
 
         const newProfileData = {
@@ -150,6 +160,7 @@ module.exports = async ({ req, res, log, error }) => {
           data: newProfileData
         });
         log('Created initial FundB profile for authenticated user.');
+        log('New profile referral attribution: ' + JSON.stringify({ referredBySaved: Boolean(profile.referred_by || (profile.data && profile.data.referred_by)), referralMatched: Boolean(referrer) }));
 
         // Atomic counter increment: one increment follows the successful creation
         // of the referred user's unique profile row. No points or bonuses are issued.
