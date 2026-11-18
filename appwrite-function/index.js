@@ -163,17 +163,20 @@ module.exports = async ({ req, res, log, error }) => {
         }
       } else if (existingReferrer) {
         log('Existing profile already has a referrer; attribution was not changed.');
-        if (/^FB[A-Z0-9]{8}$/.test(submittedReferralCode)) {
-          const referralQuery = [
-            { method: 'equal', attribute: 'referralCode', values: [submittedReferralCode] },
+        // Reconcile the inviter's counter from the saved relationship on every
+        // profile sync. This is idempotent and does not depend on the invite URL
+        // still being present after the first registration.
+        try {
+          const inviterQuery = [
+            { method: 'equal', attribute: 'userId', values: [existingReferrer] },
             { method: 'limit', values: [1] }
           ];
-          const referralQueryString = referralQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
-          const referralMatches = await appwriteRequest(tablePath + '?' + referralQueryString, 'GET', adminHeaders);
-          const inviter = (referralMatches.rows || [])[0];
-          if (inviter && inviter.userId === existingReferrer && inviter.userId !== user.$id) {
+          const inviterQueryString = inviterQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+          const inviterMatches = await appwriteRequest(tablePath + '?' + inviterQueryString, 'GET', adminHeaders);
+          const inviter = (inviterMatches.rows || [])[0];
+          if (inviter && inviter.userId !== user.$id) {
             const referredQuery = [
-              { method: 'equal', attribute: 'referred_by', values: [inviter.userId] },
+              { method: 'equal', attribute: 'referred_by', values: [existingReferrer] },
               { method: 'limit', values: [1] }
             ];
             const referredQueryString = referredQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
@@ -186,11 +189,17 @@ module.exports = async ({ req, res, log, error }) => {
               );
               log('Reconciled inviter referral counter from saved referral relationships: ' + JSON.stringify({ relationshipCount: exactReferralCount }));
             } else {
-              log('Could not reconcile inviter counter because Appwrite did not return a valid total.');
+              log('Referral counter reconciliation skipped: Appwrite returned an invalid relationship count.');
             }
           } else {
-            log('Existing referrer does not match the submitted invite code; no counter changes made.');
+            log('Referral counter reconciliation skipped: saved inviter profile was not found.');
           }
+        } catch (reconcileError) {
+          log('Referral counter reconciliation failed without blocking profile load: ' + JSON.stringify({
+            statusCode: reconcileError && reconcileError.statusCode,
+            type: reconcileError && reconcileError.type,
+            message: reconcileError && reconcileError.message
+          }));
         }
       } else {
         log('Existing profile has no referrer and no valid referral code was submitted.');
@@ -275,7 +284,8 @@ module.exports = async ({ req, res, log, error }) => {
       profile: {
         points: Number(profile.points || 0),
         referralCode: profile.referralCode || 'Not assigned',
-        totalReferrals: Number(profile.total_referrals ?? profile.totalReferrals ?? 0)
+        totalReferrals: Number(profile.total_referrals ?? profile.totalReferrals ?? 0),
+        referralLinked: Boolean(profile.referred_by)
       },
       rewardsEnabled: false
     }, origin);
