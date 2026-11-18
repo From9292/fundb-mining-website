@@ -50,6 +50,6 @@ Real rewards require separate server-side transaction records, idempotency keys,
 
 ## Referral profile behavior
 
-The profile API stores a one-time `referred_by` relationship for an eligible invite code. On subsequent profile syncs, it recalculates the inviter's `total_referrals` from saved relationships, so a missed counter increment can be repaired without counting the same referred account twice. The referred account receives a boolean `referralLinked` status; its own `totalReferrals` remains the number of people it has invited.
+The profile API stores a one-time `referred_by` relationship for an eligible invite code. On subsequent profile syncs, it recalculates the inviter's `total_referrals` from saved relationships, so a missed counter update can be repaired without counting the same referred account twice. Referral codes are submitted only during the registration flow; a later sign-in or manual profile refresh does not silently attach a stale URL code. The referred account receives a boolean `referralLinked` status; its own `totalReferrals` remains the number of people it has invited.
 
 After changing `appwrite-function/index.js`, redeploy the existing **FundB Rewards API** function from this folder in Appwrite. A Cloudflare Pages deployment does not deploy this function automatically. Keep rewards disabled until a live Appwrite execution confirms the relationship and counter behavior.
