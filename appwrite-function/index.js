@@ -96,6 +96,18 @@ module.exports = async ({ req, res, log, error }) => {
       'X-Appwrite-JWT': jwt
     });
 
+    // A referral code is only considered when creating a brand-new profile.
+    // Existing profiles are never retroactively reassigned by a URL parameter.
+    let requestBody = {};
+    try {
+      requestBody = req.bodyJson && typeof req.bodyJson === 'object'
+        ? req.bodyJson
+        : (typeof req.body === 'string' && req.body ? JSON.parse(req.body) : {});
+    } catch (_) {
+      requestBody = {};
+    }
+    const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase();
+
     // Use the function's server-side key only after verifying the caller.
     const tablePath = '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
       '/tables/' + encodeURIComponent(PROFILE_TABLE_ID) + '/rows';
@@ -113,16 +125,49 @@ module.exports = async ({ req, res, log, error }) => {
     let profile = (found.rows || [])[0];
     if (!profile) {
       try {
+        let referrer = null;
+        if (/^FB[A-Z0-9]{8}$/.test(submittedReferralCode)) {
+          const referralQuery = [
+            { method: 'equal', attribute: 'referralCode', values: [submittedReferralCode] },
+            { method: 'limit', values: [1] }
+          ];
+          const referralQueryString = referralQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+          const referralMatches = await appwriteRequest(tablePath + '?' + referralQueryString, 'GET', adminHeaders);
+          const candidate = (referralMatches.rows || [])[0];
+          if (candidate && candidate.userId && candidate.userId !== user.$id) referrer = candidate;
+        }
+
+        const newProfileData = {
+          userId: user.$id,
+          points: 0,
+          referralCode: makeReferralCode(user.$id),
+          total_referrals: 0
+        };
+        if (referrer) newProfileData.referred_by = referrer.userId;
+
         profile = await appwriteRequest(tablePath, 'POST', adminHeaders, {
           rowId: user.$id,
-          data: {
-            userId: user.$id,
-            points: 0,
-            referralCode: makeReferralCode(user.$id),
-            total_referrals: 0
-          }
+          data: newProfileData
         });
         log('Created initial FundB profile for authenticated user.');
+
+        // Atomic counter increment: one increment follows the successful creation
+        // of the referred user's unique profile row. No points or bonuses are issued.
+        if (referrer) {
+          try {
+            await appwriteRequest(
+              tablePath + '/' + encodeURIComponent(referrer.$id) + '/total_referrals/increment',
+              'PATCH', adminHeaders, { value: 1 }
+            );
+            log('Recorded one verified profile referral attribution.');
+          } catch (incrementError) {
+            log('Referral attribution saved, but inviter counter increment failed: ' + JSON.stringify({
+              statusCode: incrementError && incrementError.statusCode,
+              type: incrementError && incrementError.type,
+              message: incrementError && incrementError.message
+            }));
+          }
+        }
       } catch (createError) {
         // Preserve the real row-creation error. Looking up the requested row ID
         // here can produce a second 404 and hide the reason the POST failed.
