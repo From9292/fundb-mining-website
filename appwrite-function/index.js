@@ -126,7 +126,46 @@ module.exports = async ({ req, res, log, error }) => {
 
     let profile = (found.rows || [])[0];
     if (profile) {
-      log('Existing FundB profile found; no new referral attribution attempted.');
+      log('Existing FundB profile found.');
+      // A new account may have had its cloud profile created before the invite
+      // code arrived. Allow one-time attribution only while referred_by is empty.
+      const existingReferrer = String(profile.referred_by || '').trim();
+      if (!existingReferrer && /^FB[A-Z0-9]{8}$/.test(submittedReferralCode)) {
+        const referralQuery = [
+          { method: 'equal', attribute: 'referralCode', values: [submittedReferralCode] },
+          { method: 'limit', values: [1] }
+        ];
+        const referralQueryString = referralQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+        const referralMatches = await appwriteRequest(tablePath + '?' + referralQueryString, 'GET', adminHeaders);
+        const candidate = (referralMatches.rows || [])[0];
+        const eligibleReferrer = candidate && candidate.userId && candidate.userId !== user.$id ? candidate : null;
+        log('Existing-profile referral lookup: ' + JSON.stringify({ matchingReferrerFound: Boolean(eligibleReferrer), selfReferralRejected: Boolean(candidate && candidate.userId === user.$id) }));
+        if (eligibleReferrer) {
+          const updatedProfile = await appwriteRequest(
+            tablePath + '/' + encodeURIComponent(profile.$id),
+            'PATCH', adminHeaders, { data: { referred_by: eligibleReferrer.userId } }
+          );
+          profile = updatedProfile;
+          log('Saved referral attribution on existing profile.');
+          try {
+            await appwriteRequest(
+              tablePath + '/' + encodeURIComponent(eligibleReferrer.$id) + '/total_referrals/increment',
+              'PATCH', adminHeaders, { value: 1 }
+            );
+            log('Recorded one verified profile referral attribution for existing profile.');
+          } catch (incrementError) {
+            log('Referral attribution saved, but inviter counter increment failed: ' + JSON.stringify({
+              statusCode: incrementError && incrementError.statusCode,
+              type: incrementError && incrementError.type,
+              message: incrementError && incrementError.message
+            }));
+          }
+        }
+      } else if (existingReferrer) {
+        log('Existing profile already has a referrer; attribution was not changed.');
+      } else {
+        log('Existing profile has no referrer and no valid referral code was submitted.');
+      }
     } else {
       log('No existing FundB profile found; attempting first-time profile creation.');
     }
