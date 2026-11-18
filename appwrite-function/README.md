@@ -23,7 +23,7 @@ The code uses the existing project and table IDs already configured in FundB:
 - Database: `fundB_database`
 - Profile table: `6aedcd650007f44a070f`
 
-The profile table must have a `userId` string attribute and `points` numeric attribute and `referralCode` string attribute. The `userId` attribute must be indexed so the function can find an existing profile. Make it unique if the current data permits. Do not delete or recreate existing rows. The code returns `totalReferrals` as zero if that optional field is not present.
+The profile table must have the existing `userId` string, `points` numeric, `referralCode` string, `referred_by` string, and `total_referrals` integer attributes. Create equality-query indexes for `userId`, `referralCode`, and `referred_by`. Make `userId` unique if the current data permits. Do not delete or recreate existing rows. The `referred_by` index is required to calculate the inviter's referral count from saved relationships.
 
 Optional environment variables:
 - `FUNDB_DATABASE_ID` (defaults to the existing database ID above)
