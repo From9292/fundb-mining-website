@@ -44,3 +44,10 @@ Appwrite automatically provides `APPWRITE_FUNCTION_PROJECT_ID`, the ephemeral ke
 ## Still not production-enabled
 
 Real rewards require separate server-side transaction records, idempotency keys, provider-signed rewarded-ad callbacks, referral fraud checks, rate limits, audited wallet ledger entries, and verified payout integrations. Do not advertise balances as cash or enable withdrawals until those systems are built and tested.
+
+
+## Referral profile behavior
+
+The profile API stores a one-time `referred_by` relationship for an eligible invite code. On subsequent profile syncs, it recalculates the inviter's `total_referrals` from saved relationships, so a missed counter increment can be repaired without counting the same referred account twice. The referred account receives a boolean `referralLinked` status; its own `totalReferrals` remains the number of people it has invited.
+
+After changing `appwrite-function/index.js`, redeploy the existing **FundB Rewards API** function from this folder in Appwrite. A Cloudflare Pages deployment does not deploy this function automatically. Keep rewards disabled until a live Appwrite execution confirms the relationship and counter behavior.
