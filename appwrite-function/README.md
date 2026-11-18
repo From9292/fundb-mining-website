@@ -28,7 +28,7 @@ The profile table must have a `userId` string attribute and `points` numeric att
 Optional environment variables:
 - `FUNDB_DATABASE_ID` (defaults to the existing database ID above)
 - `FUNDB_PROFILE_TABLE_ID` (defaults to the existing profile table ID above)
-- `FUNDB_ALLOWED_ORIGIN` (set this to the exact deployed FundB website origin when known; the default `*` is only a broad CORS setting, not an authentication mechanism)
+- `FUNDB_ALLOWED_ORIGIN` (required for browser access; set this to the exact deployed FundB website origin. If omitted, the function does not emit an allow-origin header.)
 
 Appwrite automatically provides `APPWRITE_FUNCTION_PROJECT_ID`, the ephemeral key in `x-appwrite-key`, and the authenticated user's JWT in `x-appwrite-user-jwt`. Do not put API keys, passwords, or JWTs in GitHub.
 
@@ -38,6 +38,8 @@ Appwrite automatically provides `APPWRITE_FUNCTION_PROJECT_ID`, the ephemeral ke
 - It obtains the user ID from Appwrite's verified account, never from browser input.
 - It reads the existing profile before creating one.
 - New profile rows use the authenticated user's ID as a stable row ID to reduce duplicate creation during simultaneous requests.
+- New referral codes are generated with Node's cryptographic random source and checked against existing codes before assignment; existing users' codes are never changed.
+- CORS is fail-closed: only the exact `FUNDB_ALLOWED_ORIGIN` is allowed, and no wildcard origin is emitted.
 - It never accepts a balance or reward amount from the browser.
 - It does not issue mining, daily, ad, referral, transfer, withdrawal, or token rewards.
 
