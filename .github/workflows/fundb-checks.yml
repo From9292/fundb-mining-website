@@ -1,0 +1,97 @@
+name: FundB code checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, fundb-production-hardening]
+
+jobs:
+  appwrite-function:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Appwrite function dependencies
+        run: npm install --prefix appwrite-function --ignore-scripts --no-audit --no-fund
+      - name: Check function syntax
+        run: node --check appwrite-function/index.js
+      - name: Verify function module loads
+        run: node -e "require('./appwrite-function/index.js')"
+      - name: Check embedded website JavaScript
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          import tempfile
+
+          html = Path("index.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script([^>]*)>(.*?)</script>", html, flags=re.I | re.S)
+          if not scripts:
+              raise SystemExit("No embedded JavaScript blocks were found")
+          for number, (attributes, source) in enumerate(scripts, start=1):
+              is_module = 'type="module"' in attributes.lower() or "type='module'" in attributes.lower()
+              suffix = ".mjs" if is_module else ".js"
+              with tempfile.NamedTemporaryFile("w", suffix=suffix, encoding="utf-8") as handle:
+                  handle.write(source)
+                  handle.flush()
+                  subprocess.run(["node", "--check", handle.name], check=True)
+              print(f"Embedded script {number}: syntax OK")
+          PY
+      - name: Verify reward safety switches remain disabled
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path("index.html").read_text(encoding="utf-8")
+          required = [
+              "function active(){return false}",
+              "function accrued(){return 0}",
+              "$('claimBtn').disabled=true",
+              "mineBtn').disabled=true"
+          ]
+          missing = [item for item in required if item not in source]
+          if missing:
+              raise SystemExit("Safety check failed; missing: " + ", ".join(missing))
+          print("Unverified local rewards remain disabled")
+          PY
+
+      - name: Verify referral and CORS hardening
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path("appwrite-function/index.js").read_text(encoding="utf-8")
+          required = [
+              "require('crypto')",
+              "crypto.randomBytes(8)",
+              "createUniqueReferralCode(tablePath, adminHeaders)",
+              "process.env.FUNDB_ALLOWED_ORIGIN || ''",
+              "if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN)"
+          ]
+          missing = [item for item in required if item not in source]
+          if missing:
+              raise SystemExit("Backend hardening check failed; missing: " + ", ".join(missing))
+          if "Access-Control-Allow-Origin'] = '*'" in source:
+              raise SystemExit("Wildcard CORS is not permitted")
+          print("Cryptographic referral codes and exact-origin CORS checks passed")
+
+      - name: Verify referral attribution is explicit and idempotent
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          frontend = Path("index.html").read_text(encoding="utf-8")
+          backend = Path("appwrite-function/index.js").read_text(encoding="utf-8")
+          if "referralCodeOverride || referralFromUrl" in frontend:
+              raise SystemExit("A login or profile refresh could silently submit a stale referral code")
+          if "String(referralCodeOverride || '').trim().toUpperCase()" not in frontend:
+              raise SystemExit("Referral code must be passed explicitly by the registration flow")
+          if "eligibleReferrer.$id) + '/total_referrals/increment'" in backend:
+              raise SystemExit("Existing-profile referral attribution must not blindly increment counters")
+          if "Reconciled inviter referral counter after saving existing-profile attribution" not in backend:
+              raise SystemExit("Missing idempotent referral counter reconciliation")
+          print("Referral submission is explicit and existing-profile counts are idempotent")
+          PY
