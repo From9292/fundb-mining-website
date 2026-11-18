@@ -272,20 +272,31 @@ module.exports = async ({ req, res, log, error }) => {
         log('Created initial FundB profile for authenticated user.');
         log('New profile referral attribution: ' + JSON.stringify({ referredBySaved: Boolean(profile.referred_by || (profile.data && profile.data.referred_by)), referralMatched: Boolean(referrer) }));
 
-        // Atomic counter increment: one increment follows the successful creation
-        // of the referred user's unique profile row. No points or bonuses are issued.
+        // Reconcile the inviter's displayed count from saved referral relationships.
+        // This avoids relying on a column-increment endpoint and remains correct
+        // when a profile is retried or a previous counter update was missed.
         if (referrer) {
           try {
+            const referredQuery = [
+              { method: 'equal', attribute: 'referred_by', values: [referrer.userId] },
+              { method: 'limit', values: [1] }
+            ];
+            const referredQueryString = referredQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+            const referredRows = await appwriteRequest(tablePath + '?' + referredQueryString, 'GET', adminHeaders);
+            const exactReferralCount = Number(referredRows.total);
+            if (!Number.isInteger(exactReferralCount) || exactReferralCount < 0) {
+              throw new Error('Appwrite returned an invalid referral relationship count.');
+            }
             await appwriteRequest(
-              tablePath + '/' + encodeURIComponent(referrer.$id) + '/total_referrals/increment',
-              'PATCH', adminHeaders, { value: 1 }
+              tablePath + '/' + encodeURIComponent(referrer.$id),
+              'PATCH', adminHeaders, { data: { total_referrals: exactReferralCount } }
             );
-            log('Recorded one verified profile referral attribution.');
-          } catch (incrementError) {
-            log('Referral attribution saved, but inviter counter increment failed: ' + JSON.stringify({
-              statusCode: incrementError && incrementError.statusCode,
-              type: incrementError && incrementError.type,
-              message: incrementError && incrementError.message
+            log('Reconciled inviter referral counter after new-profile attribution: ' + JSON.stringify({ relationshipCount: exactReferralCount }));
+          } catch (reconcileError) {
+            log('Referral attribution saved, but inviter counter reconciliation failed: ' + JSON.stringify({
+              statusCode: reconcileError && reconcileError.statusCode,
+              type: reconcileError && reconcileError.type,
+              message: reconcileError && reconcileError.message
             }));
           }
         }
