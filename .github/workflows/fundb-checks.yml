@@ -35,7 +35,8 @@ jobs:
           if not scripts:
               raise SystemExit("No embedded JavaScript blocks were found")
           for number, (attributes, source) in enumerate(scripts, start=1):
-              suffix = ".mjs" if re.search(r'type=["\\']module["\\']', attributes, re.I) else ".js"
+              is_module = 'type="module"' in attributes.lower() or "type='module'" in attributes.lower()
+              suffix = ".mjs" if is_module else ".js"
               with tempfile.NamedTemporaryFile("w", suffix=suffix, encoding="utf-8") as handle:
                   handle.write(source)
                   handle.flush()
