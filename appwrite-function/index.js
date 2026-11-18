@@ -163,6 +163,35 @@ module.exports = async ({ req, res, log, error }) => {
         }
       } else if (existingReferrer) {
         log('Existing profile already has a referrer; attribution was not changed.');
+        if (/^FB[A-Z0-9]{8}$/.test(submittedReferralCode)) {
+          const referralQuery = [
+            { method: 'equal', attribute: 'referralCode', values: [submittedReferralCode] },
+            { method: 'limit', values: [1] }
+          ];
+          const referralQueryString = referralQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+          const referralMatches = await appwriteRequest(tablePath + '?' + referralQueryString, 'GET', adminHeaders);
+          const inviter = (referralMatches.rows || [])[0];
+          if (inviter && inviter.userId === existingReferrer && inviter.userId !== user.$id) {
+            const referredQuery = [
+              { method: 'equal', attribute: 'referred_by', values: [inviter.userId] },
+              { method: 'limit', values: [1] }
+            ];
+            const referredQueryString = referredQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+            const referredRows = await appwriteRequest(tablePath + '?' + referredQueryString, 'GET', adminHeaders);
+            const exactReferralCount = Number(referredRows.total);
+            if (Number.isInteger(exactReferralCount) && exactReferralCount >= 0) {
+              await appwriteRequest(
+                tablePath + '/' + encodeURIComponent(inviter.$id),
+                'PATCH', adminHeaders, { data: { total_referrals: exactReferralCount } }
+              );
+              log('Reconciled inviter referral counter from saved referral relationships: ' + JSON.stringify({ relationshipCount: exactReferralCount }));
+            } else {
+              log('Could not reconcile inviter counter because Appwrite did not return a valid total.');
+            }
+          } else {
+            log('Existing referrer does not match the submitted invite code; no counter changes made.');
+          }
+        }
       } else {
         log('Existing profile has no referrer and no valid referral code was submitted.');
       }
