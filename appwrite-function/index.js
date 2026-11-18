@@ -1,11 +1,12 @@
 const https = require('https');
+const crypto = require('crypto');
 const { URL } = require('url');
 
 const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const DATABASE_ID = process.env.FUNDB_DATABASE_ID || 'fundB_database';
 const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || '6aedcd650007f44a070f';
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
-const ALLOWED_ORIGIN = process.env.FUNDB_ALLOWED_ORIGIN || '*';
+const ALLOWED_ORIGIN = process.env.FUNDB_ALLOWED_ORIGIN || '';
 
 function responseHeaders(origin) {
   const headers = {
@@ -15,9 +16,7 @@ function responseHeaders(origin) {
   };
   // When an origin is configured, only echo that exact trusted website origin.
   // Do not advertise the trusted origin to unrelated browser origins.
-  if (ALLOWED_ORIGIN === '*') {
-    headers['Access-Control-Allow-Origin'] = '*';
-  } else if (origin === ALLOWED_ORIGIN) {
+  if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN) {
     headers['Access-Control-Allow-Origin'] = origin;
   }
   return headers;
@@ -65,8 +64,29 @@ function appwriteRequest(path, method, headers, body) {
   });
 }
 
-function makeReferralCode(userId) {
-  return 'FB' + userId.replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase();
+function makeReferralCode() {
+  // Generate an unpredictable 8-character code; do not derive it from user IDs.
+  const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const bytes = crypto.randomBytes(8);
+  let suffix = '';
+  for (const byte of bytes) suffix += alphabet[byte % alphabet.length];
+  return 'FB' + suffix;
+}
+
+async function createUniqueReferralCode(tablePath, adminHeaders) {
+  // Check the existing indexed referralCode field before assigning a new code.
+  // Retry on the extraordinarily unlikely collision; never overwrite an existing code.
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const candidate = makeReferralCode();
+    const query = [
+      { method: 'equal', attribute: 'referralCode', values: [candidate] },
+      { method: 'limit', values: [1] }
+    ];
+    const queryString = query.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+    const matches = await appwriteRequest(tablePath + '?' + queryString, 'GET', adminHeaders);
+    if (!(matches.rows || []).length) return candidate;
+  }
+  throw new Error('Could not allocate a unique referral code after several attempts.');
 }
 
 module.exports = async ({ req, res, log, error }) => {
@@ -227,7 +247,7 @@ module.exports = async ({ req, res, log, error }) => {
         const newProfileData = {
           userId: user.$id,
           points: 0,
-          referralCode: makeReferralCode(user.$id),
+          referralCode: await createUniqueReferralCode(tablePath, adminHeaders),
           total_referrals: 0
         };
         if (referrer) newProfileData.referred_by = referrer.userId;
