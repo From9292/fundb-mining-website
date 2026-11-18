@@ -95,4 +95,3 @@ jobs:
               raise SystemExit("Missing idempotent referral counter reconciliation")
           print("Referral submission is explicit and existing-profile counts are idempotent")
           PY
-          PY
