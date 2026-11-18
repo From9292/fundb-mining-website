@@ -156,8 +156,8 @@ module.exports = async ({ req, res, log, error }) => {
         if (referrer) {
           try {
             await appwriteRequest(
-              tablePath + '/' + encodeURIComponent(referrer.$id) + '/total_referrals/increment',
-              'PATCH', adminHeaders, { value: 1 }
+              tablePath + '/' + encodeURIComponent(referrer.$id) + '/increment',
+              'PATCH', adminHeaders, { columns: ['total_referrals'], value: 1 }
             );
             log('Recorded one verified profile referral attribution.');
           } catch (incrementError) {
