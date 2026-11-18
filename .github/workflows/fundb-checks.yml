@@ -92,6 +92,10 @@ jobs:
           if "eligibleReferrer.$id) + '/total_referrals/increment'" in backend:
               raise SystemExit("Existing-profile referral attribution must not blindly increment counters")
           if "Reconciled inviter referral counter after saving existing-profile attribution" not in backend:
-              raise SystemExit("Missing idempotent referral counter reconciliation")
-          print("Referral submission is explicit and existing-profile counts are idempotent")
+              raise SystemExit("Missing idempotent existing-profile referral counter reconciliation")
+          if "Reconciled inviter referral counter after new-profile attribution" not in backend:
+              raise SystemExit("Missing new-profile referral counter reconciliation")
+          if "total_referrals/increment" in backend:
+              raise SystemExit("Referral counters must be reconciled from saved relationships, not blind increments")
+          print("Referral submission is explicit and both new/existing profile counts are reconciled")
           PY
