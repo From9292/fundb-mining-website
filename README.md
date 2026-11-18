@@ -5,7 +5,7 @@ FundB Mining is a mobile-friendly web app prototype. This repository contains th
 ## Version labels
 
 - **App interface:** V2.2 Community Edition (the label shown in the current page header).
-- **Service-worker cache:** V2.5.0 (a cache invalidation version; it is not the app feature version).
+- **Service-worker cache:** `fundb-mining-v2-6-0` (a cache invalidation name; it is not the app feature version).
 - **Appwrite profile API:** package version 1.1.0.
 
 These version numbers refer to different parts of the project and must not be treated as interchangeable.
