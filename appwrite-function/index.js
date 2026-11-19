@@ -5,6 +5,7 @@ const { URL } = require('url');
 const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const DATABASE_ID = process.env.FUNDB_DATABASE_ID || 'fundB_database';
 const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || '6aedcd650007f44a070f';
+const TRANSACTIONS_TABLE_ID = process.env.FUNDB_TRANSACTIONS_TABLE_ID || 'fundB_transactions';
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
 const ALLOWED_ORIGIN = process.env.FUNDB_ALLOWED_ORIGIN || '';
 
@@ -49,6 +50,25 @@ function appwrite(path, method, requestHeaders, body) {
 }
 
 const tablePath = () => '/tablesdb/' + encodeURIComponent(DATABASE_ID) + '/tables/' + encodeURIComponent(PROFILE_TABLE_ID) + '/rows';
+const transactionsPath = () => '/tablesdb/' + encodeURIComponent(DATABASE_ID) + '/tables/' + encodeURIComponent(TRANSACTIONS_TABLE_ID) + '/rows';
+async function listUserTransactions(userId, adminHeaders) {
+  const queries = [
+    { method: 'equal', attribute: 'userId', values: [userId] },
+    { method: 'orderDesc', values: ['$createdAt'] },
+    { method: 'limit', values: [50] }
+  ];
+  const query = queries.map(item => 'queries[]=' + encodeURIComponent(JSON.stringify(item))).join('&');
+  const result = await appwrite(transactionsPath() + '?' + query, 'GET', adminHeaders);
+  return (result.rows || []).map(row => ({
+    id: row.$id,
+    type: row.type || '',
+    amount: Number(row.amount || 0),
+    status: row.status || '',
+    reference: row.reference || '',
+    description: row.description || '',
+    createdAt: row.$createdAt || null
+  }));
+}
 const queryUrl = (attribute, value) => {
   const q = [
     { method: 'equal', attribute, values: [value] },
@@ -109,10 +129,21 @@ module.exports = async ({ req, res, log, error }) => {
       'X-Appwrite-JWT': jwt
     });
     const body = parseBody(req);
+    const action = String(body.action || 'profileSync');
+    const adminHeaders = { 'X-Appwrite-Project': PROJECT_ID, 'X-Appwrite-Key': functionKey };
+
+    // Transaction history is read only. Users cannot create, edit or delete ledger rows.
+    if (action === 'transactionHistory') {
+      const transactions = await listUserTransactions(user.$id, adminHeaders);
+      return send(res, 200, { ok: true, transactions, rewardsEnabled: false }, origin);
+    }
+    if (action !== 'profileSync') {
+      return send(res, 400, { ok: false, message: 'Unsupported action.' }, origin);
+    }
+
     const queryCode = req.query && (req.query.ref || req.query.referralCode);
     const submittedCode = normalizeCode(body.referralCode || queryCode);
     const validCode = /^FB[A-Z0-9]{8}$/.test(submittedCode);
-    const adminHeaders = { 'X-Appwrite-Project': PROJECT_ID, 'X-Appwrite-Key': functionKey };
     let profile = await findOne('userId', user.$id, adminHeaders);
     let matchedReferrer = false;
 
