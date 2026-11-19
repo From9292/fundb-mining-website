@@ -271,10 +271,14 @@ const showSignedIn = async (user, referralCode = '') => {
   byId('accountDetails').textContent=`Signed in as ${user.name || 'FundB member'} · ${user.email}`;
   const pendingInvite = getPendingReferralCode();
   if (pendingInvite && byId('existingReferralCode')) byId('existingReferralCode').value = pendingInvite;
+  // A saved URL/session code is shown for review, but must never be silently
+  // applied to an already-existing account during sign-in or session restore.
+  // Existing accounts submit it only through the explicit Link button.
+  try { sessionStorage.removeItem(REFERRAL_SESSION_KEY); } catch (_) {}
   byId('username').value = user.name || '';
   byId('profileStatus').textContent = user.name ? 'Display name loaded from your FundB account.' : 'Choose a display name and save it to your FundB account.';
   status('Your FundB account is connected.');
-  await syncCloudProfile(referralCode || pendingInvite);
+  await syncCloudProfile(referralCode);
 };
 const showSignedOut = () => { byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
 const getError = e => e?.message || 'Something went wrong. Please try again.';
