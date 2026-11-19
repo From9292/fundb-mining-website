@@ -1,4 +1,4 @@
-const CACHE = 'fundb-mining-v2-6-0';
+const CACHE = 'fundb-mining-v2-6-1';
 const FILES = ['./', './index.html', './manifest.webmanifest', './assets/fundb-logo.png'];
 
 self.addEventListener('install', event => {
