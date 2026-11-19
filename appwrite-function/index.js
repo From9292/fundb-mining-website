@@ -323,6 +323,37 @@ module.exports = async ({ req, res, log, error }) => {
       }
     }
 
+    // Always reconcile this signed-in user's own referral total as well.
+    // Previously, an inviter with no referrer (the normal case for the original
+    // account) skipped reconciliation, so their dashboard could remain at 0
+    // even after a referred account had saved referred_by successfully.
+    try {
+      const ownReferralsQuery = [
+        { method: 'equal', attribute: 'referred_by', values: [user.$id] },
+        { method: 'limit', values: [1] }
+      ];
+      const ownReferralsQueryString = ownReferralsQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+      const ownReferralRows = await appwriteRequest(tablePath + '?' + ownReferralsQueryString, 'GET', adminHeaders);
+      const ownReferralCount = Number(ownReferralRows.total);
+      if (!Number.isInteger(ownReferralCount) || ownReferralCount < 0) {
+        throw new Error('Appwrite returned an invalid own-referral relationship count.');
+      }
+      if (Number(profile.total_referrals ?? profile.totalReferrals ?? 0) !== ownReferralCount) {
+        profile = await appwriteRequest(
+          tablePath + '/' + encodeURIComponent(profile.$id),
+          'PATCH', adminHeaders, { data: { total_referrals: ownReferralCount } }
+        );
+      }
+      profile.total_referrals = ownReferralCount;
+      log('Reconciled signed-in user referral counter: ' + JSON.stringify({ relationshipCount: ownReferralCount }));
+    } catch (ownReconcileError) {
+      log('Signed-in user referral counter reconciliation failed without blocking profile load: ' + JSON.stringify({
+        statusCode: ownReconcileError && ownReconcileError.statusCode,
+        type: ownReconcileError && ownReconcileError.type,
+        message: ownReconcileError && ownReconcileError.message
+      }));
+    }
+
     return json(res, 200, {
       ok: true,
       profile: {
