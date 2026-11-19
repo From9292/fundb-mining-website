@@ -89,7 +89,7 @@ input,textarea,select{border-radius:14px!important}
 
 <section id="wallet" hidden>
 <div class="card"><h2>FUND-B Wallet</h2><div class="balance" id="walletBalance">0.00</div><div class="unit">FundB Points · no blockchain connection yet</div><div class="notice">Wallet functions are preview-only. No deposit address exists yet. Do not send cryptocurrency to an address shown elsewhere claiming to be your FundB wallet.</div>
-<div class="two"><button class="secondary" disabled>Receive address — coming soon</button><button class="secondary" disabled>Send / transfer — coming soon</button><button class="secondary" disabled>Withdraw — coming soon</button><button class="secondary" disabled>Transaction history — coming soon</button></div><p class="muted">A real wallet requires a selected blockchain, audited smart contract or custody provider, key management, transaction monitoring and applicable compliance checks.</p></div>
+<div class="two"><button class="secondary" disabled>Receive address — coming soon</button><button class="secondary" disabled>Send / transfer — coming soon</button><button class="secondary" disabled>Withdraw — coming soon</button><button class="secondary" id="viewTransactionsBtn" type="button">Refresh transaction history</button></div><div class="item"><h3>Transaction history</h3><p class="muted" id="transactionHistoryStatus">Sign in to load your secure transaction history. No rewards or withdrawals are enabled.</p><div id="transactionHistoryList" class="muted" aria-live="polite"></div></div><p class="muted">A real wallet requires a selected blockchain, audited smart contract or custody provider, key management, transaction monitoring and applicable compliance checks.</p></div>
 </section>
 
 <section id="tasks" hidden>
@@ -219,6 +219,7 @@ const syncCloudProfile = async (referralCodeOverride = '') => {
     byId('cloudReferralStatus').textContent = result.profile.referralLinked ? 'Referral status: Linked to an inviter.' : (referralCode ? 'Referral status: invitation code received, but no matching inviter was saved. Check the code and try again.' : 'Referral status: No inviter linked to this account.');
     if (referralCode && result.profile.referralLinked) { try { sessionStorage.removeItem(REFERRAL_SESSION_KEY); } catch (_) {} }
     cloudStatus.textContent = 'Saved cloud profile loaded. Reward earning is not enabled yet.';
+    await loadTransactionHistory();
   } catch (err) {
     byId('refCode').textContent = 'Code unavailable';
     byId('copyBtn').disabled = true;
@@ -226,6 +227,45 @@ const syncCloudProfile = async (referralCodeOverride = '') => {
     cloudStatus.textContent = `Cloud profile could not load: ${err?.message || 'Please try again.'}`;
   }
 }
+const loadTransactionHistory = async () => {
+  const statusEl = byId('transactionHistoryStatus');
+  const listEl = byId('transactionHistoryList');
+  if (!statusEl || !listEl) return;
+  try {
+    statusEl.textContent = 'Loading secure transaction history…';
+    listEl.replaceChildren();
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ action: 'transactionHistory' }),
+      false,
+      '/',
+      'POST'
+    );
+    const result = execution.responseBody ? JSON.parse(execution.responseBody) : {};
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+      throw new Error(result.message || 'Transaction history request failed.');
+    }
+    const rows = Array.isArray(result.transactions) ? result.transactions : [];
+    if (!rows.length) {
+      statusEl.textContent = 'No transactions recorded yet. This is normal: rewards and withdrawals are not active.';
+      return;
+    }
+    statusEl.textContent = 'Showing your latest ' + rows.length + ' transaction(s).';
+    rows.forEach(row => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const heading = document.createElement('strong');
+      heading.textContent = String(row.type || 'Transaction') + ' · ' + Number(row.amount || 0).toFixed(2);
+      const detail = document.createElement('p');
+      detail.className = 'muted';
+      detail.textContent = [row.status || 'Status unavailable', row.reference || '', row.description || '', row.createdAt ? new Date(row.createdAt).toLocaleString() : ''].filter(Boolean).join(' · ');
+      item.append(heading, detail);
+      listEl.append(item);
+    });
+  } catch (err) {
+    statusEl.textContent = 'Transaction history is temporarily unavailable: ' + (err?.message || 'Please try again.');
+  }
+};
 const showSignedIn = async (user, referralCode = '') => {
   byId('authForm').hidden=true; byId('signedInPanel').hidden=false;
   byId('accountDetails').textContent=`Signed in as ${user.name || 'FundB member'} · ${user.email}`;
@@ -253,6 +293,7 @@ byId('loginBtn').addEventListener('click', async()=>{
   catch(e){status(getError(e),true);}
 });
 byId('refreshCloudProfileBtn').addEventListener('click', syncCloudProfile);
+byId('viewTransactionsBtn').addEventListener('click', loadTransactionHistory);
 byId('applyReferralBtn').addEventListener('click', async () => {
   const code = String(byId('existingReferralCode').value || '').trim().toUpperCase();
   if (!isValidReferralCode(code)) { status('Enter a valid FundB invitation code (FB followed by 8 letters or numbers).', true); return; }
