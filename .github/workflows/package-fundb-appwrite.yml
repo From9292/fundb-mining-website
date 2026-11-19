@@ -3,10 +3,12 @@ on:
   push:
     branches:
       - fundb-appwrite-package
+  pull_request:
+    branches:
+      - fundb-production-hardening
   workflow_dispatch:
 permissions:
   contents: read
-  actions: write
 jobs:
   package:
     runs-on: ubuntu-latest
