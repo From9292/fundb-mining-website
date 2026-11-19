@@ -1,0 +1,45 @@
+name: Build FundB Appwrite manual deployment
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/fundb-manual-package.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repaired source
+        uses: actions/checkout@v4
+        with:
+          ref: fundb-referral-repair-2026-11-19
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify source and create lockfile
+        working-directory: appwrite-function
+        run: |
+          node --check index.js
+          npm install --package-lock-only --ignore-scripts
+          npm ci --ignore-scripts
+      - name: Build Appwrite manual deployment archive
+        run: |
+          mkdir -p dist
+          tar -czf dist/fundb-rewards-api.tar.gz -C appwrite-function index.js package.json package-lock.json
+          tar -tzf dist/fundb-rewards-api.tar.gz
+          test "$(tar -tzf dist/fundb-rewards-api.tar.gz | wc -l)" -eq 3
+          test "$(tar -tzf dist/fundb-rewards-api.tar.gz | grep -c '^index.js$')" -eq 1
+          test "$(tar -tzf dist/fundb-rewards-api.tar.gz | grep -c '^package.json$')" -eq 1
+          test "$(tar -tzf dist/fundb-rewards-api.tar.gz | grep -c '^package-lock.json$')" -eq 1
+      - name: Upload verified archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: fundb-appwrite-manual-deployment
+          path: dist/fundb-rewards-api.tar.gz
+          if-no-files-found: error
+          retention-days: 14
