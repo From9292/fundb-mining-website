@@ -122,7 +122,7 @@ input,textarea,select{border-radius:14px!important}
 <h3>11. Risks and important disclosures</h3><p class="muted">The project may be delayed, changed or cancelled. Participation points may never convert into a token. Token value, liquidity, listing, revenue share, airdrop size and financial returns are not guaranteed. Do not pay anyone claiming they can guarantee FundB rewards or airdrop allocation. Users should not spend money based on anticipated future rewards.</p>
 <h3>12. Official contact</h3><p class="muted">Telegram: <a href="https://t.me/fundBminingofficial" target="_blank" rel="noopener">t.me/fundBminingofficial</a><br>Email: <a href="mailto:luckyutu9@gmail.com">luckyutu9@gmail.com</a></p><p class="muted"><b>FUND-B — Connect Globally. Learn Together. Build With Purpose.</b></p></div></section>
 
-<section id="account" hidden><div class="card"><h2>FundB account</h2><p class="muted">Secure email/password account powered by Appwrite. Use an email address you can access. Never share your password or verification code.</p><div id="authStatus" class="notice" role="status">Checking account connection…</div><div id="authForm"><label for="authName">Display name (for new accounts)</label><input id="authName" maxlength="40" autocomplete="name" placeholder="Your display name"><label for="authEmail">Email address</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"><label for="signupReferralCode">Referral code (optional)</label><input id="signupReferralCode" maxlength="10" autocomplete="off" placeholder="Enter inviter code, if you have one"><button class="primary" id="registerBtn" type="button" style="width:100%">Create account</button><button class="secondary" id="loginBtn" type="button" style="width:100%;margin-top:9px">Sign in</button><button class="ghost" id="resetPasswordBtn" type="button" style="width:100%;margin-top:9px">Send password reset email</button></div><div id="signedInPanel" hidden><p id="accountDetails" class="muted"></p><button class="secondary" id="logoutBtn" type="button" style="width:100%">Sign out</button></div><p class="muted">Account registration and sign-in use Appwrite authentication. The cloud profile below reads your saved profile; rewards are not enabled yet.</p></div><div class="card"><h2>Saved FundB cloud profile</h2><p class="muted">This information is loaded from your existing Appwrite profile after sign-in. It is separate from local FundB Points.</p><div class="eyebrow">Saved FundB Points</div><div class="balance" id="cloudPoints">—</div><div class="grid"><div class="stat"><span class="eyebrow">Referral code</span><strong id="cloudReferral">—</strong></div><div class="stat"><span class="eyebrow">Total referrals</span><strong id="cloudReferrals">—</strong></div></div><p class="muted" id="cloudReferralStatus" role="status">Referral status: —</p><p class="muted" id="cloudProfileStatus" role="status">Sign in to load your saved profile.</p><button class="secondary" id="refreshCloudProfileBtn" type="button" style="width:100%">Refresh saved profile</button></div></div><div class="card"><h2>My FundB profile</h2><label for="username">Display name</label><input id="username" maxlength="30" placeholder="Display name"><button class="secondary" id="saveName">Save display name</button><p class="muted" id="profileStatus" role="status">Sign in to load your saved FundB account name.</p></div></section>
+<section id="account" hidden><div class="card"><h2>FundB account</h2><p class="muted">Secure email/password account powered by Appwrite. Use an email address you can access. Never share your password or verification code.</p><div id="authStatus" class="notice" role="status">Checking account connection…</div><div id="authForm"><label for="authName">Display name (for new accounts)</label><input id="authName" maxlength="40" autocomplete="name" placeholder="Your display name"><label for="authEmail">Email address</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"><label for="signupReferralCode">Referral code (optional)</label><input id="signupReferralCode" maxlength="10" autocomplete="off" placeholder="Enter inviter code, if you have one"><button class="primary" id="registerBtn" type="button" style="width:100%">Create account</button><button class="secondary" id="loginBtn" type="button" style="width:100%;margin-top:9px">Sign in</button><button class="ghost" id="resetPasswordBtn" type="button" style="width:100%;margin-top:9px">Send password reset email</button></div><div id="signedInPanel" hidden><p id="accountDetails" class="muted"></p><label for="existingReferralCode">Apply an invitation code to this account (only if not already linked)</label><input id="existingReferralCode" maxlength="10" autocomplete="off" placeholder="FB12345678"><button class="secondary" id="applyReferralBtn" type="button" style="width:100%">Link my account to inviter</button><p class="muted">Use this only if this account was created through an invitation but its inviter was not linked. Existing inviter links cannot be changed.</p><button class="secondary" id="logoutBtn" type="button" style="width:100%">Sign out</button></div><p class="muted">Account registration and sign-in use Appwrite authentication. The cloud profile below reads your saved profile; rewards are not enabled yet.</p></div><div class="card"><h2>Saved FundB cloud profile</h2><p class="muted">This information is loaded from your existing Appwrite profile after sign-in. It is separate from local FundB Points.</p><div class="eyebrow">Saved FundB Points</div><div class="balance" id="cloudPoints">—</div><div class="grid"><div class="stat"><span class="eyebrow">Referral code</span><strong id="cloudReferral">—</strong></div><div class="stat"><span class="eyebrow">Total referrals</span><strong id="cloudReferrals">—</strong></div></div><p class="muted" id="cloudReferralStatus" role="status">Referral status: —</p><p class="muted" id="cloudProfileStatus" role="status">Sign in to load your saved profile.</p><button class="secondary" id="refreshCloudProfileBtn" type="button" style="width:100%">Refresh saved profile</button></div></div><div class="card"><h2>My FundB profile</h2><label for="username">Display name</label><input id="username" maxlength="30" placeholder="Display name"><button class="secondary" id="saveName">Save display name</button><p class="muted" id="profileStatus" role="status">Sign in to load your saved FundB account name.</p></div></section>
 <div class="footer">FundB Mining V2.2 · FundB Points · Secure services are being connected</div>
 </main>
 <nav class="bottom-nav" aria-label="Quick navigation">
@@ -174,8 +174,23 @@ const account = new Account(client);
 const functions = new Functions(client);
 const FUNDB_FUNCTION_ID = 'FundBRewardsAPI';
 const byId = id => document.getElementById(id);
-const referralFromUrl = (new URLSearchParams(location.search).get('ref') || '').trim().toUpperCase();
-if (referralFromUrl && /^FB[A-Z0-9]{8}$/.test(referralFromUrl)) byId('signupReferralCode').value = referralFromUrl;
+const REFERRAL_SESSION_KEY = 'fundb_pending_referral_v1';
+const referralParams = new URLSearchParams(location.search);
+const referralFromUrl = (referralParams.get('ref') || referralParams.get('referral') || referralParams.get('referralCode') || '').trim().toUpperCase();
+const isValidReferralCode = value => /^FB[A-Z0-9]{8}$/.test(String(value || '').trim().toUpperCase());
+const getPendingReferralCode = () => {
+  let saved = '';
+  try { saved = sessionStorage.getItem(REFERRAL_SESSION_KEY) || ''; } catch (_) {}
+  const entered = byId('signupReferralCode')?.value || '';
+  const candidate = referralFromUrl || entered || saved;
+  return isValidReferralCode(candidate) ? candidate.trim().toUpperCase() : '';
+};
+if (isValidReferralCode(referralFromUrl)) {
+  try { sessionStorage.setItem(REFERRAL_SESSION_KEY, referralFromUrl); } catch (_) {}
+  byId('signupReferralCode').value = referralFromUrl;
+  const inviteField = byId('existingReferralCode');
+  if (inviteField) inviteField.value = referralFromUrl;
+}
 const status = (message, bad=false) => { const el=byId('authStatus'); if(el){el.textContent=message;el.style.borderColor=bad?'#9b4545':'#6b5423';} };
 const syncCloudProfile = async (referralCodeOverride = '') => {
   const cloudStatus = byId('cloudProfileStatus');
@@ -201,7 +216,8 @@ const syncCloudProfile = async (referralCodeOverride = '') => {
     byId('copyBtn').disabled = !result.profile.referralCode;
     byId('copyBtn').textContent = result.profile.referralCode ? 'Copy invite link' : 'Referral code unavailable';
     byId('cloudReferrals').textContent = String(result.profile.totalReferrals ?? 0);
-    byId('cloudReferralStatus').textContent = result.profile.referralLinked ? 'Referral status: Linked to an inviter.' : 'Referral status: No inviter linked to this account.';
+    byId('cloudReferralStatus').textContent = result.profile.referralLinked ? 'Referral status: Linked to an inviter.' : (referralCode ? 'Referral status: invitation code received, but no matching inviter was saved. Check the code and try again.' : 'Referral status: No inviter linked to this account.');
+    if (referralCode && result.profile.referralLinked) { try { sessionStorage.removeItem(REFERRAL_SESSION_KEY); } catch (_) {} }
     cloudStatus.textContent = 'Saved cloud profile loaded. Reward earning is not enabled yet.';
   } catch (err) {
     byId('refCode').textContent = 'Code unavailable';
@@ -213,6 +229,8 @@ const syncCloudProfile = async (referralCodeOverride = '') => {
 const showSignedIn = async (user, referralCode = '') => {
   byId('authForm').hidden=true; byId('signedInPanel').hidden=false;
   byId('accountDetails').textContent=`Signed in as ${user.name || 'FundB member'} · ${user.email}`;
+  const pendingInvite = getPendingReferralCode();
+  if (pendingInvite && byId('existingReferralCode')) byId('existingReferralCode').value = pendingInvite;
   byId('username').value = user.name || '';
   byId('profileStatus').textContent = user.name ? 'Display name loaded from your FundB account.' : 'Choose a display name and save it to your FundB account.';
   status('Your FundB account is connected.');
@@ -225,7 +243,7 @@ catch(e){ showSignedOut(); status('Appwrite is ready. Create an account or sign 
 byId('registerBtn').addEventListener('click', async()=>{
   const name=byId('authName').value.trim(); const email=byId('authEmail').value.trim(); const password=byId('authPassword').value;
   if(!name || !email || password.length<8){status('Enter your display name, a valid email and a password of at least 8 characters.',true);return;}
-  try { const referralCode = (referralFromUrl || byId('signupReferralCode').value || '').trim().toUpperCase(); status('Creating your secure account…'); await account.create(ID.unique(),email,password,name); await account.createEmailPasswordSession(email,password); const user=await account.get(); await showSignedIn(user, referralCode); byId('authPassword').value=''; byId('signupReferralCode').value=''; }
+  try { const referralCode = getPendingReferralCode(); status(referralCode ? 'Creating your account with the invitation code…' : 'Creating your secure account…'); await account.create(ID.unique(),email,password,name); await account.createEmailPasswordSession(email,password); const user=await account.get(); await showSignedIn(user, referralCode); byId('authPassword').value=''; byId('signupReferralCode').value=''; }
   catch(e){status(getError(e),true);}
 });
 byId('loginBtn').addEventListener('click', async()=>{
@@ -235,6 +253,17 @@ byId('loginBtn').addEventListener('click', async()=>{
   catch(e){status(getError(e),true);}
 });
 byId('refreshCloudProfileBtn').addEventListener('click', syncCloudProfile);
+byId('applyReferralBtn').addEventListener('click', async () => {
+  const code = String(byId('existingReferralCode').value || '').trim().toUpperCase();
+  if (!isValidReferralCode(code)) { status('Enter a valid FundB invitation code (FB followed by 8 letters or numbers).', true); return; }
+  try {
+    status('Checking and linking your invitation…');
+    await syncCloudProfile(code);
+    const linked = byId('cloudReferralStatus').textContent.includes('Linked to an inviter');
+    status(linked ? 'Your invitation has been linked successfully.' : 'The invitation was not linked. Check that the code belongs to another FundB account and that this account has no inviter yet.', !linked);
+    if (linked) { try { sessionStorage.removeItem(REFERRAL_SESSION_KEY); } catch (_) {} }
+  } catch (err) { status(err?.message || 'Could not link the invitation.', true); }
+});
 byId('saveName').addEventListener('click', async()=>{
   const name = byId('username').value.trim().slice(0,30);
   const profileStatus = byId('profileStatus');
