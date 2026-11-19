@@ -126,6 +126,16 @@ module.exports = async ({ req, res, log, error }) => {
     } catch (_) {
       requestBody = {};
     }
+    if (requestBody.action === 'transactionHistory') {
+      // Transaction storage is not wired to this function yet. Fail explicitly
+      // rather than returning a fake empty history that could mislead users.
+      return json(res, 501, {
+        ok: false,
+        code: 'TRANSACTION_HISTORY_NOT_CONFIGURED',
+        message: 'Transaction history is not connected yet. No rewards, deposits or withdrawals are active.'
+      }, origin);
+    }
+
     const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase();
     const validReferralCodeSubmitted = /^FB[A-Z0-9]{8}$/.test(submittedReferralCode);
     log('Referral request diagnostics: ' + JSON.stringify({ bodyParsed: Boolean(req.bodyJson || req.body), referralCodeSubmitted: Boolean(submittedReferralCode), referralCodeFormatValid: validReferralCodeSubmitted }));
