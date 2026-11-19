@@ -126,7 +126,7 @@ module.exports = async ({ req, res, log, error }) => {
     } catch (_) {
       requestBody = {};
     }
-    const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase().replace(/[\\s-]+/g, '');
+    const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase().replace(/[\s-]+/g, '');
     const validReferralCodeSubmitted = /^FB[A-Z0-9]{8}$/.test(submittedReferralCode);
     log('Referral request diagnostics: ' + JSON.stringify({ bodyParsed: Boolean(req.bodyJson || req.body), referralCodeSubmitted: Boolean(submittedReferralCode), referralCodeFormatValid: validReferralCodeSubmitted }));
 
