@@ -122,13 +122,15 @@ module.exports = async ({ req, res, log, error }) => {
     try {
       requestBody = req.bodyJson && typeof req.bodyJson === 'object'
         ? req.bodyJson
-        : (typeof req.body === 'string' && req.body ? JSON.parse(req.body) : {});
+        : (typeof req.body === 'string' && req.body
+          ? JSON.parse(req.body)
+          : (req.body && typeof req.body === 'object' ? req.body : {}));
     } catch (_) {
       requestBody = {};
     }
     const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase().replace(/[\s-]+/g, '');
     const validReferralCodeSubmitted = /^FB[A-Z0-9]{8}$/.test(submittedReferralCode);
-    log('Referral request diagnostics: ' + JSON.stringify({ bodyParsed: Boolean(req.bodyJson || req.body), referralCodeSubmitted: Boolean(submittedReferralCode), referralCodeFormatValid: validReferralCodeSubmitted }));
+    log('Referral request diagnostics: ' + JSON.stringify({ bodyParsed: Boolean(req.bodyJson || req.body), referralCodeSubmitted: Boolean(submittedReferralCode), referralCodeFormatValid: validReferralCodeSubmitted, requestBodyType: req.bodyJson ? 'bodyJson' : typeof req.body }));
 
     // Use the function's server-side key only after verifying the caller.
     const tablePath = '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
