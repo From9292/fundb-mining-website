@@ -296,7 +296,7 @@ byId('loginBtn').addEventListener('click', async()=>{
   try {status('Signing in…'); await account.createEmailPasswordSession(email,password); const user=await account.get(); showSignedIn(user); byId('authPassword').value='';}
   catch(e){status(getError(e),true);}
 });
-byId('refreshCloudProfileBtn').addEventListener('click', syncCloudProfile);
+byId('refreshCloudProfileBtn').addEventListener('click', () => syncCloudProfile());
 byId('viewTransactionsBtn').addEventListener('click', loadTransactionHistory);
 byId('applyReferralBtn').addEventListener('click', async () => {
   const code = String(byId('existingReferralCode').value || '').trim().toUpperCase();
