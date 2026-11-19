@@ -232,7 +232,7 @@ const loadTransactionHistory = async () => {
   const listEl = byId('transactionHistoryList');
   if (!statusEl || !listEl) return;
   try {
-    statusEl.textContent = 'Loading secure transaction history…';
+    statusEl.textContent = 'Checking transaction-history availability…';
     listEl.replaceChildren();
     const execution = await functions.createExecution(
       FUNDB_FUNCTION_ID,
@@ -247,7 +247,7 @@ const loadTransactionHistory = async () => {
     }
     const rows = Array.isArray(result.transactions) ? result.transactions : [];
     if (!rows.length) {
-      statusEl.textContent = 'No transactions recorded yet. This is normal: rewards and withdrawals are not active.';
+      statusEl.textContent = 'Transaction history is not connected yet. This does not confirm that your account has zero transactions.';
       return;
     }
     statusEl.textContent = 'Showing your latest ' + rows.length + ' transaction(s).';
@@ -263,7 +263,7 @@ const loadTransactionHistory = async () => {
       listEl.append(item);
     });
   } catch (err) {
-    statusEl.textContent = 'Transaction history is temporarily unavailable: ' + (err?.message || 'Please try again.');
+    statusEl.textContent = err?.message || 'Transaction history is not available yet. Rewards and withdrawals remain disabled.';
   }
 };
 const showSignedIn = async (user, referralCode = '') => {
