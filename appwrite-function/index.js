@@ -126,7 +126,7 @@ module.exports = async ({ req, res, log, error }) => {
     } catch (_) {
       requestBody = {};
     }
-    const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase();
+    const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase().replace(/[\s-]+/g, '');
     const validReferralCodeSubmitted = /^FB[A-Z0-9]{8}$/.test(submittedReferralCode);
     log('Referral request diagnostics: ' + JSON.stringify({ bodyParsed: Boolean(req.bodyJson || req.body), referralCodeSubmitted: Boolean(submittedReferralCode), referralCodeFormatValid: validReferralCodeSubmitted }));
 
@@ -147,6 +147,23 @@ module.exports = async ({ req, res, log, error }) => {
     let profile = (found.rows || [])[0];
     if (profile) {
       log('Existing FundB profile found.');
+      // Repair missing/legacy personal invite codes without changing points,
+      // userId, mining data, or an existing valid code/referral relationship.
+      const currentOwnCode = String(profile.referralCode || '').trim().toUpperCase();
+      if (!/^FB[A-Z0-9]{8}$/.test(currentOwnCode)) {
+        const repairedOwnCode = await createUniqueReferralCode(tablePath, adminHeaders);
+        profile = await appwriteRequest(
+          tablePath + '/' + encodeURIComponent(profile.$id),
+          'PATCH', adminHeaders, { data: { referralCode: repairedOwnCode } }
+        );
+        log('Assigned a valid unique referral code to the existing profile.');
+      } else if (profile.referralCode !== currentOwnCode) {
+        profile = await appwriteRequest(
+          tablePath + '/' + encodeURIComponent(profile.$id),
+          'PATCH', adminHeaders, { data: { referralCode: currentOwnCode } }
+        );
+        log('Normalized existing referral code casing.');
+      }
       // A new account may have had its cloud profile created before the invite
       // code arrived. Allow one-time attribution only while referred_by is empty.
       const existingReferrer = String(profile.referred_by || '').trim();
