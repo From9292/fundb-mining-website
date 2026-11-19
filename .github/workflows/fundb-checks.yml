@@ -95,6 +95,8 @@ jobs:
               raise SystemExit("Missing idempotent existing-profile referral counter reconciliation")
           if "Reconciled inviter referral counter after new-profile attribution" not in backend:
               raise SystemExit("Missing new-profile referral counter reconciliation")
+          if "Reconciled signed-in user referral counter" not in backend:
+              raise SystemExit("Missing signed-in inviter dashboard referral counter reconciliation")
           if "total_referrals/increment" in backend:
               raise SystemExit("Referral counters must be reconciled from saved relationships, not blind increments")
           print("Referral submission is explicit and both new/existing profile counts are reconciled")
