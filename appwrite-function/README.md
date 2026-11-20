@@ -17,11 +17,12 @@ The source folder is in this repository at [appwrite-function](https://github.co
 
 ## Existing database configuration
 
-The code uses the existing project and table IDs already configured in FundB:
+The code uses the existing FundB project and probes both previously recorded database/table ID pairs, preferring the table that already contains the signed-in user's profile. This avoids creating duplicate profiles if one historical mapping is stale:
 
 - Appwrite project: `6aedc1580001af2161b0`
-- Database: `6aedcd650007f44a070f`
-- Profile table: `profile`
+- Preferred database: `6aedcd650007f44a070f`
+- Preferred profile table: `profile`
+- Legacy fallback: database `fundB_database`, profile table `6aedcd650007f44a070f`
 
 The profile table must have a `userId` string attribute and `points` numeric attribute and `referralCode` string attribute. The `userId` attribute must be indexed so the function can find an existing profile. Make it unique if the current data permits. Do not delete or recreate existing rows. The code returns `totalReferrals` as zero if that optional field is not present.
 
