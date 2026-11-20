@@ -226,21 +226,24 @@ module.exports = async ({ req, res, log, error }) => {
     }
     const profileMatches = validTables.filter(candidate => candidate.profile);
     const populatedTables = validTables.filter(candidate => candidate.hasExistingRows);
+    const candidateSummary = candidateDiagnostics.map(item =>
+      item.databaseId + '/' + item.tableId + '=' +
+      (item.status === 'reachable' ? 'reachable' : (item.status === null ? 'unknown' : 'HTTP ' + item.status)) +
+      (item.type ? ':' + item.type : '') +
+      (item.matchingProfile ? ':profile-match' : '') +
+      (item.hasRows ? ':has-rows' : '')
+    ).join('; ');
     let selectedTable = profileMatches[0] || null;
     if (!selectedTable && populatedTables.length === 1) selectedTable = populatedTables[0];
     if (!selectedTable && populatedTables.length > 1) {
-      throw new Error('Multiple candidate FundB tables contain rows, but none matched this user. Refusing to create or modify a profile until the correct Profile table is confirmed.');
+      throw new Error('Multiple candidate FundB tables contain rows, but none matched this user. No profile was changed. Candidates: ' + candidateSummary);
     }
     if (!selectedTable && validTables.length === 1) selectedTable = validTables[0];
     if (!selectedTable && validTables.length > 1) {
-      throw new Error('Multiple candidate FundB tables are empty. Refusing to create a profile in an unverified table.');
+      throw new Error('Multiple candidate FundB tables are empty. No profile was created. Candidates: ' + candidateSummary);
     }
     if (!selectedTable) {
-      const summary = candidateDiagnostics.map(item =>
-        item.databaseId + '/' + item.tableId + '=' + (item.status || item.status === 0 ? item.status : item.status || 'OK') +
-        (item.type ? ':' + item.type : '')
-      ).join('; ');
-      const discoveryError = new Error('No supplied FundB table mapping was reachable. Checked database/table candidates: ' + summary);
+      const discoveryError = new Error('No supplied FundB table mapping was reachable. Candidates: ' + candidateSummary);
       discoveryError.statusCode = lastTableError && lastTableError.statusCode ? lastTableError.statusCode : null;
       discoveryError.type = 'FUNDB_TABLE_MAPPING_NOT_RESOLVED';
       throw discoveryError;
@@ -447,7 +450,7 @@ module.exports = async ({ req, res, log, error }) => {
     const safeDiagnostic = {
       upstreamStatus: err && err.statusCode ? Number(err.statusCode) : null,
       upstreamType: err && err.type ? String(err.type).slice(0, 100) : null,
-      upstreamMessage: err && err.message ? String(err.message).replace(/[\\r\\n]+/g, ' ').slice(0, 240) : 'No upstream message was returned.',
+      upstreamMessage: err && err.message ? String(err.message).replace(/[\\r\\n]+/g, ' ').slice(0, 1200) : 'No upstream message was returned.',
       causeCode: err && err.cause && err.cause.code ? String(err.cause.code).slice(0, 100) : null
     };
     // Older website builds display only the main message, so include the safe diagnostic there too.
