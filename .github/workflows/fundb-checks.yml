@@ -22,6 +22,8 @@ jobs:
         run: node --check appwrite-function/index.js
       - name: Verify function module loads
         run: node -e "require('./appwrite-function/index.js')"
+      - name: Smoke-test API security boundaries
+        run: node appwrite-function/smoke.test.js
       - name: Check embedded website JavaScript
         run: |
           python3 - <<'PY'
