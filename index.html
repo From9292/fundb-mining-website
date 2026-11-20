@@ -255,7 +255,7 @@ const showSignedIn = async (user, referralCode = '') => {
 const showSignedOut = () => { byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
 const getError = e => e?.message || 'Something went wrong. Please try again.';
 try { const user=await account.get(); await showSignedIn(user); }
-catch(e){ showSignedOut(); status('Appwrite is ready. Create an account or sign in.', false); }
+catch(e){ showSignedOut(); if(e?.code===401 || e?.type==='user_unauthorized'){status('Appwrite is connected. Create an account or sign in.',false);}else{status('Appwrite could not be reached from this preview: '+(e?.message||'connection failed')+'. The preview hostname may need to be added as an Appwrite Web platform.',true);} }
 byId('registerBtn').addEventListener('click', async()=>{
   const name=byId('authName').value.trim(); const email=byId('authEmail').value.trim(); const password=byId('authPassword').value;
   if(!name || !email || password.length<8){status('Enter your display name, a valid email and a password of at least 8 characters.',true);return;}
@@ -265,7 +265,7 @@ byId('registerBtn').addEventListener('click', async()=>{
 byId('loginBtn').addEventListener('click', async()=>{
   const email=byId('authEmail').value.trim(); const password=byId('authPassword').value;
   if(!email || !password){status('Enter your email and password to sign in.',true);return;}
-  try {status('Signing in…'); await account.createEmailPasswordSession(email,password); const user=await account.get(); showSignedIn(user); byId('authPassword').value='';}
+  try {status('Signing in…'); await account.createEmailPasswordSession(email,password); const user=await account.get(); await showSignedIn(user); byId('authPassword').value='';}
   catch(e){status(getError(e),true);}
 });
 byId('refreshCloudProfileBtn').addEventListener('click', () => syncCloudProfile());
