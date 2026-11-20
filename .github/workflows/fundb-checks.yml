@@ -71,7 +71,7 @@ jobs:
               "createUniqueReferralCode(tablePath, adminHeaders)",
               "const ALLOWED_ORIGINS = new Set(",
               "ALLOWED_ORIGINS.has(origin)",
-              "Access-Control-Allow-Origin': origin"
+              "Access-Control-Allow-Origin'] = origin"
           ]
           missing = [item for item in required if item not in source]
           if missing:
