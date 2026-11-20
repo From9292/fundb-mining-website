@@ -160,15 +160,20 @@ module.exports = async ({ req, res, log, error }) => {
     // Both mappings appeared in earlier FundB setup records. Probe the known
     // pairs and prefer the one that already contains this user's saved profile.
     // This prevents a wrong default from creating duplicate profiles elsewhere.
+    const knownDatabaseIds = ['6aedcd650007f44a070f', 'fundBdatabase', 'fundB_database'];
+    const knownProfileTableIds = [
+      '6afea0720025daaed040',
+      '6afbee8500163626863a',
+      '6afd028f002b30f3902b'
+    ];
+    // Probe the three supplied table IDs against each previously recorded
+    // database identifier. This is read-only discovery until a matching
+    // existing profile is found; never create a profile in an ambiguous table.
     const tableCandidates = [
-      // User supplied these three existing table IDs for the Profile table
-      // lookup. Probe all three under the recorded FundB database ID and
-      // select only by finding the signed-in user's existing profile or rows.
-      { databaseId: '6aedcd650007f44a070f', tableId: '6afea0720025daaed040' },
-      { databaseId: '6aedcd650007f44a070f', tableId: '6afbee8500163626863a' },
-      { databaseId: '6aedcd650007f44a070f', tableId: '6afd028f002b30f3902b' },
-      // Preserve earlier recorded mappings as read-only compatibility probes.
       { databaseId: DATABASE_ID, tableId: PROFILE_TABLE_ID },
+      ...knownDatabaseIds.flatMap(databaseId =>
+        knownProfileTableIds.map(tableId => ({ databaseId, tableId }))
+      ),
       { databaseId: 'fundBdatabase', tableId: '6aedcd650007f44a070f' },
       { databaseId: 'fundB_database', tableId: '6aedcd650007f44a070f' }
     ];
@@ -176,6 +181,7 @@ module.exports = async ({ req, res, log, error }) => {
       all.findIndex(item => item.databaseId === candidate.databaseId && item.tableId === candidate.tableId) === index
     );
     const validTables = [];
+    const candidateDiagnostics = [];
     let lastTableError = null;
     for (const candidate of uniqueCandidates) {
       const candidatePath = '/tablesdb/' + encodeURIComponent(candidate.databaseId) +
@@ -184,15 +190,30 @@ module.exports = async ({ req, res, log, error }) => {
         const candidateRows = await appwriteRequest(candidatePath + '?' + queryString, 'GET', adminHeaders);
         const anyRowsQuery = 'queries[]=' + encodeURIComponent(JSON.stringify({ method: 'limit', values: [1] }));
         const existingRows = await appwriteRequest(candidatePath + '?' + anyRowsQuery, 'GET', adminHeaders);
-        validTables.push({
+        const candidateResult = {
           databaseId: candidate.databaseId,
           tableId: candidate.tableId,
           tablePath: candidatePath,
           profile: (candidateRows.rows || [])[0] || null,
           hasExistingRows: (existingRows.rows || []).length > 0
+        };
+        validTables.push(candidateResult);
+        candidateDiagnostics.push({
+          databaseId: candidate.databaseId,
+          tableId: candidate.tableId,
+          status: 'reachable',
+          matchingProfile: Boolean(candidateResult.profile),
+          hasRows: candidateResult.hasExistingRows
         });
       } catch (candidateError) {
         lastTableError = candidateError;
+        candidateDiagnostics.push({
+          databaseId: candidate.databaseId,
+          tableId: candidate.tableId,
+          status: Number(candidateError && candidateError.statusCode) || null,
+          type: candidateError && candidateError.type ? String(candidateError.type).slice(0, 80) : null,
+          message: candidateError && candidateError.message ? String(candidateError.message).slice(0, 140) : 'Unknown lookup error'
+        });
         if (candidateError && candidateError.statusCode === 404) {
           log('FundB table candidate not found; safely trying the other known mapping: ' + JSON.stringify({
             databaseId: candidate.databaseId,
@@ -215,7 +236,14 @@ module.exports = async ({ req, res, log, error }) => {
       throw new Error('Multiple candidate FundB tables are empty. Refusing to create a profile in an unverified table.');
     }
     if (!selectedTable) {
-      throw lastTableError || new Error('No known FundB profile table mapping could be resolved.');
+      const summary = candidateDiagnostics.map(item =>
+        item.databaseId + '/' + item.tableId + '=' + (item.status || item.status === 0 ? item.status : item.status || 'OK') +
+        (item.type ? ':' + item.type : '')
+      ).join('; ');
+      const discoveryError = new Error('No supplied FundB table mapping was reachable. Checked database/table candidates: ' + summary);
+      discoveryError.statusCode = lastTableError && lastTableError.statusCode ? lastTableError.statusCode : null;
+      discoveryError.type = 'FUNDB_TABLE_MAPPING_NOT_RESOLVED';
+      throw discoveryError;
     }
     const tablePath = selectedTable.tablePath;
     let profile = selectedTable.profile;
