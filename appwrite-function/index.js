@@ -162,6 +162,7 @@ module.exports = async ({ req, res, log, error }) => {
     // This prevents a wrong default from creating duplicate profiles elsewhere.
     const knownDatabaseIds = ['fundB_database', '6aedcd650007f44a070f', 'fundBdatabase'];
     const knownProfileTableIds = [
+      '6aedcd650007f44a070f',
       '6afea0720025daaed040',
       '6afbee8500163626863a',
       '6afd028f002b30f3902b'
