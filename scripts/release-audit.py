@@ -12,6 +12,7 @@ required_pages = [
     "privacy.html",
     "terms.html",
     "community-guidelines.html",
+    "whitepaper.html",
 ]
 for name in required_pages:
     path = ROOT / name
@@ -44,6 +45,7 @@ required_urls = {
     f"{CANONICAL}/privacy.html",
     f"{CANONICAL}/terms.html",
     f"{CANONICAL}/community-guidelines.html",
+    f"{CANONICAL}/whitepaper.html",
 }
 if not required_urls.issubset(set(locations)):
     missing = sorted(required_urls - set(locations))
