@@ -161,12 +161,15 @@ module.exports = async ({ req, res, log, error }) => {
     // pairs and prefer the one that already contains this user's saved profile.
     // This prevents a wrong default from creating duplicate profiles elsewhere.
     const tableCandidates = [
-      // Confirmed in the user's Appwrite TablesDB dashboard: database ID
-      // `fundBdatabase` (no underscore), with the existing Profile table ID.
-      { databaseId: 'fundBdatabase', tableId: '6aedcd650007f44a070f' },
+      // User supplied these three existing table IDs for the Profile table
+      // lookup. Probe all three under the recorded FundB database ID and
+      // select only by finding the signed-in user's existing profile or rows.
+      { databaseId: '6aedcd650007f44a070f', tableId: '6afea0720025daaed040' },
+      { databaseId: '6aedcd650007f44a070f', tableId: '6afbee8500163626863a' },
+      { databaseId: '6aedcd650007f44a070f', tableId: '6afd028f002b30f3902b' },
+      // Preserve earlier recorded mappings as read-only compatibility probes.
       { databaseId: DATABASE_ID, tableId: PROFILE_TABLE_ID },
-      { databaseId: '6aedcd650007f44a070f', tableId: 'profile' },
-      // Retain the earlier recorded spelling as a compatibility fallback.
+      { databaseId: 'fundBdatabase', tableId: '6aedcd650007f44a070f' },
       { databaseId: 'fundB_database', tableId: '6aedcd650007f44a070f' }
     ];
     const uniqueCandidates = tableCandidates.filter((candidate, index, all) =>
@@ -200,7 +203,17 @@ module.exports = async ({ req, res, log, error }) => {
         throw candidateError;
       }
     }
-    const selectedTable = validTables.find(candidate => candidate.profile) || validTables.find(candidate => candidate.hasExistingRows) || validTables[0];
+    const profileMatches = validTables.filter(candidate => candidate.profile);
+    const populatedTables = validTables.filter(candidate => candidate.hasExistingRows);
+    let selectedTable = profileMatches[0] || null;
+    if (!selectedTable && populatedTables.length === 1) selectedTable = populatedTables[0];
+    if (!selectedTable && populatedTables.length > 1) {
+      throw new Error('Multiple candidate FundB tables contain rows, but none matched this user. Refusing to create or modify a profile until the correct Profile table is confirmed.');
+    }
+    if (!selectedTable && validTables.length === 1) selectedTable = validTables[0];
+    if (!selectedTable && validTables.length > 1) {
+      throw new Error('Multiple candidate FundB tables are empty. Refusing to create a profile in an unverified table.');
+    }
     if (!selectedTable) {
       throw lastTableError || new Error('No known FundB profile table mapping could be resolved.');
     }
