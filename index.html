@@ -138,8 +138,8 @@ const KEY='fundb_points_v3',SESSION=86400000,RATE=1,$=id=>document.getElementByI
 const newCode=()=>'FUNDB-'+Math.random().toString(36).slice(2,7).toUpperCase();
 function fresh(){return{points:0,today:0,day:new Date().toDateString(),start:0,end:0,claimed:'',streak:0,code:newCode(),name:'',adCount:0}}
 let state;
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
-function load(){try{state=JSON.parse(localStorage.getItem(KEY))||fresh()}catch{state=fresh()}state.adCount=0; if(!state.code)state.code=newCode();if(state.day!==new Date().toDateString()){state.day=new Date().toDateString();state.today=0}save()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));return true}catch(_){return false}}
+function load(){try{const stored=JSON.parse(localStorage.getItem(KEY)||'null');state=stored&&typeof stored==='object'&&!Array.isArray(stored)?{...fresh(),...stored}:fresh()}catch{state=fresh()}state.adCount=0;if(!state.code)state.code=newCode();if(state.day!==new Date().toDateString()){state.day=new Date().toDateString();state.today=0}save()}
 function toast(s){let t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',2600)}
 function active(){return false}
 function accrued(){return 0}
