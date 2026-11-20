@@ -160,23 +160,17 @@ module.exports = async ({ req, res, log, error }) => {
     // Both mappings appeared in earlier FundB setup records. Probe the known
     // pairs and prefer the one that already contains this user's saved profile.
     // This prevents a wrong default from creating duplicate profiles elsewhere.
-    const knownDatabaseIds = ['fundB_database', '6aedcd650007f44a070f', 'fundBdatabase'];
+    // Live Appwrite diagnostics confirmed fundB_database exists. The other
+    // historical database identifiers returned database_not_found, so skip them.
     const knownProfileTableIds = [
-      '6aedcd650007f44a070f',
       '6afea0720025daaed040',
       '6afbee8500163626863a',
       '6afd028f002b30f3902b'
     ];
-    // Probe the three supplied table IDs against each previously recorded
-    // database identifier. This is read-only discovery until a matching
-    // existing profile is found; never create a profile in an ambiguous table.
+    // Probe only the verified database and supplied table IDs.
     const tableCandidates = [
       { databaseId: DATABASE_ID, tableId: PROFILE_TABLE_ID },
-      ...knownDatabaseIds.flatMap(databaseId =>
-        knownProfileTableIds.map(tableId => ({ databaseId, tableId }))
-      ),
-      { databaseId: 'fundBdatabase', tableId: '6aedcd650007f44a070f' },
-      { databaseId: 'fundB_database', tableId: '6aedcd650007f44a070f' }
+      ...knownProfileTableIds.map(tableId => ({ databaseId: 'fundB_database', tableId }))
     ];
     const uniqueCandidates = tableCandidates.filter((candidate, index, all) =>
       all.findIndex(item => item.databaseId === candidate.databaseId && item.tableId === candidate.tableId) === index
@@ -229,7 +223,6 @@ module.exports = async ({ req, res, log, error }) => {
       }
     }
     const profileMatches = validTables.filter(candidate => candidate.profile);
-    const populatedTables = validTables.filter(candidate => candidate.hasExistingRows);
     const candidateSummary = candidateDiagnostics.map(item =>
       item.databaseId + '/' + item.tableId + '=' +
       (item.status === 'reachable' ? 'reachable' : (item.status === null ? 'unknown' : 'HTTP ' + item.status)) +
@@ -242,13 +235,14 @@ module.exports = async ({ req, res, log, error }) => {
       throw new Error('More than one candidate table contains this signed-in user profile. No profile or referral data was changed. Candidates: ' + candidateSummary);
     }
     let selectedTable = profileMatches[0] || null;
-    if (!selectedTable && populatedTables.length === 1) selectedTable = populatedTables[0];
-    if (!selectedTable && populatedTables.length > 1) {
-      throw new Error('Multiple candidate FundB tables contain rows, but none matched this user. No profile was changed. Candidates: ' + candidateSummary);
+    if (!selectedTable && validTables.length === 1) {
+      // A single reachable table in the verified database is unambiguous.
+      // If several tables are reachable, never guess based on row counts:
+      // another FundB table may contain unrelated or legacy data.
+      selectedTable = validTables[0];
     }
-    if (!selectedTable && validTables.length === 1) selectedTable = validTables[0];
     if (!selectedTable && validTables.length > 1) {
-      throw new Error('Multiple candidate FundB tables are empty. No profile was created. Candidates: ' + candidateSummary);
+      throw new Error('Multiple candidate FundB tables are reachable but none matched this user. No profile was created or changed. Candidates: ' + candidateSummary);
     }
     if (!selectedTable) {
       const discoveryError = new Error('No supplied FundB table mapping was reachable. Candidates: ' + candidateSummary);
