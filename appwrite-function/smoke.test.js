@@ -53,7 +53,9 @@ async function invoke(handler, req) {
 }
 
 (async () => {
-  const handler = loadHandler({ FUNDB_ALLOWED_ORIGIN: 'https://fundb.example' });
+  const handler = loadHandler({
+    FUNDB_ALLOWED_ORIGIN: 'https://fundb.example, https://fundb-preview.example'
+  });
 
   const options = await invoke(handler, {
     method: 'OPTIONS',
@@ -62,9 +64,16 @@ async function invoke(handler, req) {
   assert.equal(options.res.statusCode, 204);
   assert.equal(options.res.headers['Access-Control-Allow-Origin'], 'https://fundb.example');
 
+  const previewOptions = await invoke(handler, {
+    method: 'OPTIONS',
+    headers: { origin: 'https://fundb-preview.example' }
+  });
+  assert.equal(previewOptions.res.statusCode, 204);
+  assert.equal(previewOptions.res.headers['Access-Control-Allow-Origin'], 'https://fundb-preview.example');
+
   const hostileOrigin = await invoke(handler, {
     method: 'OPTIONS',
-    headers: { origin: 'https://attacker.example' }
+    headers: { origin: 'https://fundb.example.attacker.example' }
   });
   assert.equal(hostileOrigin.res.statusCode, 204);
   assert.equal(hostileOrigin.res.headers['Access-Control-Allow-Origin'], undefined);
@@ -86,7 +95,7 @@ async function invoke(handler, req) {
   assert.match(missingAuth.res.body.message, /project configuration/);
   assert.equal(missingAuth.errors.length, 0);
 
-  console.log('Appwrite API boundary smoke tests passed (CORS allow/deny, method guard, missing-auth fail-closed).');
+  console.log('Appwrite API boundary smoke tests passed (single/multiple exact CORS origins, hostile-origin deny, method guard, missing-auth fail-closed).');
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;
