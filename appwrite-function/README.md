@@ -11,19 +11,13 @@ Use the existing Appwrite function **FundB Rewards API**. Do not create another 
 - Entrypoint: `index.js`
 - Build command: `npm install`
 - Function execution access: `Any` (the endpoint itself requires a valid signed-in user's JWT)
-- Dynamic API key scopes: `rows.read` and `rows.write`
+- Dynamic API key scopes: `rows.read`, `rows.write`, and `tables.read` (the last scope is needed for read-only table-name discovery)
 
 The source folder is in this repository at [appwrite-function](https://github.com/From9292/fundb-mining-website/tree/fundb-production-hardening/appwrite-function).
 
 ## Existing database configuration
 
-The verified existing FundB database ID is `fundB_database`. The function checks this database first against the three table IDs supplied for the Profile lookup:
-
-- `6afea0720025daaed040`
-- `6afbee8500163626863a`
-- `6afd028f002b30f3902b`
-
-It probes these tables for the signed-in user's existing profile and existing rows. It will not create a profile in an arbitrary table when multiple candidates remain ambiguous. Earlier mappings are retained only as compatibility probes. Do not delete or recreate existing rows.
+The verified existing FundB database ID is `fundB_database`. The function first attempts a read-only TablesDB listing to resolve the internal ID of the exact table named **Profile**, then probes its known table candidates. Do not delete or recreate existing rows or tables.
 
 The selected Profile table must have these columns before profile creation and referral lookup can work:
 
@@ -49,14 +43,13 @@ Appwrite automatically provides `APPWRITE_FUNCTION_PROJECT_ID`, the ephemeral ke
 - It reads the existing profile before creating one.
 - New profile rows use the authenticated user's ID as a stable row ID to reduce duplicate creation during simultaneous requests.
 - New referral codes are generated with Node's cryptographic random source and checked against existing codes before assignment; existing users' codes are never changed.
-- CORS is fail-closed: only the exact `FUNDB_ALLOWED_ORIGIN` is allowed, and no wildcard origin is emitted.
+- CORS is fail-closed: only the exact allowed origins are emitted.
 - It never accepts a balance or reward amount from the browser.
 - It does not issue mining, daily, ad, referral, transfer, withdrawal, or token rewards.
 
 ## Still not production-enabled
 
 Real rewards require separate server-side transaction records, idempotency keys, provider-signed rewarded-ad callbacks, referral fraud checks, rate limits, audited wallet ledger entries, and verified payout integrations. Do not advertise balances as cash or enable withdrawals until those systems are built and tested.
-
 
 ## Referral profile behavior
 
