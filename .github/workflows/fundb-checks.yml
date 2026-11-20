@@ -69,15 +69,16 @@ jobs:
               "require('crypto')",
               "crypto.randomBytes(8)",
               "createUniqueReferralCode(tablePath, adminHeaders)",
-              "process.env.FUNDB_ALLOWED_ORIGIN || ''",
-              "if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN)"
+              "const ALLOWED_ORIGINS = new Set(",
+              "ALLOWED_ORIGINS.has(origin)",
+              "Access-Control-Allow-Origin': origin"
           ]
           missing = [item for item in required if item not in source]
           if missing:
               raise SystemExit("Backend hardening check failed; missing: " + ", ".join(missing))
-          if "Access-Control-Allow-Origin'] = '*'" in source:
+          if "Access-Control-Allow-Origin'] = '*'" in source or "Access-Control-Allow-Origin': '*'" in source:
               raise SystemExit("Wildcard CORS is not permitted")
-          print("Cryptographic referral codes and exact-origin CORS checks passed")
+          print("Cryptographic referral codes and exact-origin allowlist checks passed")
 
       - name: Verify referral attribution is explicit and idempotent
         run: |
