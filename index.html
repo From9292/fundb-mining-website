@@ -166,7 +166,23 @@ load();$('username').value=state.name||'';render();setInterval(render,1000);
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 <script type="module">
-import { Client, Account, ID, Functions } from 'https://cdn.jsdelivr.net/npm/appwrite@17.0.0/+esm';
+let AppwriteSDK;
+try {
+  AppwriteSDK = await import('https://cdn.jsdelivr.net/npm/appwrite@17.0.0/+esm');
+} catch (primaryCdnError) {
+  // Keep sign-in available if the primary CDN is temporarily blocked or unavailable.
+  try {
+    AppwriteSDK = await import('https://esm.sh/appwrite@17.0.0');
+  } catch (fallbackCdnError) {
+    const authStatus = document.getElementById('authStatus');
+    if (authStatus) {
+      authStatus.textContent = 'The secure sign-in library could not load from either trusted CDN. Check your connection and reload this page. Your saved account has not been changed.';
+      authStatus.style.borderColor = '#9b4545';
+    }
+    throw fallbackCdnError;
+  }
+}
+const { Client, Account, ID, Functions } = AppwriteSDK;
 const APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
 const APPWRITE_PROJECT_ID = '6aedc1580001af2161b0';
 const client = new Client().setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID);
@@ -287,7 +303,16 @@ const showSignedIn = async (user, referralCode = '') => {
   await syncCloudProfile(referralCode);
 };
 const showSignedOut = () => { byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
-const getError = e => e?.message || 'Something went wrong. Please try again.';
+const getError = e => {
+  const message = String(e?.message || 'Something went wrong. Please try again.');
+  if (/invalid origin|origin.*not allowed|platform.*not found|project.*not found/i.test(message)) {
+    return `Appwrite rejected this website address (${location.origin}). The exact hostname must be added as a Web platform in Appwrite project settings before sign-in can work here. Your existing account is unchanged.`;
+  }
+  if (/failed to fetch|networkerror|load failed|network request failed/i.test(message)) {
+    return 'FundB could not reach Appwrite. Check the connection or whether this website hostname is registered as a Web platform. Your existing account is unchanged.';
+  }
+  return message;
+};
 try { const user=await account.get(); await showSignedIn(user); }
 catch(e){ showSignedOut(); if(e?.code===401 || e?.type==='user_unauthorized'){status('Appwrite is connected. Create an account or sign in.',false);}else{status('Appwrite could not be reached from this preview: '+(e?.message||'connection failed')+'. The preview hostname may need to be added as an Appwrite Web platform.',true);} }
 byId('registerBtn').addEventListener('click', async()=>{
