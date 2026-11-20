@@ -22,6 +22,8 @@ jobs:
         run: node --check appwrite-function/index.js
       - name: Verify function module loads
         run: node -e "require('./appwrite-function/index.js')"
+      - name: Run mocked Appwrite safety tests
+        run: node --test appwrite-function/test/*.test.js
       - name: Check embedded website JavaScript
         run: |
           python3 - <<'PY'
