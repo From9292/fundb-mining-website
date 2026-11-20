@@ -5,6 +5,8 @@
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const fs = require('node:fs');
+const https = require('node:https');
+const { EventEmitter } = require('node:events');
 
 function loadHandler(env = {}) {
   const keys = [
@@ -109,7 +111,62 @@ assert.doesNotMatch(backendSource, /action === 'transactionHistory'[\\s\\S]{0,50
   assert.match(missingAuth.res.body.message, /project configuration/);
   assert.equal(missingAuth.errors.length, 0);
 
-  console.log('Appwrite API boundary smoke tests passed (single/multiple exact CORS origins, hostile-origin deny, method guard, missing-auth fail-closed).');
+  // Exercise the authenticated read-only history action with a mocked Appwrite
+  // transport. The caller cannot choose the user ID; it comes from /account.
+  const historyHandler = loadHandler({
+    APPWRITE_FUNCTION_PROJECT_ID: 'fundb-test-project',
+    FUNDB_ALLOWED_ORIGIN: 'https://fundb.example'
+  });
+  const originalRequest = https.request;
+  const captured = [];
+  https.request = (url, options, callback) => {
+    const request = new EventEmitter();
+    request.write = () => {};
+    request.destroy = error => request.emit('error', error);
+    request.end = () => {
+      captured.push({ url: String(url), method: options.method });
+      const response = new EventEmitter();
+      response.setEncoding = () => {};
+      const isAccount = new URL(String(url)).pathname.endsWith('/v1/account');
+      const payload = isAccount
+        ? { $id: 'authenticated-user-123' }
+        : { rows: [{
+            $id: 'tx-1', type: 'Test entry', amount: 12.5, status: 'Recorded',
+            reference: 'TEST-REF', description: 'Read-only test', $createdAt: '2026-11-20T00:00:00.000Z'
+          }] };
+      callback(response);
+      process.nextTick(() => {
+        response.emit('data', JSON.stringify(payload));
+        response.emit('end');
+      });
+    };
+    return request;
+  };
+  try {
+    const history = await invoke(historyHandler, {
+      method: 'POST',
+      headers: {
+        origin: 'https://fundb.example',
+        'x-appwrite-user-jwt': 'test-user-jwt',
+        'x-appwrite-key': 'test-function-key'
+      },
+      bodyJson: { action: 'transactionHistory', userId: 'attacker-selected-user' }
+    });
+    assert.equal(history.res.statusCode, 200);
+    assert.equal(history.res.body.ok, true);
+    assert.equal(history.res.body.transactions.length, 1);
+    assert.equal(history.res.body.transactions[0].id, 'tx-1');
+    assert.equal(captured.length, 2, 'history must verify identity and perform one read');
+    assert.ok(captured.every(item => item.method === 'GET'), 'history action must be read-only');
+    const historyUrl = new URL(captured[1].url);
+    const queryText = historyUrl.searchParams.getAll('queries[]').join(' ');
+    assert.match(queryText, /authenticated-user-123/);
+    assert.doesNotMatch(queryText, /attacker-selected-user/);
+  } finally {
+    https.request = originalRequest;
+  }
+
+  console.log('Appwrite API boundary and authenticated transaction-history smoke tests passed (exact CORS, method/auth guards, identity-scoped read-only history).');
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;
