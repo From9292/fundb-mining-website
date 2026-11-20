@@ -120,11 +120,22 @@ module.exports = async ({ req, res, log, error }) => {
     // Existing profiles are never retroactively reassigned by a URL parameter.
     let requestBody = {};
     try {
-      requestBody = req.bodyJson && typeof req.bodyJson === 'object'
-        ? req.bodyJson
-        : (typeof req.body === 'string' && req.body ? JSON.parse(req.body) : {});
+      if (req.bodyJson && typeof req.bodyJson === 'object' && !Array.isArray(req.bodyJson)) {
+        requestBody = req.bodyJson;
+      } else if (typeof req.body === 'string' && req.body.trim()) {
+        requestBody = JSON.parse(req.body);
+      } else if (req.bodyJson !== undefined && req.bodyJson !== null) {
+        throw new Error('Request body must be a JSON object.');
+      }
+      if (!requestBody || typeof requestBody !== 'object' || Array.isArray(requestBody)) {
+        throw new Error('Request body must be a JSON object.');
+      }
     } catch (_) {
-      requestBody = {};
+      return json(res, 400, {
+        ok: false,
+        code: 'INVALID_REQUEST_BODY',
+        message: 'Request body must contain a valid JSON object.'
+      }, origin);
     }
     if (requestBody.action === 'transactionHistory') {
       // Transaction storage is not wired to this function yet. Fail explicitly
