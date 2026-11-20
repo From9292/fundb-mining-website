@@ -167,10 +167,40 @@ module.exports = async ({ req, res, log, error }) => {
       '6afbee8500163626863a',
       '6afd028f002b30f3902b'
     ];
-    // Probe only the verified database and supplied table IDs.
+    // Discover the real internal table ID from Appwrite itself instead of
+    // relying on IDs copied from old screenshots or earlier guesses. This is
+    // read-only and selects only the exact Profile table in the verified DB.
+    let discoveredProfileTableIds = [];
+    try {
+      const tableList = await appwriteRequest(
+        '/tablesdb/' + encodeURIComponent(DATABASE_ID) + '/tables?search=' + encodeURIComponent('Profile'),
+        'GET',
+        adminHeaders
+      );
+      discoveredProfileTableIds = (tableList.tables || [])
+        .filter(table => String(table.name || '').trim().toLowerCase() === 'profile')
+        .map(table => table.$id || table.id)
+        .filter(tableId => typeof tableId === 'string' && tableId.length > 0);
+      log('FundB Profile table discovery: ' + JSON.stringify({
+        databaseId: DATABASE_ID,
+        exactProfileTableMatches: discoveredProfileTableIds.length
+      }));
+    } catch (discoveryError) {
+      // Listing tables requires the tables.read API-key scope. If it is not
+      // granted, retain the safe read-only candidate checks below and report
+      // the permission failure without exposing the key.
+      log('FundB table listing unavailable; falling back to known read-only candidates: ' + JSON.stringify({
+        statusCode: Number(discoveryError && discoveryError.statusCode) || null,
+        type: discoveryError && discoveryError.type ? String(discoveryError.type).slice(0, 80) : null,
+        message: discoveryError && discoveryError.message ? String(discoveryError.message).slice(0, 140) : 'Unknown listing error'
+      }));
+    }
+    // Probe the verified database, discovered Profile ID, configured mapping,
+    // and historical IDs. Duplicate pairs are removed below.
     const tableCandidates = [
+      ...discoveredProfileTableIds.map(tableId => ({ databaseId: DATABASE_ID, tableId })),
       { databaseId: DATABASE_ID, tableId: PROFILE_TABLE_ID },
-      ...knownProfileTableIds.map(tableId => ({ databaseId: 'fundB_database', tableId }))
+      ...knownProfileTableIds.map(tableId => ({ databaseId: DATABASE_ID, tableId }))
     ];
     const uniqueCandidates = tableCandidates.filter((candidate, index, all) =>
       all.findIndex(item => item.databaseId === candidate.databaseId && item.tableId === candidate.tableId) === index
