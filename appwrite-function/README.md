@@ -28,7 +28,7 @@ The profile table must have a `userId` string attribute and `points` numeric att
 Optional environment variables:
 - `FUNDB_DATABASE_ID` (defaults to the existing database ID above)
 - `FUNDB_PROFILE_TABLE_ID` (defaults to the existing profile table ID above)
-- `FUNDB_ALLOWED_ORIGIN` (required for browser access; set this to the exact deployed FundB website origin. If omitted, the function does not emit an allow-origin header.)
+- `FUNDB_ALLOWED_ORIGIN` (optional comma-separated exact-origin allowlist. Defaults to the known Netlify and Cloudflare Pages FundB origins; set it to your current exact website origin(s) if the hosting domain changes.)
 
 Appwrite automatically provides `APPWRITE_FUNCTION_PROJECT_ID`, the ephemeral key in `x-appwrite-key`, and the authenticated user's JWT in `x-appwrite-user-jwt`. Do not put API keys, passwords, or JWTs in GitHub.
 
