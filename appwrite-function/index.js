@@ -216,6 +216,7 @@ module.exports = async ({ req, res, log, error }) => {
         const candidateResult = {
           databaseId: candidate.databaseId,
           tableId: candidate.tableId,
+          tableName: candidate.tableName || null,
           tablePath: candidatePath,
           profile: (candidateRows.rows || [])[0] || null
         };
