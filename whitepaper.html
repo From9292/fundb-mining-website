@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="FundB Mining and FundB Media project whitepaper: product vision, participation design, proposed airdrop framework, security, governance, risks and roadmap.">
+<meta name="theme-color" content="#090a0e">
+<title>FundB Mining & Media — Project Whitepaper</title>
+<style>
+:root{color-scheme:dark;--bg:#090a0e;--panel:#15171c;--gold:#edbd4b;--gold2:#ffe39a;--muted:#b5b7bf;--line:#3c3528}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#332817 0,#090a0e 42%);color:#f8f4e9;font:16px/1.72 system-ui,-apple-system,Segoe UI,sans-serif}
+header,main,footer{max-width:940px;margin:auto;padding:22px}header{padding-top:34px}a{color:var(--gold2)}h1,h2,h3{line-height:1.25;color:var(--gold2)}h1{font-size:clamp(30px,6vw,48px);margin:.4em 0}h2{font-size:23px;margin-top:34px;border-bottom:1px solid var(--line);padding-bottom:9px}h3{font-size:18px;margin-top:22px}.meta,.callout,.toc,.section{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:16px 0}.meta{color:var(--muted)}.callout{border-color:#80612d;background:#211a0e}.muted,small{color:var(--muted)}li{margin:8px 0}table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}th,td{border:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}th{color:var(--gold2);background:#201b12}.tag{display:inline-block;border:1px solid #80612d;border-radius:99px;padding:4px 10px;color:var(--gold2);font-size:12px;font-weight:700}.toc a{text-decoration:none}.toc li{margin:5px 0}footer{color:var(--muted);border-top:1px solid var(--line);margin-top:40px;padding-bottom:40px}@media print{body{background:#fff;color:#111}h1,h2,h3,a{color:#6c4b08}.meta,.callout,.toc,.section{background:#fff;border-color:#bbb;color:#111}}
+</style>
+</head>
+<body>
+<header>
+<p><a href="./index.html">← Back to FundB Mining</a></p>
+<span class="tag">PROJECT WHITEPAPER · VERSION 1.0 · 20 NOVEMBER 2026</span>
+<h1>FundB Mining & FundB Media</h1>
+<p><strong>Connect globally. Learn together. Build with purpose.</strong></p>
+<div class="meta"><b>Document status:</b> Public project proposal, not an offer to sell a financial product. This paper describes a development vision and proposed design. It does not promise income, token value, airdrop eligibility, allocation, exchange listing or profit. Product, technical, legal and economic details may change after review.</div>
+</header>
+<main>
+<div class="callout"><b>Important status notice.</b> The current FundB preview supports account authentication, cloud profiles and referral attribution. FundB Points are non-transferable preview participation points with no established cash value. Mining rewards, rewarded-ad credits, daily claims, referral bonuses, withdrawals, transfers and token distributions are not active. No user should spend money or make financial decisions based on a possible future airdrop.</div>
+<nav class="toc"><b>Contents</b><ol>
+<li><a href="#summary">Executive summary</a></li><li><a href="#vision">Vision, mission and principles</a></li><li><a href="#product">Product architecture</a></li><li><a href="#points">FundB Points and participation</a></li><li><a href="#airdrop">Proposed community airdrop framework</a></li><li><a href="#allocation">Allocation and tokenomics — not finalized</a></li><li><a href="#sustainability">Long-term sustainability</a></li><li><a href="#technology">Technology and security</a></li><li><a href="#fairness">Fairness, eligibility and anti-abuse</a></li><li><a href="#governance">Governance and transparency</a></li><li><a href="#roadmap">Development roadmap</a></li><li><a href="#risks">Risks and limitations</a></li><li><a href="#participate">How to participate safely</a></li><li><a href="#glossary">Glossary</a></li><li><a href="#disclaimer">Disclaimers and contact</a></li>
+</ol></nav>
+
+<section id="summary"><h2>1. Executive summary</h2>
+<p>FundB is a proposed global digital participation ecosystem combining a mobile-first web application, educational and community activities, creator-oriented media features and a possible future blockchain token. The project aims to make useful digital participation accessible across regions, languages and device types, including lower-cost Android devices and mobile networks.</p>
+<p>The product is being developed in stages. The first stage focuses on account access, profile continuity, transparent product information and a safe community preview. Later stages may add verified activities, a server-controlled points ledger, community messaging, learning experiences and creator tools. A token and community airdrop are possibilities for a later stage, subject to technical feasibility, funding, legal review, security audits and published rules.</p>
+<p>FundB is not currently a cryptocurrency mining operation. Any use of the word “mining” describes the proposed participation experience and must not be confused with proof-of-work blockchain mining or guaranteed income.</p></section>
+
+<section id="vision"><h2>2. Vision, mission and principles</h2>
+<h3>Vision</h3><p>Build a dependable, inclusive digital community where people can learn, create, collaborate and participate in transparent online activities.</p>
+<h3>Mission</h3><p>Develop a reliable platform with clear rules, accessible design, responsible monetization and fair treatment of members. If a token is eventually launched, its design should support a real ecosystem rather than rely on hype or promises of price appreciation.</p>
+<h3>Operating principles</h3><ul><li><b>Transparency:</b> clearly label live, planned, paused and unavailable features.</li><li><b>Security:</b> protect accounts, personal information, reward records and administrative access.</li><li><b>Fair access:</b> avoid making payment a condition of basic participation or possible community distribution.</li><li><b>Integrity:</b> never fabricate balances, transactions, ad views, user counts or token allocations.</li><li><b>Sustainability:</b> activate rewards only when a verified funding source and operational controls exist.</li><li><b>Respect:</b> support moderation, privacy, accessibility and local legal requirements.</li></ul></section>
+
+<section id="product"><h2>3. Product architecture</h2>
+<h3>3.1 FundB Mining</h3><p>The proposed participation area may include account dashboards, verified activity sessions, learning tasks, check-ins and a points ledger. Activities must be recorded by trusted server-side services. Browser timers, screenshots and client-side values are not sufficient evidence of an earned reward.</p>
+<h3>3.2 FundB Media</h3><p>The longer-term media vision includes multilingual profiles, community posts, direct messaging, groups, learning content, quizzes, games, creator pages, livestreams and audio/video communication. Each feature requires appropriate moderation, abuse reporting, privacy controls and reliable service infrastructure before it is represented as live.</p>
+<h3>3.3 Wallet and account area</h3><p>The current wallet area is informational. A future token wallet would require a selected blockchain, secure key-management model, audited contracts, transaction monitoring, clear network fees, recovery guidance and compliance review. A displayed points balance is not a blockchain wallet balance.</p>
+<h3>3.4 Global access</h3><p>The web application is intended to work on modern mobile and desktop browsers. Global availability cannot be guaranteed until hosting, localization, accessibility, data protection, sanctions screening where applicable, regional restrictions and customer support capacity are assessed.</p></section>
+
+<section id="points"><h2>4. FundB Points and participation</h2>
+<p>FundB Points are proposed internal accounting units for eligible participation. In the current preview they are not money, cryptocurrency, equity, a deposit, a debt owed by the project or a claim against any reserve. They have no established market price, redemption rate or cash value.</p>
+<p>Potential future activities could include verified learning modules, knowledge quizzes, approved community contributions, genuine creator participation and other tasks. The project may set activity limits and quality thresholds to reduce spam and abuse. Proposed example point rates shown in early product concepts are illustrations only and do not create an entitlement.</p>
+<p>If points are enabled, the ledger should record an immutable event identifier, user identifier, activity type, amount, timestamp, verification status and reason for any adjustment. Users should be able to review their own history and request correction through a documented support process. Administrative adjustments must be access-controlled and audited.</p></section>
+
+<section id="airdrop"><h2>5. Proposed community airdrop framework</h2>
+<p>FundB intends to evaluate a community distribution if a token is successfully designed, funded, legally reviewed and launched. The objective would be to recognize genuine participation and help bootstrap a useful ecosystem. This is an intention to explore a programme, not a promise that an airdrop will occur.</p>
+<h3>5.1 Possible eligibility principles</h3><ul><li>One legitimate account per individual, subject to a fair verification and appeal process.</li><li>Genuine eligible participation recorded during a clearly announced campaign period.</li><li>Compliance with published age, regional and legal eligibility rules.</li><li>Anti-bot, duplicate-account, impersonation and manipulation checks.</li><li>Completion of any reasonable identity or wallet checks only if legally necessary, proportionate and explained in advance.</li></ul>
+<h3>5.2 Possible allocation methodology</h3><p>If a campaign proceeds, the project may consider a points-weighted formula with caps, activity quality multipliers, account-age safeguards and anti-abuse exclusions. A formula must be published before the final snapshot and must explain how points, caps, excluded activity, rounding and unclaimed allocations are treated. The final method may differ after independent review.</p>
+<h3>5.3 Snapshot, review and distribution</h3><ol><li>Publish final campaign rules, eligible regions, timeline and token contract details.</li><li>Announce a snapshot window and explain which verified records are included.</li><li>Run automated and manual anti-fraud checks with a documented appeal window.</li><li>Publish aggregate allocation statistics without exposing private user data.</li><li>Provide each eligible user with a clear claim process, supported network and fee information.</li><li>Distribute only after contract testing, security review and operational funding are complete.</li></ol>
+<h3>5.4 No guaranteed allocation</h3><p>Participation does not guarantee that a person will qualify or receive tokens. No minimum token amount, fixed value, price, liquidity, exchange listing, income or profit is promised. The project may delay, change or cancel a distribution if it cannot be conducted safely, lawfully or sustainably. No one should pay a third party to “secure” an allocation.</p></section>
+
+<section id="allocation"><h2>6. Allocation and tokenomics — not finalized</h2>
+<p>The token name is proposed as FundB. The blockchain, token standard, maximum supply, circulating supply, decimals, contract address, minting controls, burn policy, treasury arrangements, vesting schedule and allocation percentages have not been finalized. Publishing invented percentages or a guaranteed token price would mislead participants.</p>
+<table><thead><tr><th>Design item</th><th>Current status</th><th>Required before launch</th></tr></thead><tbody>
+<tr><td>Token name / ticker</td><td>FundB is a working project name</td><td>Trademark, naming and chain compatibility review</td></tr>
+<tr><td>Blockchain and standard</td><td>Not selected</td><td>Network evaluation, contract specification and audit</td></tr>
+<tr><td>Total and circulating supply</td><td>Not determined</td><td>Published supply model and mint/burn controls</td></tr>
+<tr><td>Community allocation</td><td>Concept under evaluation</td><td>Evidence-based allocation plan and campaign rules</td></tr>
+<tr><td>Team, treasury and ecosystem allocations</td><td>Not determined</td><td>Named purposes, vesting, custody and public reporting</td></tr>
+<tr><td>Price, liquidity and exchange listing</td><td>Unknown; not guaranteed</td><td>No reliable promise can be made in advance</td></tr>
+</tbody></table>
+<p>Any future allocation table should include every category and sum to 100%, identify vesting and unlock conditions, disclose treasury control and explain how conflicts of interest are managed. No token sale or deposit should be accepted on the basis of this draft.</p></section>
+
+<section id="sustainability"><h2>7. Long-term sustainability</h2>
+<p>A stable platform requires recurring revenue or committed funding that is independent of speculative token appreciation. Possible models, if lawful and commercially viable, include clearly labelled sponsorships, non-incentivized advertising, optional premium creator tools, voluntary subscriptions, ticketed educational events and business partnerships.</p>
+<p>Advertising must follow the provider's rules. Ordinary display ads must not be clicked, refreshed or watched as a condition for earning points. Rewarded advertising may only be used through an ad format and provider that explicitly permit incentives, with server-verified completion callbacks and clear user disclosures.</p>
+<p>Before any reward is activated, FundB should publish the funding source, maximum reward budget, rate limits, eligibility, payment timing, tax treatment where relevant and what happens if funding is exhausted. The project must not promise a long-term income stream unless it can demonstrate a durable, legally compliant source of funds and the ability to meet the obligation.</p></section>
+
+<section id="technology"><h2>8. Technology and security</h2>
+<p>The current preview uses Appwrite for authentication and cloud profile services, with the public web experience deployed through Cloudflare Pages. The project uses authenticated server-side function calls for profile operations. Referral attribution is designed to be tied to account records rather than trusting a browser-only counter.</p>
+<h3>Required production controls</h3><ul><li>Server-authoritative reward ledger; clients cannot create or edit reward records.</li><li>Least-privilege database permissions and protected server secrets.</li><li>Rate limits, replay protection, idempotency keys and abuse monitoring.</li><li>Secure session handling, account recovery and email verification.</li><li>Encrypted transport, backups, recovery drills and incident response procedures.</li><li>Independent security review of APIs, database rules and smart contracts.</li><li>Clear transaction history, support escalation and operational status reporting.</li></ul>
+<p>Security testing and automated checks reduce risk but cannot prove that a system is completely secure. Vulnerabilities should be reported through the official support channel and handled under a documented process.</p></section>
+
+<section id="fairness"><h2>9. Fairness, eligibility and anti-abuse</h2>
+<p>A global participation programme can attract bots, duplicate accounts, referral rings, fake engagement and account trading. Controls should be proportionate and explainable. Automated detection should not be the sole basis for irreversible exclusion where a meaningful appeal is practical.</p>
+<p>Referral attribution should be one-time, reject self-referrals, avoid duplicate credit and never overwrite an established inviter relationship. Referral linking alone does not create a cash or token entitlement. Any future referral reward must have a published cap, eligibility period and anti-abuse policy.</p>
+<p>FundB should provide accessible support for users with limited connectivity and clear translations of material rules. Regional restrictions may apply where required by law or service-provider terms.</p></section>
+
+<section id="governance"><h2>10. Governance and transparency</h2>
+<p>Before a token launch, the project should disclose who controls the website, infrastructure, treasury and token contracts; how administrative permissions are limited; how material decisions are approved; and how conflicts of interest are managed. A public change log should distinguish implemented features from proposals.</p>
+<p>Any future community governance process should explain who may participate, how proposals are submitted, how voting power is calculated, what decisions are binding and how voter manipulation is prevented. Governance should not be described as decentralized unless the technical and legal arrangements genuinely support that claim.</p>
+<p>Periodic reports should cover product availability, security incidents, reward funding, distribution status and material changes. Personal data and account-level balances must not be exposed in public reports.</p></section>
+
+<section id="roadmap"><h2>11. Development roadmap</h2>
+<table><thead><tr><th>Stage</th><th>Focus</th><th>Exit criteria</th></tr></thead><tbody>
+<tr><td>1. Core preview</td><td>Brand, mobile interface, account access, cloud profile, referrals, policy pages and transparent disclosures</td><td>Stable login, safe profile handling, accessible navigation and repeatable release checks</td></tr>
+<tr><td>2. Account and ledger reliability</td><td>Transaction history, server-side ledger design, audit trails, backups and support workflows</td><td>Authenticated read-only history, permission tests, recovery and data integrity tests</td></tr>
+<tr><td>3. Community services</td><td>Messaging, moderation, reporting, language support and learning activities</td><td>Abuse controls, privacy review, operational monitoring and load tests</td></tr>
+<tr><td>4. Sustainable operations</td><td>Approved revenue channels, creator features and any compliant rewarded-ad integration</td><td>Provider approval, documented funding, server verification and clear user terms</td></tr>
+<tr><td>5. Token feasibility</td><td>Legal analysis, token design, supply model, contract prototype and independent audit</td><td>Published token specification, risk disclosure, audited contracts and launch decision</td></tr>
+<tr><td>6. Possible distribution</td><td>Eligibility snapshot, anti-fraud review, appeals and distribution</td><td>Published rules, funded distribution, tested claim process and legal clearance</td></tr>
+</tbody></table>
+<p>Any target date, including the previously discussed 2028 target, is provisional. A stage should advance only when its exit criteria are met; calendar pressure must not replace security or compliance.</p></section>
+
+<section id="risks"><h2>12. Risks and limitations</h2>
+<ul><li><b>Development risk:</b> features may take longer than expected or never be completed.</li><li><b>Funding risk:</b> revenue may be insufficient to support operations or rewards.</li><li><b>Token risk:</b> a token may never launch, may have no liquidity or may lose all market value.</li><li><b>Regulatory risk:</b> laws on digital assets, advertising, privacy, consumer protection and rewards vary by jurisdiction and may change.</li><li><b>Security risk:</b> accounts, infrastructure, wallets and smart contracts may be attacked or fail.</li><li><b>Operational risk:</b> third-party providers may experience outages, change terms or discontinue services.</li><li><b>Fairness risk:</b> fraud detection may make mistakes; appeal and correction processes are important.</li></ul>
+<p>Users should never borrow, invest, deposit funds or make purchases in expectation of FundB points, tokens or future income. This project proposal is not financial, investment, tax or legal advice.</p></section>
+
+<section id="participate"><h2>13. How to participate safely</h2><ol><li>Visit the official FundB website and read the current preview notice.</li><li>Create an account only with an email address you control and a unique password.</li><li>Keep your password, one-time codes, private keys and recovery phrases private.</li><li>Explore features marked available; treat planned or disabled features as unavailable.</li><li>Use referral links honestly. Do not create duplicate accounts or pay for referrals.</li><li>Check official announcements for any future campaign rules; beware of impersonators and fake claim links.</li><li>Never pay a fee, deposit cryptocurrency or share a wallet recovery phrase to receive a supposed guaranteed airdrop.</li></ol></section>
+
+<section id="glossary"><h2>14. Glossary</h2>
+<p><b>FundB Points:</b> internal participation points in the preview; not cryptocurrency or money.</p>
+<p><b>Airdrop:</b> a possible future distribution of tokens to eligible wallets under published rules.</p>
+<p><b>Snapshot:</b> a defined time or period used to determine which eligible records are considered for a campaign.</p>
+<p><b>Server-authoritative ledger:</b> a record controlled by trusted backend services rather than editable browser code.</p>
+<p><b>Vesting:</b> a schedule that restricts when allocated tokens become transferable.</p>
+<p><b>Liquidity:</b> the ability to buy or sell an asset without causing substantial price movement; it is not guaranteed by a token launch.</p></section>
+
+<section id="disclaimer"><h2>15. Disclaimers and contact</h2>
+<p>This whitepaper is a project proposal and may be revised, supplemented or withdrawn. It is not an offer, solicitation, prospectus, investment recommendation or guarantee. No token supply, allocation, price, listing, liquidity, yield, income or profit is promised. Future features and distribution remain conditional on successful development, funding, security review and applicable legal requirements.</p>
+<p><b>Official project channels:</b><br>Website: <a href="./index.html">FundB Mining</a><br>Telegram: <a href="https://t.me/fundBminingofficial" rel="noopener">t.me/fundBminingofficial</a><br>Email: <a href="mailto:luckyutu9@gmail.com">luckyutu9@gmail.com</a></p>
+<p>Related documents: <a href="./about.html">About & FAQ</a> · <a href="./privacy.html">Privacy Notice</a> · <a href="./terms.html">Terms of Use</a> · <a href="./community-guidelines.html">Community Guidelines</a></p>
+</section>
+</main>
+<footer>FundB Mining & FundB Media · Whitepaper v1.0 · 20 November 2026<br>This document describes a proposal, not guaranteed financial outcomes.</footer>
+</body></html>
