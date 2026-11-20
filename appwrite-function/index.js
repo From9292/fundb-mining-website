@@ -147,8 +147,6 @@ module.exports = async ({ req, res, log, error }) => {
     log('Referral request diagnostics: ' + JSON.stringify({ bodyParsed: Boolean(req.bodyJson || req.body), referralCodeSubmitted: Boolean(submittedReferralCode), referralCodeFormatValid: validReferralCodeSubmitted }));
 
     // Use the function's server-side key only after verifying the caller.
-    const tablePath = '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
-      '/tables/' + encodeURIComponent(PROFILE_TABLE_ID) + '/rows';
     const queryList = [
       { method: 'equal', attribute: 'userId', values: [user.$id] },
       { method: 'limit', values: [1] }
@@ -158,9 +156,54 @@ module.exports = async ({ req, res, log, error }) => {
       'X-Appwrite-Project': PROJECT_ID,
       'X-Appwrite-Key': functionKey
     };
-    const found = await appwriteRequest(tablePath + '?' + queryString, 'GET', adminHeaders);
 
-    let profile = (found.rows || [])[0];
+    // Both mappings appeared in earlier FundB setup records. Probe the known
+    // pairs and prefer the one that already contains this user's saved profile.
+    // This prevents a wrong default from creating duplicate profiles elsewhere.
+    const tableCandidates = [
+      { databaseId: DATABASE_ID, tableId: PROFILE_TABLE_ID },
+      { databaseId: '6aedcd650007f44a070f', tableId: 'profile' },
+      { databaseId: 'fundB_database', tableId: '6aedcd650007f44a070f' }
+    ];
+    const uniqueCandidates = tableCandidates.filter((candidate, index, all) =>
+      all.findIndex(item => item.databaseId === candidate.databaseId && item.tableId === candidate.tableId) === index
+    );
+    const validTables = [];
+    let lastTableError = null;
+    for (const candidate of uniqueCandidates) {
+      const candidatePath = '/tablesdb/' + encodeURIComponent(candidate.databaseId) +
+        '/tables/' + encodeURIComponent(candidate.tableId) + '/rows';
+      try {
+        const candidateRows = await appwriteRequest(candidatePath + '?' + queryString, 'GET', adminHeaders);
+        validTables.push({
+          databaseId: candidate.databaseId,
+          tableId: candidate.tableId,
+          tablePath: candidatePath,
+          profile: (candidateRows.rows || [])[0] || null
+        });
+      } catch (candidateError) {
+        lastTableError = candidateError;
+        if (candidateError && candidateError.statusCode === 404) {
+          log('FundB table candidate not found; safely trying the other known mapping: ' + JSON.stringify({
+            databaseId: candidate.databaseId,
+            tableId: candidate.tableId
+          }));
+          continue;
+        }
+        throw candidateError;
+      }
+    }
+    const selectedTable = validTables.find(candidate => candidate.profile) || validTables[0];
+    if (!selectedTable) {
+      throw lastTableError || new Error('No known FundB profile table mapping could be resolved.');
+    }
+    const tablePath = selectedTable.tablePath;
+    let profile = selectedTable.profile;
+    log('Resolved FundB profile table: ' + JSON.stringify({
+      databaseId: selectedTable.databaseId,
+      tableId: selectedTable.tableId,
+      existingProfileFound: Boolean(profile)
+    }));
     if (profile) {
       log('Existing FundB profile found.');
       // A new account may have had its cloud profile created before the invite
