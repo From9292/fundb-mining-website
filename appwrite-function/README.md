@@ -25,7 +25,15 @@ The verified existing FundB database ID is `fundB_database`. The function checks
 
 It probes these tables for the signed-in user's existing profile and existing rows. It will not create a profile in an arbitrary table when multiple candidates remain ambiguous. Earlier mappings are retained only as compatibility probes. Do not delete or recreate existing rows.
 
-The selected Profile table must have a `userId` string attribute and `points` numeric attribute and `referralCode` string attribute. The `userId` attribute must be indexed so the function can find an existing profile. Make it unique if the current data permits. The code returns `totalReferrals` as zero if that optional field is not present.
+The selected Profile table must have these columns before profile creation and referral lookup can work:
+
+- `userId`: string, required, indexed (unique if existing rows permit)
+- `points`: numeric
+- `referralCode`: string, indexed (unique if existing rows permit)
+- `total_referrals`: numeric
+- `referred_by`: string, optional, indexed for referral reconciliation
+
+The previously supplied Profile-table screenshot showed `userId`, `points`, `referred_by`, and `total_referrals`, but did not visibly show `referralCode`. Confirm that `referralCode` exists as a column in the selected table before expecting referral codes to load or new profiles to be created. Do not create duplicate tables or delete existing rows.
 
 Optional environment variables:
 - `FUNDB_DATABASE_ID` (defaults to `fundB_database`)
