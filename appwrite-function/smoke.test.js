@@ -57,6 +57,10 @@ async function invoke(handler, req) {
 const backendSource = fs.readFileSync(path.join(__dirname, 'index.js'), 'utf8');
 assert.match(backendSource, /if \(requestBody\.action === 'transactionHistory'\)/);
 assert.match(backendSource, /listUserTransactions\(user\.\$id, adminHeaders\)/);
+const historyActionOffset = backendSource.indexOf("requestBody.action === 'transactionHistory'");
+const adminHeadersOffset = backendSource.indexOf("const adminHeaders =");
+assert.ok(adminHeadersOffset >= 0 && adminHeadersOffset < historyActionOffset,
+  'adminHeaders must be initialized before the transaction-history action');
 assert.match(backendSource, /attribute: 'userId', values: \[userId\]/);
 assert.match(backendSource, /FUNDB_TRANSACTIONS_TABLE_ID/);
 assert.match(backendSource, /orderDesc/);
