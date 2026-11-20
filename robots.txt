@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://fundb-production-hardening.fundb-mining-website.pages.dev/sitemap.xml
