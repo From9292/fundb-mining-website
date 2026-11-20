@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { URL } = require('url');
 
 const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
-const DATABASE_ID = process.env.FUNDB_DATABASE_ID || '6aedcd650007f44a070f';
+const DATABASE_ID = process.env.FUNDB_DATABASE_ID || 'fundB_database';
 const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || 'profile';
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
 const ALLOWED_ORIGINS = new Set(
@@ -160,7 +160,7 @@ module.exports = async ({ req, res, log, error }) => {
     // Both mappings appeared in earlier FundB setup records. Probe the known
     // pairs and prefer the one that already contains this user's saved profile.
     // This prevents a wrong default from creating duplicate profiles elsewhere.
-    const knownDatabaseIds = ['6aedcd650007f44a070f', 'fundBdatabase', 'fundB_database'];
+    const knownDatabaseIds = ['fundB_database', '6aedcd650007f44a070f', 'fundBdatabase'];
     const knownProfileTableIds = [
       '6afea0720025daaed040',
       '6afbee8500163626863a',
