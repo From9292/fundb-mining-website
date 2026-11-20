@@ -161,8 +161,12 @@ module.exports = async ({ req, res, log, error }) => {
     // pairs and prefer the one that already contains this user's saved profile.
     // This prevents a wrong default from creating duplicate profiles elsewhere.
     const tableCandidates = [
+      // Confirmed in the user's Appwrite TablesDB dashboard: database ID
+      // `fundBdatabase` (no underscore), with the existing Profile table ID.
+      { databaseId: 'fundBdatabase', tableId: '6aedcd650007f44a070f' },
       { databaseId: DATABASE_ID, tableId: PROFILE_TABLE_ID },
       { databaseId: '6aedcd650007f44a070f', tableId: 'profile' },
+      // Retain the earlier recorded spelling as a compatibility fallback.
       { databaseId: 'fundB_database', tableId: '6aedcd650007f44a070f' }
     ];
     const uniqueCandidates = tableCandidates.filter((candidate, index, all) =>
