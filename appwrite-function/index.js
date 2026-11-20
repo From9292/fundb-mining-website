@@ -222,7 +222,7 @@ module.exports = async ({ req, res, log, error }) => {
           tableId: candidate.tableId,
           statusCode: Number(candidateError && candidateError.statusCode) || null,
           type: candidateError && candidateError.type ? String(candidateError.type).slice(0, 80) : null,
-          message: candidateError && candidateError.message ? String(candidateError.message).replace(/[\\r\\n]+/g, ' ').slice(0, 140) : 'Unknown lookup error'
+          message: candidateError && candidateError.message ? String(candidateError.message).replace(/[\r\n]+/g, ' ').slice(0, 140) : 'Unknown lookup error'
         }));
         continue;
       }
@@ -233,7 +233,7 @@ module.exports = async ({ req, res, log, error }) => {
       item.databaseId + '/' + item.tableId + '=' +
       (item.status === 'reachable' ? 'reachable' : (item.status === null ? 'unknown' : 'HTTP ' + item.status)) +
       (item.type ? ':' + item.type : '') +
-      (item.message ? ':' + String(item.message).replace(/[;\\r\\n]+/g, ' ').slice(0, 100) : '') +
+      (item.message ? ':' + String(item.message).replace(/[;\r\n]+/g, ' ').slice(0, 100) : '') +
       (item.matchingProfile ? ':profile-match' : '') +
       (item.hasRows ? ':has-rows' : '')
     ).join('; ');
@@ -457,7 +457,7 @@ module.exports = async ({ req, res, log, error }) => {
     const safeDiagnostic = {
       upstreamStatus: err && err.statusCode ? Number(err.statusCode) : null,
       upstreamType: err && err.type ? String(err.type).slice(0, 100) : null,
-      upstreamMessage: err && err.message ? String(err.message).replace(/[\\r\\n]+/g, ' ').slice(0, 1200) : 'No upstream message was returned.',
+      upstreamMessage: err && err.message ? String(err.message).replace(/[\r\n]+/g, ' ').slice(0, 1200) : 'No upstream message was returned.',
       causeCode: err && err.cause && err.cause.code ? String(err.cause.code).slice(0, 100) : null
     };
     // Older website builds display only the main message, so include the safe diagnostic there too.
