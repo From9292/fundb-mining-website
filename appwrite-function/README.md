@@ -21,7 +21,7 @@ The code uses the existing project and table IDs already configured in FundB:
 
 - Appwrite project: `6aedc1580001af2161b0`
 - Database: `6aedcd650007f44a070f` (existing database ID; `FUNDB_DATABASE_ID` or `FUNBDATAID` may override it)
-- Profile table: `6aedcd650007f44a070f`
+- Profile table: `profile` (or set `FUNDB_PROFILE_TABLE_ID` to the exact existing profile table ID)
 - Transaction table: `fundB_transactions` (or set `FUNDB_TRANSACTIONS_TABLE_ID` to the existing table ID)
 
 The profile table must have a `userId` string attribute and `points` numeric attribute and `referralCode` string attribute. The transaction table must contain a `userId` string attribute and the fields used by the history view (`type`, `amount`, `status`, `reference`, and `description`); index `userId` for efficient account-scoped reads. The history endpoint returns at most 50 most recent rows and filters by the verified Appwrite account ID. The profile `userId` attribute must be indexed so the function can find an existing profile. Make it unique if the current data permits. Do not delete or recreate existing rows. The code returns `totalReferrals` as zero if that optional field is not present.
