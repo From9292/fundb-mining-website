@@ -224,7 +224,10 @@ const syncCloudProfile = async (referralCodeOverride = '') => {
     );
     const result = execution.responseBody ? JSON.parse(execution.responseBody) : {};
     if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok || !result.profile) {
-      throw new Error(result.message || `Profile request failed (${execution.responseStatusCode || 'no response'}).`);
+      const detail = result.diagnostic
+        ? ` [HTTP ${result.diagnostic.statusCode || execution.responseStatusCode || 'unknown'}${result.diagnostic.type ? ', ' + result.diagnostic.type : ''}${result.diagnostic.causeCode ? ', ' + result.diagnostic.causeCode : ''}]`
+        : '';
+      throw new Error((result.message || `Profile request failed (${execution.responseStatusCode || 'no response'}).`) + detail);
     }
     byId('cloudPoints').textContent = Number(result.profile.points || 0).toFixed(2);
     byId('cloudReferral').textContent = result.profile.referralCode || 'Not assigned';
