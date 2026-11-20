@@ -6,7 +6,12 @@ const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const DATABASE_ID = process.env.FUNDB_DATABASE_ID || 'fundB_database';
 const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || '6aedcd650007f44a070f';
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
-const ALLOWED_ORIGIN = process.env.FUNDB_ALLOWED_ORIGIN || '';
+// Accept a comma-separated allowlist so the stable production host and the
+// stable branch preview can both use the API without opening CORS to everyone.
+const ALLOWED_ORIGINS = (process.env.FUNDB_ALLOWED_ORIGIN || '')
+  .split(',')
+  .map(value => value.trim())
+  .filter(Boolean);
 
 function responseHeaders(origin) {
   const headers = {
@@ -14,9 +19,8 @@ function responseHeaders(origin) {
     'Access-Control-Allow-Headers': 'Content-Type, X-Appwrite-User-JWT',
     'Vary': 'Origin'
   };
-  // When an origin is configured, only echo that exact trusted website origin.
-  // Do not advertise the trusted origin to unrelated browser origins.
-  if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN) {
+  // Echo only an exact allowlisted origin. Never use "*" or partial matching.
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
   }
   return headers;
