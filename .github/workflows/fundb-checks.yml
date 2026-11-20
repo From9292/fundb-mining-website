@@ -99,6 +99,9 @@ jobs:
           print("Referral submission is explicit and existing-profile counts are idempotent")
           PY
 
+      - name: Audit public release metadata and legal pages
+        run: python3 scripts/release-audit.py
+
       - name: Smoke-test navigation, IDs and PWA metadata
         run: |
           python3 - <<'PY'
