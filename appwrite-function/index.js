@@ -175,11 +175,14 @@ module.exports = async ({ req, res, log, error }) => {
         '/tables/' + encodeURIComponent(candidate.tableId) + '/rows';
       try {
         const candidateRows = await appwriteRequest(candidatePath + '?' + queryString, 'GET', adminHeaders);
+        const anyRowsQuery = 'queries[]=' + encodeURIComponent(JSON.stringify({ method: 'limit', values: [1] }));
+        const existingRows = await appwriteRequest(candidatePath + '?' + anyRowsQuery, 'GET', adminHeaders);
         validTables.push({
           databaseId: candidate.databaseId,
           tableId: candidate.tableId,
           tablePath: candidatePath,
-          profile: (candidateRows.rows || [])[0] || null
+          profile: (candidateRows.rows || [])[0] || null,
+          hasExistingRows: (existingRows.rows || []).length > 0
         });
       } catch (candidateError) {
         lastTableError = candidateError;
@@ -193,7 +196,7 @@ module.exports = async ({ req, res, log, error }) => {
         throw candidateError;
       }
     }
-    const selectedTable = validTables.find(candidate => candidate.profile) || validTables[0];
+    const selectedTable = validTables.find(candidate => candidate.profile) || validTables.find(candidate => candidate.hasExistingRows) || validTables[0];
     if (!selectedTable) {
       throw lastTableError || new Error('No known FundB profile table mapping could be resolved.');
     }
