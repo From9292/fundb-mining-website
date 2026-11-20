@@ -6,7 +6,13 @@ const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const DATABASE_ID = process.env.FUNDB_DATABASE_ID || '6aedcd650007f44a070f';
 const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || 'profile';
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
-const ALLOWED_ORIGIN = process.env.FUNDB_ALLOWED_ORIGIN || '';
+const ALLOWED_ORIGINS = new Set(
+  (process.env.FUNDB_ALLOWED_ORIGIN ||
+    'https://cosmic-cupcake-cc56c4.netlify.app,https://fundb-production-hardening.fundb-mining-website.pages.dev,https://fundb-public-content-legal.fundb-mining-website.pages.dev')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean)
+);
 
 function responseHeaders(origin) {
   const headers = {
@@ -16,7 +22,7 @@ function responseHeaders(origin) {
   };
   // When an origin is configured, only echo that exact trusted website origin.
   // Do not advertise the trusted origin to unrelated browser origins.
-  if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN) {
+  if (ALLOWED_ORIGINS.has(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
   }
   return headers;
