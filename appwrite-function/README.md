@@ -20,7 +20,7 @@ The source folder is in this repository at [appwrite-function](https://github.co
 The code uses the existing project and table IDs already configured in FundB:
 
 - Appwrite project: `6aedc1580001af2161b0`
-- Database: `fundB_database`
+- Database: `6aedcd650007f44a070f` (existing database ID; `FUNDB_DATABASE_ID` or `FUNBDATAID` may override it)
 - Profile table: `6aedcd650007f44a070f`
 - Transaction table: `fundB_transactions` (or set `FUNDB_TRANSACTIONS_TABLE_ID` to the existing table ID)
 
