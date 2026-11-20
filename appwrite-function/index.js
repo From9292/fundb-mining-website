@@ -147,6 +147,13 @@ module.exports = async ({ req, res, log, error }) => {
       'X-Appwrite-JWT': jwt
     });
 
+    // Prepare the server-side table credentials immediately after authenticating
+    // the caller so every authenticated action, including history, can use them.
+    const adminHeaders = {
+      'X-Appwrite-Project': PROJECT_ID,
+      'X-Appwrite-Key': functionKey
+    };
+
     // A referral code is only considered when creating a brand-new profile.
     // Existing profiles are never retroactively reassigned by a URL parameter.
     let requestBody = {};
@@ -186,10 +193,6 @@ module.exports = async ({ req, res, log, error }) => {
       { method: 'limit', values: [1] }
     ];
     const queryString = queryList.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
-    const adminHeaders = {
-      'X-Appwrite-Project': PROJECT_ID,
-      'X-Appwrite-Key': functionKey
-    };
     const found = await appwriteRequest(tablePath + '?' + queryString, 'GET', adminHeaders);
 
     let profile = (found.rows || [])[0];
