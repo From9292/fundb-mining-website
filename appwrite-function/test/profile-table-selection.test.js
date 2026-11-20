@@ -129,7 +129,7 @@ test('selects exact-case Profile and leaves both existing rows untouched', async
   assert.ok(requests.some(item => item.path.endsWith('/tables/legacy-lower-id/rows')));
 });
 
-test('fails closed when table discovery is unavailable and multiple rows match', async () => {
+test('fails closed when table discovery is unavailable and no configured mapping is verified', async () => {
   installAppwriteMock({ discoveryDenied: true });
   delete require.cache[require.resolve('../appwrite-function/index.js')];
   const handler = require('../appwrite-function/index.js');
@@ -150,7 +150,7 @@ test('fails closed when table discovery is unavailable and multiple rows match',
   });
 
   assert.equal(res.statusCode, 500);
-  assert.match(res.payload.message, /canonical Profile table could not be identified uniquely/);
+  assert.match(res.payload.message, /No supplied FundB table mapping was reachable/);
   assert.equal(writes.length, 0, 'ambiguous profile lookup must never mutate user data');
 });
 
