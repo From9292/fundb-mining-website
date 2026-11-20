@@ -100,8 +100,8 @@ function makeResponse() {
 
 test('selects exact-case Profile and leaves both existing rows untouched', async () => {
   installAppwriteMock();
-  delete require.cache[require.resolve('../appwrite-function/index.js')];
-  const handler = require('../appwrite-function/index.js');
+  delete require.cache[require.resolve('../index.js')];
+  const handler = require('../index.js');
   const res = makeResponse();
   await handler({
     req: {
@@ -131,8 +131,8 @@ test('selects exact-case Profile and leaves both existing rows untouched', async
 
 test('fails closed when table discovery is unavailable and no configured mapping is verified', async () => {
   installAppwriteMock({ discoveryDenied: true });
-  delete require.cache[require.resolve('../appwrite-function/index.js')];
-  const handler = require('../appwrite-function/index.js');
+  delete require.cache[require.resolve('../index.js')];
+  const handler = require('../index.js');
   const res = makeResponse();
   await handler({
     req: {
