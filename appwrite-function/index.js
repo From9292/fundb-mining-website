@@ -179,8 +179,8 @@ module.exports = async ({ req, res, log, error }) => {
       );
       discoveredProfileTableIds = (tableList.tables || [])
         .filter(table => String(table.name || '').trim().toLowerCase() === 'profile')
-        .map(table => table.$id || table.id)
-        .filter(tableId => typeof tableId === 'string' && tableId.length > 0);
+        .map(table => ({ tableId: table.$id || table.id, tableName: String(table.name || '').trim() }))
+        .filter(table => typeof table.tableId === 'string' && table.tableId.length > 0);
       log('FundB Profile table discovery: ' + JSON.stringify({
         databaseId: DATABASE_ID,
         exactProfileTableMatches: discoveredProfileTableIds.length
@@ -198,9 +198,9 @@ module.exports = async ({ req, res, log, error }) => {
     // Probe the verified database, discovered Profile ID, configured mapping,
     // and historical IDs. Duplicate pairs are removed below.
     const tableCandidates = [
-      ...discoveredProfileTableIds.map(tableId => ({ databaseId: DATABASE_ID, tableId })),
-      { databaseId: DATABASE_ID, tableId: PROFILE_TABLE_ID },
-      ...knownProfileTableIds.map(tableId => ({ databaseId: DATABASE_ID, tableId }))
+      ...discoveredProfileTableIds.map(table => ({ databaseId: DATABASE_ID, tableId: table.tableId, tableName: table.tableName })),
+      { databaseId: DATABASE_ID, tableId: PROFILE_TABLE_ID, tableName: PROFILE_TABLE_ID === 'Profile' ? 'Profile' : null },
+      ...knownProfileTableIds.map(tableId => ({ databaseId: DATABASE_ID, tableId, tableName: null }))
     ];
     const uniqueCandidates = tableCandidates.filter((candidate, index, all) =>
       all.findIndex(item => item.databaseId === candidate.databaseId && item.tableId === candidate.tableId) === index
@@ -257,10 +257,15 @@ module.exports = async ({ req, res, log, error }) => {
       (item.matchingProfile ? ':profile-match' : '') +
       (item.hasRows ? ':has-rows' : '')
     ).join('; ');
-    if (profileMatches.length > 1) {
-      throw new Error('More than one candidate table contains this signed-in user profile. No profile or referral data was changed. Candidates: ' + candidateSummary);
+    // The dashboard's canonical FundB table is explicitly named "Profile"
+    // (capital P). If both legacy case-variant tables contain this user, use
+    // the unique exact-case canonical table. Do not merge, overwrite, or delete
+    // either row. If exact-case discovery is unavailable or ambiguous, stop.
+    const canonicalProfileMatches = profileMatches.filter(candidate => candidate.tableName === 'Profile');
+    if (profileMatches.length > 1 && canonicalProfileMatches.length !== 1) {
+      throw new Error('More than one candidate table contains this signed-in user profile, and the canonical Profile table could not be identified uniquely. No profile or referral data was changed. Candidates: ' + candidateSummary);
     }
-    let selectedTable = profileMatches[0] || null;
+    let selectedTable = profileMatches.length > 1 ? canonicalProfileMatches[0] : (profileMatches[0] || null);
     if (!selectedTable && validTables.length === 1) {
       // A single reachable table in the verified database is unambiguous.
       // If several tables are reachable, never guess based on row counts:
