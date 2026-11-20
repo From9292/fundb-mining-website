@@ -4,6 +4,7 @@
 // These tests deliberately avoid contacting Appwrite or touching real profiles.
 const assert = require('node:assert/strict');
 const path = require('node:path');
+const fs = require('node:fs');
 
 function loadHandler(env = {}) {
   const keys = [
@@ -51,6 +52,15 @@ async function invoke(handler, req) {
   });
   return { res, logs, errors };
 }
+
+// Static regression guard for the restored read-only transaction history endpoint.
+const backendSource = fs.readFileSync(path.join(__dirname, 'index.js'), 'utf8');
+assert.match(backendSource, /if \(requestBody\.action === 'transactionHistory'\)/);
+assert.match(backendSource, /listUserTransactions\(user\.\$id, adminHeaders\)/);
+assert.match(backendSource, /attribute: 'userId', values: \[userId\]/);
+assert.match(backendSource, /FUNDB_TRANSACTIONS_TABLE_ID/);
+assert.match(backendSource, /orderDesc/);
+assert.doesNotMatch(backendSource, /action === 'transactionHistory'[\\s\\S]{0,500}statusCode: 501/);
 
 (async () => {
   const handler = loadHandler({
