@@ -2,7 +2,7 @@ name: FundB code checks
 
 on:
   pull_request:
-    branches: [main, fundb-production-hardening]
+    branches: [main, fundb-production-hardening, fundb-public-content-legal]
   push:
     branches: [main, fundb-production-hardening]
 
