@@ -399,16 +399,24 @@ module.exports = async ({ req, res, log, error }) => {
     error('FundB profile API diagnostic: ' + JSON.stringify(diagnostic));
     // Return only non-secret diagnostic fields so the signed-in user can report
     // the exact failure without opening logs or exposing JWTs/API keys.
+    const safeDiagnostic = {
+      upstreamStatus: err && err.statusCode ? Number(err.statusCode) : null,
+      upstreamType: err && err.type ? String(err.type).slice(0, 100) : null,
+      upstreamMessage: err && err.message ? String(err.message).replace(/[\\r\\n]+/g, ' ').slice(0, 240) : 'No upstream message was returned.',
+      causeCode: err && err.cause && err.cause.code ? String(err.cause.code).slice(0, 100) : null
+    };
+    // Older website builds display only the main message, so include the safe diagnostic there too.
+    const visibleDiagnostic = [
+      safeDiagnostic.upstreamStatus ? 'HTTP ' + safeDiagnostic.upstreamStatus : null,
+      safeDiagnostic.upstreamType,
+      safeDiagnostic.upstreamMessage,
+      safeDiagnostic.causeCode
+    ].filter(Boolean).join(' | ');
     return json(res, 500, {
       ok: false,
       code: err && err.statusCode ? 'APPWRITE_UPSTREAM_ERROR' : 'PROFILE_SERVICE_ERROR',
-      message: 'The FundB profile request failed. Use the diagnostic details below to identify the cause.',
-      diagnostic: {
-        upstreamStatus: err && err.statusCode ? Number(err.statusCode) : null,
-        upstreamType: err && err.type ? String(err.type) : null,
-        upstreamMessage: err && err.message ? String(err.message).slice(0, 240) : 'No upstream message was returned.',
-        causeCode: err && err.cause && err.cause.code ? String(err.cause.code) : null
-      }
+      message: 'The FundB profile request failed.' + (visibleDiagnostic ? ' Diagnostic: ' + visibleDiagnostic : ''),
+      diagnostic: safeDiagnostic
     }, req.headers.origin || '');
   }
 };
