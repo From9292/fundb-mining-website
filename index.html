@@ -89,7 +89,7 @@ input,textarea,select{border-radius:14px!important}
 
 <section id="wallet" hidden>
 <div class="card"><h2>FUND-B Wallet</h2><div class="balance" id="walletBalance">0.00</div><div class="unit">FundB Points · no blockchain connection yet</div><div class="notice">Wallet functions are preview-only. No deposit address exists yet. Do not send cryptocurrency to an address shown elsewhere claiming to be your FundB wallet.</div>
-<div class="two"><button class="secondary" disabled>Receive address — coming soon</button><button class="secondary" disabled>Send / transfer — coming soon</button><button class="secondary" disabled>Withdraw — coming soon</button><button class="secondary" id="viewTransactionsBtn" type="button">Refresh transaction history</button></div><div class="item"><h3>Transaction history</h3><p class="muted" id="transactionHistoryStatus">Sign in to load your secure transaction history. No rewards or withdrawals are enabled.</p><div id="transactionHistoryList" class="muted" aria-live="polite"></div></div><p class="muted">A real wallet requires a selected blockchain, audited smart contract or custody provider, key management, transaction monitoring and applicable compliance checks.</p></div>
+<div class="two"><button class="secondary" disabled>Receive address — coming soon</button><button class="secondary" disabled>Send / transfer — coming soon</button><button class="secondary" disabled>Withdraw — coming soon</button><button class="secondary" id="viewTransactionsBtn" type="button" disabled>History unavailable</button></div><div class="item"><h3>Transaction history</h3><p class="muted" id="transactionHistoryStatus">Transaction history is not implemented yet. No transaction records are available in this preview.</p><div id="transactionHistoryList" class="muted" aria-live="polite"></div></div><p class="muted">A real wallet requires a selected blockchain, audited smart contract or custody provider, key management, transaction monitoring and applicable compliance checks.</p></div>
 </section>
 
 <section id="tasks" hidden>
@@ -227,43 +227,15 @@ const syncCloudProfile = async (referralCodeOverride = '') => {
     cloudStatus.textContent = `Cloud profile could not load: ${err?.message || 'Please try again.'}`;
   }
 }
-const loadTransactionHistory = async () => {
+const loadTransactionHistory = () => {
   const statusEl = byId('transactionHistoryStatus');
   const listEl = byId('transactionHistoryList');
-  if (!statusEl || !listEl) return;
-  try {
-    statusEl.textContent = 'Checking transaction-history availability…';
-    listEl.replaceChildren();
-    const execution = await functions.createExecution(
-      FUNDB_FUNCTION_ID,
-      JSON.stringify({ action: 'transactionHistory' }),
-      false,
-      '/',
-      'POST'
-    );
-    const result = execution.responseBody ? JSON.parse(execution.responseBody) : {};
-    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
-      throw new Error(result.message || 'Transaction history request failed.');
-    }
-    const rows = Array.isArray(result.transactions) ? result.transactions : [];
-    if (!rows.length) {
-      statusEl.textContent = 'Transaction history is not connected yet. This does not confirm that your account has zero transactions.';
-      return;
-    }
-    statusEl.textContent = 'Showing your latest ' + rows.length + ' transaction(s).';
-    rows.forEach(row => {
-      const item = document.createElement('div');
-      item.className = 'item';
-      const heading = document.createElement('strong');
-      heading.textContent = String(row.type || 'Transaction') + ' · ' + Number(row.amount || 0).toFixed(2);
-      const detail = document.createElement('p');
-      detail.className = 'muted';
-      detail.textContent = [row.status || 'Status unavailable', row.reference || '', row.description || '', row.createdAt ? new Date(row.createdAt).toLocaleString() : ''].filter(Boolean).join(' · ');
-      item.append(heading, detail);
-      listEl.append(item);
-    });
-  } catch (err) {
-    statusEl.textContent = err?.message || 'Transaction history is not available yet. Rewards and withdrawals remain disabled.';
+  if (statusEl) statusEl.textContent = 'Transaction history is not implemented yet. No transaction records are available in this preview.';
+  if (listEl) listEl.replaceChildren();
+  const button = byId('viewTransactionsBtn');
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'History unavailable';
   }
 };
 const showSignedIn = async (user, referralCode = '') => {
