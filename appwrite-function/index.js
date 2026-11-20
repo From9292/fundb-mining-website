@@ -183,22 +183,18 @@ module.exports = async ({ req, res, log, error }) => {
         '/tables/' + encodeURIComponent(candidate.tableId) + '/rows';
       try {
         const candidateRows = await appwriteRequest(candidatePath + '?' + queryString, 'GET', adminHeaders);
-        const anyRowsQuery = 'queries[]=' + encodeURIComponent(JSON.stringify({ method: 'limit', values: [1] }));
-        const existingRows = await appwriteRequest(candidatePath + '?' + anyRowsQuery, 'GET', adminHeaders);
         const candidateResult = {
           databaseId: candidate.databaseId,
           tableId: candidate.tableId,
           tablePath: candidatePath,
-          profile: (candidateRows.rows || [])[0] || null,
-          hasExistingRows: (existingRows.rows || []).length > 0
+          profile: (candidateRows.rows || [])[0] || null
         };
         validTables.push(candidateResult);
         candidateDiagnostics.push({
           databaseId: candidate.databaseId,
           tableId: candidate.tableId,
           status: 'reachable',
-          matchingProfile: Boolean(candidateResult.profile),
-          hasRows: candidateResult.hasExistingRows
+          matchingProfile: Boolean(candidateResult.profile)
         });
       } catch (candidateError) {
         lastTableError = candidateError;
