@@ -1,6 +1,6 @@
 # FundB Appwrite profile API
 
-This function is the first server-side API for FundB. It verifies the signed-in Appwrite account, loads the existing profile, and creates a zero-point profile only when one does not exist. It does not award points.
+This function verifies the signed-in Appwrite account, manages the existing FundB profile and one-time referral attribution, and serves authenticated read-only transaction history. It does not award points or create transaction records.
 
 ## Deploy this function
 
@@ -22,13 +22,15 @@ The code uses the existing project and table IDs already configured in FundB:
 - Appwrite project: `6aedc1580001af2161b0`
 - Database: `fundB_database`
 - Profile table: `6aedcd650007f44a070f`
+- Transaction table: `fundB_transactions` (or set `FUNDB_TRANSACTIONS_TABLE_ID` to the existing table ID)
 
-The profile table must have a `userId` string attribute and `points` numeric attribute and `referralCode` string attribute. The `userId` attribute must be indexed so the function can find an existing profile. Make it unique if the current data permits. Do not delete or recreate existing rows. The code returns `totalReferrals` as zero if that optional field is not present.
+The profile table must have a `userId` string attribute and `points` numeric attribute and `referralCode` string attribute. The transaction table must contain a `userId` string attribute and the fields used by the history view (`type`, `amount`, `status`, `reference`, and `description`); index `userId` for efficient account-scoped reads. The history endpoint returns at most 50 most recent rows and filters by the verified Appwrite account ID. The `userId` attribute must be indexed so the function can find an existing profile. Make it unique if the current data permits. Do not delete or recreate existing rows. The code returns `totalReferrals` as zero if that optional field is not present.
 
 Optional environment variables:
 - `FUNDB_DATABASE_ID` (defaults to the existing database ID above)
 - `FUNDB_PROFILE_TABLE_ID` (defaults to the existing profile table ID above)
-- `FUNDB_ALLOWED_ORIGIN` (required for browser access; set this to the exact deployed FundB website origin. If omitted, the function does not emit an allow-origin header.)
+- `FUNDB_ALLOWED_ORIGIN` (optional comma-separated list of exact additional website origins; production and the approved preview hostname are built into the current code)
+- `FUNDB_TRANSACTIONS_TABLE_ID` (defaults to `fundB_transactions`)
 
 Appwrite automatically provides `APPWRITE_FUNCTION_PROJECT_ID`, the ephemeral key in `x-appwrite-key`, and the authenticated user's JWT in `x-appwrite-user-jwt`. Do not put API keys, passwords, or JWTs in GitHub.
 
@@ -41,11 +43,12 @@ Appwrite automatically provides `APPWRITE_FUNCTION_PROJECT_ID`, the ephemeral ke
 - New referral codes are generated with Node's cryptographic random source and checked against existing codes before assignment; existing users' codes are never changed.
 - CORS is fail-closed: only the exact `FUNDB_ALLOWED_ORIGIN` is allowed, and no wildcard origin is emitted.
 - It never accepts a balance or reward amount from the browser.
+- Transaction history is read-only; users cannot create, edit or delete ledger rows through this endpoint.
 - It does not issue mining, daily, ad, referral, transfer, withdrawal, or token rewards.
 
 ## Still not production-enabled
 
-Real rewards require separate server-side transaction records, idempotency keys, provider-signed rewarded-ad callbacks, referral fraud checks, rate limits, audited wallet ledger entries, and verified payout integrations. Do not advertise balances as cash or enable withdrawals until those systems are built and tested.
+Real rewards require separate server-side transaction records, idempotency keys, provider-signed rewarded-ad callbacks, referral fraud checks, rate limits, audited wallet ledger entries, and verified payout integrations. If the transaction table is not present or its schema differs, the history endpoint returns an explicit service error; it does not fabricate an empty history. Do not advertise balances as cash or enable withdrawals until those systems are built and tested.
 
 
 ## Referral profile behavior
