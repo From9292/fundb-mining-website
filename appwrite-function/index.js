@@ -397,6 +397,18 @@ module.exports = async ({ req, res, log, error }) => {
       projectConfigured: Boolean(PROJECT_ID)
     };
     error('FundB profile API diagnostic: ' + JSON.stringify(diagnostic));
-    return json(res, 500, { ok: false, message: 'The FundB profile service could not reach Appwrite. Diagnostic details are recorded in the function execution logs.' }, req.headers.origin || '');
+    // Return only non-secret diagnostic fields so the signed-in user can report
+    // the exact failure without opening logs or exposing JWTs/API keys.
+    return json(res, 500, {
+      ok: false,
+      code: err && err.statusCode ? 'APPWRITE_UPSTREAM_ERROR' : 'PROFILE_SERVICE_ERROR',
+      message: 'The FundB profile request failed. Use the diagnostic details below to identify the cause.',
+      diagnostic: {
+        upstreamStatus: err && err.statusCode ? Number(err.statusCode) : null,
+        upstreamType: err && err.type ? String(err.type) : null,
+        upstreamMessage: err && err.message ? String(err.message).slice(0, 240) : 'No upstream message was returned.',
+        causeCode: err && err.cause && err.cause.code ? String(err.cause.code) : null
+      }
+    }, req.headers.origin || '');
   }
 };
