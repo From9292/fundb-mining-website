@@ -17,7 +17,7 @@ The source folder is in this repository at [appwrite-function](https://github.co
 
 ## Existing database configuration
 
-The function verifies the existing FundB database ID `6aedcd650007f44a070f` against the three table IDs supplied for the Profile lookup:
+The verified existing FundB database ID is `fundB_database`. The function checks this database first against the three table IDs supplied for the Profile lookup:
 
 - `6afea0720025daaed040`
 - `6afbee8500163626863a`
@@ -28,7 +28,7 @@ It probes these tables for the signed-in user's existing profile and existing ro
 The selected Profile table must have a `userId` string attribute and `points` numeric attribute and `referralCode` string attribute. The `userId` attribute must be indexed so the function can find an existing profile. Make it unique if the current data permits. The code returns `totalReferrals` as zero if that optional field is not present.
 
 Optional environment variables:
-- `FUNDB_DATABASE_ID` (defaults to the recorded FundB database ID above)
+- `FUNDB_DATABASE_ID` (defaults to `fundB_database`)
 - `FUNDB_PROFILE_TABLE_ID` (legacy fallback table ID)
 - `FUNDB_ALLOWED_ORIGIN` (optional comma-separated exact-origin allowlist. Defaults to the known Netlify and Cloudflare Pages FundB origins; set it to your current exact website origin(s) if the hosting domain changes.)
 
