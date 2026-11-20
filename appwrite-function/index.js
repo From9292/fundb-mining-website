@@ -6,12 +6,14 @@ const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const DATABASE_ID = process.env.FUNDB_DATABASE_ID || 'fundB_database';
 const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || '6aedcd650007f44a070f';
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
-// Accept a comma-separated allowlist so the stable production host and the
-// stable branch preview can both use the API without opening CORS to everyone.
-const ALLOWED_ORIGINS = (process.env.FUNDB_ALLOWED_ORIGIN || '')
-  .split(',')
-  .map(value => value.trim())
-  .filter(Boolean);
+// Keep the known production and stable preview hosts trusted even if an
+// older Appwrite environment value contains only the production hostname.
+// Additional exact origins may be supplied through FUNDB_ALLOWED_ORIGIN.
+const ALLOWED_ORIGINS = [
+  'https://fundb-production-hardening.fundb-mining-website.pages.dev',
+  'https://fundb-public-content-legal.fundb-mining-website.pages.dev',
+  ...(process.env.FUNDB_ALLOWED_ORIGIN || '').split(',').map(value => value.trim()).filter(Boolean)
+].filter((value, index, all) => all.indexOf(value) === index);
 
 function responseHeaders(origin) {
   const headers = {
