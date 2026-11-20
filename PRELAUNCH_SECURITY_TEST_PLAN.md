@@ -45,4 +45,4 @@ Do not enable rewards unless all applicable tests pass, the database permissions
 
 ## Current status
 
-The current FundB API supports authenticated profile loading and referral relationship handling only. Transaction history intentionally returns HTTP 501. No test results are implied by this document; record each test's date, environment, build and outcome before release.
+The current FundB API supports authenticated profile loading, one-time referral attribution and an authenticated read-only transaction-history action. The history action reads at most 50 rows filtered by the verified Appwrite account ID and does not create or modify transactions. Its live operation still depends on the existing `fundB_transactions` table being present with the documented fields and `userId` index. This code path has passed the automated mocked security test; live Appwrite schema and execution behavior must still be verified. No reward, mining, transfer, withdrawal or token-payout functionality is enabled.
