@@ -386,6 +386,19 @@ module.exports = async ({ req, res, log, error }) => {
       projectConfigured: Boolean(PROJECT_ID)
     };
     error('FundB profile API diagnostic: ' + JSON.stringify(diagnostic));
-    return json(res, 500, { ok: false, message: 'The FundB profile service could not reach Appwrite. Diagnostic details are recorded in the function execution logs.' }, req.headers.origin || '');
+    // Return only non-secret Appwrite error metadata so the signed-in user can
+    // see the actual database/configuration failure without opening execution logs.
+    // Never include request headers, JWTs, API keys, or stack traces in the response.
+    const safeMessage = String(err && err.message || 'Unknown Appwrite error').slice(0, 240);
+    return json(res, 500, {
+      ok: false,
+      code: 'PROFILE_BACKEND_ERROR',
+      message: 'FundB could not load the saved profile: ' + safeMessage,
+      diagnostic: {
+        statusCode: Number(err && err.statusCode) || null,
+        type: String(err && err.type || '').slice(0, 100) || null,
+        causeCode: String(err && err.cause && err.cause.code || '').slice(0, 100) || null
+      }
+    }, req.headers.origin || '');
   }
 };
