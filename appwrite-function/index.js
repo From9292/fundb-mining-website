@@ -70,6 +70,31 @@ function appwriteRequest(path, method, headers, body) {
   });
 }
 
+const TRANSACTIONS_TABLE_ID = process.env.FUNDB_TRANSACTIONS_TABLE_ID || 'fundB_transactions';
+function transactionsTablePath() {
+  return '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
+    '/tables/' + encodeURIComponent(TRANSACTIONS_TABLE_ID) + '/rows';
+}
+async function listUserTransactions(userId, adminHeaders) {
+  // Read-only: scope every query to the authenticated Appwrite user.
+  const queries = [
+    { method: 'equal', attribute: 'userId', values: [userId] },
+    { method: 'orderDesc', values: ['$createdAt'] },
+    { method: 'limit', values: [50] }
+  ];
+  const queryString = queries.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+  const result = await appwriteRequest(transactionsTablePath() + '?' + queryString, 'GET', adminHeaders);
+  return (result.rows || []).map(row => ({
+    id: row.$id,
+    type: String(row.type || 'Transaction'),
+    amount: Number(row.amount || 0),
+    status: String(row.status || 'Status unavailable'),
+    reference: String(row.reference || ''),
+    description: String(row.description || ''),
+    createdAt: row.$createdAt || null
+  }));
+}
+
 function makeReferralCode() {
   // Generate an unpredictable 8-character code; do not derive it from user IDs.
   const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -144,13 +169,9 @@ module.exports = async ({ req, res, log, error }) => {
       }, origin);
     }
     if (requestBody.action === 'transactionHistory') {
-      // Transaction storage is not wired to this function yet. Fail explicitly
-      // rather than returning a fake empty history that could mislead users.
-      return json(res, 501, {
-        ok: false,
-        code: 'TRANSACTION_HISTORY_NOT_CONFIGURED',
-        message: 'Transaction history is not connected yet. No rewards, deposits or withdrawals are active.'
-      }, origin);
+      // Read-only history: authenticate first, then return only this user's rows.
+      const transactions = await listUserTransactions(user.$id, adminHeaders);
+      return json(res, 200, { ok: true, transactions, rewardsEnabled: false }, origin);
     }
 
     const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase();
