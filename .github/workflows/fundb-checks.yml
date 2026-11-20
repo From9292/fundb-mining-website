@@ -2,7 +2,7 @@ name: FundB code checks
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, fundb-production-hardening, fundb-public-content-legal]
   push:
     branches: [main, fundb-production-hardening]
 
@@ -22,6 +22,8 @@ jobs:
         run: node --check appwrite-function/index.js
       - name: Verify function module loads
         run: node -e "require('./appwrite-function/index.js')"
+      - name: Smoke-test API security boundaries
+        run: node appwrite-function/smoke.test.js
       - name: Check embedded website JavaScript
         run: |
           python3 - <<'PY'
@@ -70,14 +72,15 @@ jobs:
               "crypto.randomBytes(8)",
               "createUniqueReferralCode(tablePath, adminHeaders)",
               "process.env.FUNDB_ALLOWED_ORIGIN || ''",
-              "if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN)"
+              ".split(',')",
+              "ALLOWED_ORIGINS.includes(origin)"
           ]
           missing = [item for item in required if item not in source]
           if missing:
               raise SystemExit("Backend hardening check failed; missing: " + ", ".join(missing))
           if "Access-Control-Allow-Origin'] = '*'" in source:
               raise SystemExit("Wildcard CORS is not permitted")
-          print("Cryptographic referral codes and exact-origin CORS checks passed")
+          print("Cryptographic referral codes and exact allowlisted-origin CORS checks passed")
 
       - name: Verify referral attribution is explicit and idempotent
         run: |
@@ -95,3 +98,75 @@ jobs:
               raise SystemExit("Missing idempotent referral counter reconciliation")
           print("Referral submission is explicit and existing-profile counts are idempotent")
           PY
+
+      - name: Audit public release metadata and legal pages
+        run: python3 scripts/release-audit.py
+
+      - name: Smoke-test navigation, IDs and PWA metadata
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          import json
+          from urllib.parse import urlsplit
+
+          root = Path(".")
+          html = (root / "index.html").read_text(encoding="utf-8")
+
+          class Audit(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = []
+                  self.fragments = []
+                  self.local_links = []
+                  self.tab_targets = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if attrs.get("id"):
+                      self.ids.append(attrs["id"])
+                  if attrs.get("href"):
+                      href = attrs["href"]
+                      parsed = urlsplit(href)
+                      if parsed.fragment:
+                          self.fragments.append(parsed.fragment)
+                      if href and not parsed.scheme and not href.startswith("//"):
+                          path = parsed.path
+                          if path:
+                              self.local_links.append(path)
+                  if attrs.get("data-tab"):
+                      self.tab_targets.append(attrs["data-tab"])
+
+          audit = Audit()
+          audit.feed(html)
+          duplicates = sorted({value for value in audit.ids if audit.ids.count(value) > 1})
+          if duplicates:
+              raise SystemExit("Duplicate HTML IDs: " + ", ".join(duplicates))
+          missing_fragments = sorted(set(audit.fragments) - set(audit.ids))
+          if missing_fragments:
+              raise SystemExit("Broken in-page links: " + ", ".join(missing_fragments))
+          missing_tabs = sorted(set(audit.tab_targets) - set(audit.ids))
+          if missing_tabs:
+              raise SystemExit("Navigation points to missing sections: " + ", ".join(missing_tabs))
+          missing_files = sorted({p for p in audit.local_links if not (root / p).exists()})
+          if missing_files:
+              raise SystemExit("Broken local file links: " + ", ".join(missing_files))
+          manifest = json.loads((root / "manifest.webmanifest").read_text(encoding="utf-8"))
+          for key in ("name", "short_name", "start_url", "display", "icons"):
+              if key not in manifest:
+                  raise SystemExit("PWA manifest missing required field: " + key)
+          if not (root / "sw.js").is_file():
+              raise SystemExit("Service worker file is missing")
+          print("HTML IDs, in-page links, tab targets, local links and PWA metadata passed")
+          PY
+
+      - name: Package Appwrite function source archive
+        run: |
+          tar -czf FundBRewardsAPI.tar.gz -C appwrite-function index.js package.json
+          tar -tzf FundBRewardsAPI.tar.gz
+      - name: Upload Appwrite function source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: FundBRewardsAPI-source
+          path: FundBRewardsAPI.tar.gz
+          if-no-files-found: error
+          retention-days: 7

@@ -3,10 +3,17 @@ const crypto = require('crypto');
 const { URL } = require('url');
 
 const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
-const DATABASE_ID = process.env.FUNDB_DATABASE_ID || 'fundB_database';
-const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || '6aedcd650007f44a070f';
+const DATABASE_ID = process.env.FUNDB_DATABASE_ID || process.env.FUNBDATAID || '6aedcd650007f44a070f';
+const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || 'profile';
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
-const ALLOWED_ORIGIN = process.env.FUNDB_ALLOWED_ORIGIN || '';
+// Keep the known production and stable preview hosts trusted even if an
+// older Appwrite environment value contains only the production hostname.
+// Additional exact origins may be supplied through FUNDB_ALLOWED_ORIGIN.
+const ALLOWED_ORIGINS = [
+  'https://fundb-production-hardening.fundb-mining-website.pages.dev',
+  'https://fundb-public-content-legal.fundb-mining-website.pages.dev',
+  ...(process.env.FUNDB_ALLOWED_ORIGIN || '').split(',').map(value => value.trim()).filter(Boolean)
+].filter((value, index, all) => all.indexOf(value) === index);
 
 function responseHeaders(origin) {
   const headers = {
@@ -14,9 +21,8 @@ function responseHeaders(origin) {
     'Access-Control-Allow-Headers': 'Content-Type, X-Appwrite-User-JWT',
     'Vary': 'Origin'
   };
-  // When an origin is configured, only echo that exact trusted website origin.
-  // Do not advertise the trusted origin to unrelated browser origins.
-  if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN) {
+  // Echo only an exact allowlisted origin. Never use "*" or partial matching.
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
   }
   return headers;
@@ -62,6 +68,31 @@ function appwriteRequest(path, method, headers, body) {
     if (payload) request.write(payload);
     request.end();
   });
+}
+
+const TRANSACTIONS_TABLE_ID = process.env.FUNDB_TRANSACTIONS_TABLE_ID || 'fundB_transactions';
+function transactionsTablePath() {
+  return '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
+    '/tables/' + encodeURIComponent(TRANSACTIONS_TABLE_ID) + '/rows';
+}
+async function listUserTransactions(userId, adminHeaders) {
+  // Read-only: scope every query to the authenticated Appwrite user.
+  const queries = [
+    { method: 'equal', attribute: 'userId', values: [userId] },
+    { method: 'orderDesc', values: ['$createdAt'] },
+    { method: 'limit', values: [50] }
+  ];
+  const queryString = queries.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+  const result = await appwriteRequest(transactionsTablePath() + '?' + queryString, 'GET', adminHeaders);
+  return (result.rows || []).map(row => ({
+    id: row.$id,
+    type: String(row.type || 'Transaction'),
+    amount: Number(row.amount || 0),
+    status: String(row.status || 'Status unavailable'),
+    reference: String(row.reference || ''),
+    description: String(row.description || ''),
+    createdAt: row.$createdAt || null
+  }));
 }
 
 function makeReferralCode() {
@@ -116,24 +147,38 @@ module.exports = async ({ req, res, log, error }) => {
       'X-Appwrite-JWT': jwt
     });
 
+    // Prepare the server-side table credentials immediately after authenticating
+    // the caller so every authenticated action, including history, can use them.
+    const adminHeaders = {
+      'X-Appwrite-Project': PROJECT_ID,
+      'X-Appwrite-Key': functionKey
+    };
+
     // A referral code is only considered when creating a brand-new profile.
     // Existing profiles are never retroactively reassigned by a URL parameter.
     let requestBody = {};
     try {
-      requestBody = req.bodyJson && typeof req.bodyJson === 'object'
-        ? req.bodyJson
-        : (typeof req.body === 'string' && req.body ? JSON.parse(req.body) : {});
+      if (req.bodyJson && typeof req.bodyJson === 'object' && !Array.isArray(req.bodyJson)) {
+        requestBody = req.bodyJson;
+      } else if (typeof req.body === 'string' && req.body.trim()) {
+        requestBody = JSON.parse(req.body);
+      } else if (req.bodyJson !== undefined && req.bodyJson !== null) {
+        throw new Error('Request body must be a JSON object.');
+      }
+      if (!requestBody || typeof requestBody !== 'object' || Array.isArray(requestBody)) {
+        throw new Error('Request body must be a JSON object.');
+      }
     } catch (_) {
-      requestBody = {};
+      return json(res, 400, {
+        ok: false,
+        code: 'INVALID_REQUEST_BODY',
+        message: 'Request body must contain a valid JSON object.'
+      }, origin);
     }
     if (requestBody.action === 'transactionHistory') {
-      // Transaction storage is not wired to this function yet. Fail explicitly
-      // rather than returning a fake empty history that could mislead users.
-      return json(res, 501, {
-        ok: false,
-        code: 'TRANSACTION_HISTORY_NOT_CONFIGURED',
-        message: 'Transaction history is not connected yet. No rewards, deposits or withdrawals are active.'
-      }, origin);
+      // Read-only history: authenticate first, then return only this user's rows.
+      const transactions = await listUserTransactions(user.$id, adminHeaders);
+      return json(res, 200, { ok: true, transactions, rewardsEnabled: false }, origin);
     }
 
     const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase();
@@ -148,10 +193,6 @@ module.exports = async ({ req, res, log, error }) => {
       { method: 'limit', values: [1] }
     ];
     const queryString = queryList.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
-    const adminHeaders = {
-      'X-Appwrite-Project': PROJECT_ID,
-      'X-Appwrite-Key': functionKey
-    };
     const found = await appwriteRequest(tablePath + '?' + queryString, 'GET', adminHeaders);
 
     let profile = (found.rows || [])[0];
@@ -345,6 +386,19 @@ module.exports = async ({ req, res, log, error }) => {
       projectConfigured: Boolean(PROJECT_ID)
     };
     error('FundB profile API diagnostic: ' + JSON.stringify(diagnostic));
-    return json(res, 500, { ok: false, message: 'The FundB profile service could not reach Appwrite. Diagnostic details are recorded in the function execution logs.' }, req.headers.origin || '');
+    // Return only non-secret Appwrite error metadata so the signed-in user can
+    // see the actual database/configuration failure without opening execution logs.
+    // Never include request headers, JWTs, API keys, or stack traces in the response.
+    const safeMessage = String(err && err.message || 'Unknown Appwrite error').slice(0, 240);
+    return json(res, 500, {
+      ok: false,
+      code: 'PROFILE_BACKEND_ERROR',
+      message: 'FundB could not load the saved profile: ' + safeMessage,
+      diagnostic: {
+        statusCode: Number(err && err.statusCode) || null,
+        type: String(err && err.type || '').slice(0, 100) || null,
+        causeCode: String(err && err.cause && err.cause.code || '').slice(0, 100) || null
+      }
+    }, req.headers.origin || '');
   }
 };
