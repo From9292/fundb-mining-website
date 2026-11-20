@@ -214,14 +214,17 @@ module.exports = async ({ req, res, log, error }) => {
           type: candidateError && candidateError.type ? String(candidateError.type).slice(0, 80) : null,
           message: candidateError && candidateError.message ? String(candidateError.message).slice(0, 140) : 'Unknown lookup error'
         });
-        if (candidateError && candidateError.statusCode === 404) {
-          log('FundB table candidate not found; safely trying the other known mapping: ' + JSON.stringify({
-            databaseId: candidate.databaseId,
-            tableId: candidate.tableId
-          }));
-          continue;
-        }
-        throw candidateError;
+        // A bad or stale environment-variable mapping must not prevent
+        // discovery of the other known tables. All candidate operations here
+        // are read-only, so continue collecting diagnostics for every pair.
+        log('FundB table candidate lookup failed; safely checking the next known mapping: ' + JSON.stringify({
+          databaseId: candidate.databaseId,
+          tableId: candidate.tableId,
+          statusCode: Number(candidateError && candidateError.statusCode) || null,
+          type: candidateError && candidateError.type ? String(candidateError.type).slice(0, 80) : null,
+          message: candidateError && candidateError.message ? String(candidateError.message).replace(/[\\r\\n]+/g, ' ').slice(0, 140) : 'Unknown lookup error'
+        }));
+        continue;
       }
     }
     const profileMatches = validTables.filter(candidate => candidate.profile);
@@ -230,9 +233,13 @@ module.exports = async ({ req, res, log, error }) => {
       item.databaseId + '/' + item.tableId + '=' +
       (item.status === 'reachable' ? 'reachable' : (item.status === null ? 'unknown' : 'HTTP ' + item.status)) +
       (item.type ? ':' + item.type : '') +
+      (item.message ? ':' + String(item.message).replace(/[;\\r\\n]+/g, ' ').slice(0, 100) : '') +
       (item.matchingProfile ? ':profile-match' : '') +
       (item.hasRows ? ':has-rows' : '')
     ).join('; ');
+    if (profileMatches.length > 1) {
+      throw new Error('More than one candidate table contains this signed-in user profile. No profile or referral data was changed. Candidates: ' + candidateSummary);
+    }
     let selectedTable = profileMatches[0] || null;
     if (!selectedTable && populatedTables.length === 1) selectedTable = populatedTables[0];
     if (!selectedTable && populatedTables.length > 1) {
