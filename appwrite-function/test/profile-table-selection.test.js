@@ -1,0 +1,159 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const https = require('node:https');
+const { EventEmitter } = require('node:events');
+
+const originalRequest = https.request;
+const user = { $id: 'user-existing-123' };
+const canonicalProfile = {
+  $id: 'canonical-row-1',
+  userId: user.$id,
+  points: 17,
+  referralCode: 'FB12345678',
+  total_referrals: 2,
+  referred_by: ''
+};
+const legacyProfile = {
+  $id: 'legacy-row-1',
+  userId: user.$id,
+  points: 999,
+  referralCode: 'FB87654321',
+  total_referrals: 99,
+  referred_by: ''
+};
+let writes;
+let requests;
+
+function installAppwriteMock(options = {}) {
+  writes = [];
+  requests = [];
+  https.request = (url, requestOptions, callback) => {
+    const request = new EventEmitter();
+    let body = '';
+    request.write = chunk => { body += chunk; };
+    request.destroy = err => request.emit('error', err);
+    request.end = () => {
+      const parsed = new URL(url);
+      const path = parsed.pathname;
+      const method = requestOptions.method;
+      requests.push({ path, method });
+      let status = 200;
+      let payload = {};
+      if (path.endsWith('/account') && method === 'GET') {
+        payload = user;
+      } else if (path.endsWith('/tables') && method === 'GET') {
+        payload = { tables: [
+          { $id: 'canonical-upper-id', name: 'Profile' },
+          { $id: 'legacy-lower-id', name: 'profile' }
+        ] };
+      } else if (path.endsWith('/tables/canonical-upper-id/rows') && method === 'GET') {
+        payload = { rows: [canonicalProfile], total: 1 };
+      } else if (path.endsWith('/tables/legacy-lower-id/rows') && method === 'GET') {
+        payload = { rows: [legacyProfile], total: 1 };
+      } else if (path.includes('/tables/') && path.endsWith('/rows') && method === 'GET') {
+        status = 404;
+        payload = { message: 'Table not found', type: 'table_not_found' };
+      } else if (method === 'PATCH' || method === 'POST' || path.includes('/increment')) {
+        writes.push({ path, method, body });
+        status = 500;
+        payload = { message: 'Unexpected write in read-only test' };
+      } else {
+        status = 404;
+        payload = { message: 'Unexpected mocked route: ' + method + ' ' + path };
+      }
+      if (options.discoveryDenied && path.endsWith('/tables')) {
+        status = 403;
+        payload = { message: 'Missing tables.read scope', type: 'general_access_forbidden' };
+      }
+      const response = new EventEmitter();
+      response.statusCode = status;
+      response.setEncoding = () => {};
+      queueMicrotask(() => {
+        callback(response);
+        response.emit('data', JSON.stringify(payload));
+        response.emit('end');
+      });
+    };
+    return request;
+  };
+}
+
+function makeResponse() {
+  return {
+    statusCode: null,
+    payload: null,
+    headers: null,
+    json(value, status, headers) {
+      this.payload = value;
+      this.statusCode = status;
+      this.headers = headers;
+      return value;
+    },
+    text(value, status, headers) {
+      this.payload = value;
+      this.statusCode = status;
+      this.headers = headers;
+      return value;
+    }
+  };
+}
+
+test('selects exact-case Profile and leaves both existing rows untouched', async () => {
+  installAppwriteMock();
+  delete require.cache[require.resolve('../appwrite-function/index.js')];
+  const handler = require('../appwrite-function/index.js');
+  const res = makeResponse();
+  await handler({
+    req: {
+      method: 'POST',
+      headers: {
+        origin: 'https://fundb-production-hardening.fundb-mining-website.pages.dev',
+        'x-appwrite-user-jwt': 'test-jwt',
+        'x-appwrite-key': 'test-function-key'
+      },
+      bodyJson: {}
+    },
+    res,
+    log() {},
+    error() {}
+  });
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.payload.ok, true);
+  assert.equal(res.payload.profile.points, 17);
+  assert.equal(res.payload.profile.referralCode, 'FB12345678');
+  assert.equal(res.payload.profile.totalReferrals, 2);
+  assert.equal(res.payload.rewardsEnabled, false);
+  assert.equal(writes.length, 0, 'profile lookup must not write to either matching row');
+  assert.ok(requests.some(item => item.path.endsWith('/tables/canonical-upper-id/rows')));
+  assert.ok(requests.some(item => item.path.endsWith('/tables/legacy-lower-id/rows')));
+});
+
+test('fails closed when table discovery is unavailable and multiple rows match', async () => {
+  installAppwriteMock({ discoveryDenied: true });
+  delete require.cache[require.resolve('../appwrite-function/index.js')];
+  const handler = require('../appwrite-function/index.js');
+  const res = makeResponse();
+  await handler({
+    req: {
+      method: 'POST',
+      headers: {
+        origin: 'https://fundb-production-hardening.fundb-mining-website.pages.dev',
+        'x-appwrite-user-jwt': 'test-jwt',
+        'x-appwrite-key': 'test-function-key'
+      },
+      bodyJson: {}
+    },
+    res,
+    log() {},
+    error() {}
+  });
+
+  assert.equal(res.statusCode, 500);
+  assert.match(res.payload.message, /canonical Profile table could not be identified uniquely/);
+  assert.equal(writes.length, 0, 'ambiguous profile lookup must never mutate user data');
+});
+
+test.after(() => {
+  https.request = originalRequest;
+});
