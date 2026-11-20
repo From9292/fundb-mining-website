@@ -158,3 +158,15 @@ jobs:
               raise SystemExit("Service worker file is missing")
           print("HTML IDs, in-page links, tab targets, local links and PWA metadata passed")
           PY
+
+      - name: Package Appwrite function source archive
+        run: |
+          tar -czf FundBRewardsAPI.tar.gz -C appwrite-function index.js package.json
+          tar -tzf FundBRewardsAPI.tar.gz
+      - name: Upload Appwrite function source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: FundBRewardsAPI-source
+          path: FundBRewardsAPI.tar.gz
+          if-no-files-found: error
+          retention-days: 7
