@@ -4,6 +4,10 @@ const https = require('node:https');
 const { EventEmitter } = require('node:events');
 
 const originalRequest = https.request;
+const originalProjectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
+const originalEndpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
+process.env.APPWRITE_FUNCTION_PROJECT_ID = 'fundb-ci-test-project';
+process.env.APPWRITE_FUNCTION_API_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
 const user = { $id: 'user-existing-123' };
 const canonicalProfile = {
   $id: 'canonical-row-1',
@@ -156,4 +160,8 @@ test('fails closed when table discovery is unavailable and no configured mapping
 
 test.after(() => {
   https.request = originalRequest;
+  if (originalProjectId === undefined) delete process.env.APPWRITE_FUNCTION_PROJECT_ID;
+  else process.env.APPWRITE_FUNCTION_PROJECT_ID = originalProjectId;
+  if (originalEndpoint === undefined) delete process.env.APPWRITE_FUNCTION_API_ENDPOINT;
+  else process.env.APPWRITE_FUNCTION_API_ENDPOINT = originalEndpoint;
 });
