@@ -154,9 +154,28 @@ module.exports = async ({ req, res, log, error }) => {
       action: typeof requestBody.action === 'string' ? requestBody.action : 'profileSync'
     }));
     if (requestBody.action === 'transactionHistory') {
-      // Use the verified internal ID of the dedicated FundB Transactions table.
-      // This avoids a stale or mistyped environment variable blocking read-only history.
-      const transactionsTableId = 'fundB_transactions';
+      // Resolve the dedicated ledger by its exact display name in the configured database.
+      // The table's internal ID can differ from its display name; never guess it.
+      const tableList = await appwriteRequest(
+        '/tablesdb/' + encodeURIComponent(DATABASE_ID) + '/tables?search=' + encodeURIComponent('Transactions'),
+        'GET',
+        { 'X-Appwrite-Project': PROJECT_ID, 'X-Appwrite-Key': functionKey }
+      );
+      const ledgerMatches = (tableList.tables || []).filter(table =>
+        String(table.name || '').trim().toLowerCase() === 'fundb transactions'
+      );
+      if (ledgerMatches.length !== 1) {
+        const err = new Error(ledgerMatches.length
+          ? 'More than one table is named FundB Transactions in the configured database. No transaction data was changed.'
+          : 'The FundB Transactions table was not found in database ' + DATABASE_ID + '. Check the database and table in Appwrite; no transaction data was changed.');
+        err.statusCode = ledgerMatches.length ? 409 : 404;
+        err.type = ledgerMatches.length ? 'duplicate_ledger_table' : 'ledger_table_not_found';
+        throw err;
+      }
+      const transactionsTableId = String(ledgerMatches[0].$id || ledgerMatches[0].id || '').trim();
+      if (!transactionsTableId) {
+        throw new Error('Appwrite returned the FundB Transactions table without an internal ID.');
+      }
       const ledgerPath = '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
         '/tables/' + encodeURIComponent(transactionsTableId) + '/rows';
       const ledgerQueries = [
