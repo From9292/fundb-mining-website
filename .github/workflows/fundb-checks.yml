@@ -45,18 +45,26 @@ jobs:
                   subprocess.run(["node", "--check", handle.name], check=True)
               print(f"Embedded script {number}: syntax OK")
           PY
-      - name: Verify unavailable transaction history stays non-operational
+      - name: Verify authenticated read-only transaction history UI
         run: |
           python3 - <<'PY'
           from pathlib import Path
           source = Path("index.html").read_text(encoding="utf-8")
-          if "action: 'transactionHistory'" in source or 'action: "transactionHistory"' in source:
-              raise SystemExit("Frontend must not call the unsupported transactionHistory endpoint")
-          if 'id="viewTransactionsBtn" type="button" disabled' not in source:
-              raise SystemExit("Transaction-history control must remain disabled until a ledger is implemented")
-          if "Transaction history is not available yet." not in source:
-              raise SystemExit("The UI must clearly disclose that transaction history is unavailable")
-          print("No unsupported transaction-history requests; UI remains accurately disabled")
+          required = [
+              'id="viewTransactionsBtn" type="button">Refresh transaction history',
+              "JSON.stringify({ action: 'transactionHistory' })",
+              "functions.createExecution(",
+              "await loadTransactionHistory()",
+              "byId('viewTransactionsBtn').addEventListener('click', loadTransactionHistory)",
+              "transactionHistoryLoading"
+          ]
+          missing = [item for item in required if item not in source]
+          if missing:
+              raise SystemExit("Transaction-history integration is incomplete: " + ", ".join(missing))
+          for unsafe in ["action: 'createTransaction'", "action: 'withdraw'", "action: 'transfer'", "action: 'deposit'"]:
+              if unsafe in source:
+                  raise SystemExit("Wallet history UI must not activate financial actions: " + unsafe)
+          print("Authenticated transaction-history refresh is wired; financial actions remain unavailable")
           PY
 
       - name: Verify reward safety switches remain disabled
