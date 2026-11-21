@@ -3,17 +3,18 @@ const crypto = require('crypto');
 const { URL } = require('url');
 
 const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
-const DATABASE_ID = process.env.FUNDB_DATABASE_ID || process.env.FUNBDATAID || '6aedcd650007f44a070f';
+// Older FundB deployments use FUNBDATAID. Support that existing setting
+// before falling back to the placeholder database name, without changing data.
+const DATABASE_ID = process.env.FUNDB_DATABASE_ID || process.env.FUNBDATAID || 'fundB_database';
 const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || 'profile';
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
-// Keep the known production and stable preview hosts trusted even if an
-// older Appwrite environment value contains only the production hostname.
-// Additional exact origins may be supplied through FUNDB_ALLOWED_ORIGIN.
-const ALLOWED_ORIGINS = [
-  'https://fundb-production-hardening.fundb-mining-website.pages.dev',
-  'https://fundb-public-content-legal.fundb-mining-website.pages.dev',
-  ...(process.env.FUNDB_ALLOWED_ORIGIN || '').split(',').map(value => value.trim()).filter(Boolean)
-].filter((value, index, all) => all.indexOf(value) === index);
+const ALLOWED_ORIGINS = new Set(
+  (process.env.FUNDB_ALLOWED_ORIGIN ||
+    'https://cosmic-cupcake-cc56c4.netlify.app,https://fundb-production-hardening.fundb-mining-website.pages.dev,https://fundb-public-content-legal.fundb-mining-website.pages.dev')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean)
+);
 
 function responseHeaders(origin) {
   const headers = {
@@ -21,8 +22,9 @@ function responseHeaders(origin) {
     'Access-Control-Allow-Headers': 'Content-Type, X-Appwrite-User-JWT',
     'Vary': 'Origin'
   };
-  // Echo only an exact allowlisted origin. Never use "*" or partial matching.
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+  // When an origin is configured, only echo that exact trusted website origin.
+  // Do not advertise the trusted origin to unrelated browser origins.
+  if (ALLOWED_ORIGINS.has(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
   }
   return headers;
@@ -70,31 +72,6 @@ function appwriteRequest(path, method, headers, body) {
   });
 }
 
-const TRANSACTIONS_TABLE_ID = process.env.FUNDB_TRANSACTIONS_TABLE_ID || 'fundB_transactions';
-function transactionsTablePath() {
-  return '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
-    '/tables/' + encodeURIComponent(TRANSACTIONS_TABLE_ID) + '/rows';
-}
-async function listUserTransactions(userId, adminHeaders) {
-  // Read-only: scope every query to the authenticated Appwrite user.
-  const queries = [
-    { method: 'equal', attribute: 'userId', values: [userId] },
-    { method: 'orderDesc', values: ['$createdAt'] },
-    { method: 'limit', values: [50] }
-  ];
-  const queryString = queries.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
-  const result = await appwriteRequest(transactionsTablePath() + '?' + queryString, 'GET', adminHeaders);
-  return (result.rows || []).map(row => ({
-    id: row.$id,
-    type: String(row.type || 'Transaction'),
-    amount: Number(row.amount || 0),
-    status: String(row.status || 'Status unavailable'),
-    reference: String(row.reference || ''),
-    description: String(row.description || ''),
-    createdAt: row.$createdAt || null
-  }));
-}
-
 function makeReferralCode() {
   // Generate an unpredictable 8-character code; do not derive it from user IDs.
   const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -123,6 +100,11 @@ async function createUniqueReferralCode(tablePath, adminHeaders) {
 module.exports = async ({ req, res, log, error }) => {
   try {
     const origin = req.headers.origin || '';
+    // Reject browser-originated requests from sites outside the exact allowlist.
+    // Requests without an Origin header (server-to-server/Appwrite execution) remain supported.
+    if (origin && !ALLOWED_ORIGINS.has(origin)) {
+      return json(res, 403, { ok: false, message: 'This website origin is not allowed to access FundB.' }, origin);
+    }
     if (req.method === 'OPTIONS') {
       return res.text('', 204, responseHeaders(origin));
     }
@@ -147,38 +129,75 @@ module.exports = async ({ req, res, log, error }) => {
       'X-Appwrite-JWT': jwt
     });
 
-    // Prepare the server-side table credentials immediately after authenticating
-    // the caller so every authenticated action, including history, can use them.
-    const adminHeaders = {
-      'X-Appwrite-Project': PROJECT_ID,
-      'X-Appwrite-Key': functionKey
-    };
-
     // A referral code is only considered when creating a brand-new profile.
     // Existing profiles are never retroactively reassigned by a URL parameter.
     let requestBody = {};
     try {
       if (req.bodyJson && typeof req.bodyJson === 'object' && !Array.isArray(req.bodyJson)) {
         requestBody = req.bodyJson;
+      } else if (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) {
+        // Some Appwrite runtimes expose parsed JSON through req.body rather
+        // than req.bodyJson. Do not silently turn an action into profile sync.
+        requestBody = req.body;
       } else if (typeof req.body === 'string' && req.body.trim()) {
         requestBody = JSON.parse(req.body);
-      } else if (req.bodyJson !== undefined && req.bodyJson !== null) {
-        throw new Error('Request body must be a JSON object.');
+      } else if (typeof req.bodyRaw === 'string' && req.bodyRaw.trim()) {
+        requestBody = JSON.parse(req.bodyRaw);
       }
-      if (!requestBody || typeof requestBody !== 'object' || Array.isArray(requestBody)) {
-        throw new Error('Request body must be a JSON object.');
-      }
+      if (!requestBody || typeof requestBody !== 'object' || Array.isArray(requestBody)) requestBody = {};
     } catch (_) {
-      return json(res, 400, {
-        ok: false,
-        code: 'INVALID_REQUEST_BODY',
-        message: 'Request body must contain a valid JSON object.'
-      }, origin);
+      requestBody = {};
     }
+    log('FundB request action diagnostics: ' + JSON.stringify({
+      bodyJsonPresent: Boolean(req.bodyJson),
+      bodyObjectPresent: Boolean(req.body && typeof req.body === 'object'),
+      action: typeof requestBody.action === 'string' ? requestBody.action : 'profileSync'
+    }));
     if (requestBody.action === 'transactionHistory') {
-      // Read-only history: authenticate first, then return only this user's rows.
-      const transactions = await listUserTransactions(user.$id, adminHeaders);
-      return json(res, 200, { ok: true, transactions, rewardsEnabled: false }, origin);
+      // Resolve the dedicated ledger by its exact display name in the configured database.
+      // The table's internal ID can differ from its display name; never guess it.
+      const tableList = await appwriteRequest(
+        '/tablesdb/' + encodeURIComponent(DATABASE_ID) + '/tables?search=' + encodeURIComponent('Transactions'),
+        'GET',
+        { 'X-Appwrite-Project': PROJECT_ID, 'X-Appwrite-Key': functionKey }
+      );
+      const ledgerMatches = (tableList.tables || []).filter(table =>
+        String(table.name || '').trim().toLowerCase() === 'fundb transactions'
+      );
+      if (ledgerMatches.length !== 1) {
+        const err = new Error(ledgerMatches.length
+          ? 'More than one table is named FundB Transactions in the configured database. No transaction data was changed.'
+          : 'The FundB Transactions table was not found in database ' + DATABASE_ID + '. Check the database and table in Appwrite; no transaction data was changed.');
+        err.statusCode = ledgerMatches.length ? 409 : 404;
+        err.type = ledgerMatches.length ? 'duplicate_ledger_table' : 'ledger_table_not_found';
+        throw err;
+      }
+      const transactionsTableId = String(ledgerMatches[0].$id || ledgerMatches[0].id || '').trim();
+      if (!transactionsTableId) {
+        throw new Error('Appwrite returned the FundB Transactions table without an internal ID.');
+      }
+      const ledgerPath = '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
+        '/tables/' + encodeURIComponent(transactionsTableId) + '/rows';
+      const ledgerQueries = [
+        { method: 'equal', attribute: 'userId', values: [user.$id] },
+        { method: 'orderDesc', attribute: '$createdAt' },
+        { method: 'limit', values: [50] }
+      ];
+      const ledgerQueryString = ledgerQueries
+        .map(query => 'queries[]=' + encodeURIComponent(JSON.stringify(query))).join('&');
+      const ledgerResult = await appwriteRequest(ledgerPath + '?' + ledgerQueryString, 'GET', {
+        'X-Appwrite-Project': PROJECT_ID,
+        'X-Appwrite-Key': functionKey
+      });
+      const transactions = (ledgerResult.rows || []).map(row => ({
+        type: String(row.type || 'Transaction').slice(0, 40),
+        amount: Number(row.amount),
+        status: String(row.status || 'pending').slice(0, 30),
+        reference: String(row.reference || '').slice(0, 120),
+        description: String(row.description || '').slice(0, 240),
+        createdAt: row.createdAt || row.$createdAt || null
+      })).filter(row => Number.isFinite(row.amount) && row.amount >= 0);
+      return json(res, 200, { ok: true, transactions }, origin);
     }
 
     const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase();
@@ -186,16 +205,148 @@ module.exports = async ({ req, res, log, error }) => {
     log('Referral request diagnostics: ' + JSON.stringify({ bodyParsed: Boolean(req.bodyJson || req.body), referralCodeSubmitted: Boolean(submittedReferralCode), referralCodeFormatValid: validReferralCodeSubmitted }));
 
     // Use the function's server-side key only after verifying the caller.
-    const tablePath = '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
-      '/tables/' + encodeURIComponent(PROFILE_TABLE_ID) + '/rows';
     const queryList = [
       { method: 'equal', attribute: 'userId', values: [user.$id] },
       { method: 'limit', values: [1] }
     ];
     const queryString = queryList.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
-    const found = await appwriteRequest(tablePath + '?' + queryString, 'GET', adminHeaders);
+    const adminHeaders = {
+      'X-Appwrite-Project': PROJECT_ID,
+      'X-Appwrite-Key': functionKey
+    };
 
-    let profile = (found.rows || [])[0];
+    // Both mappings appeared in earlier FundB setup records. Probe the known
+    // pairs and prefer the one that already contains this user's saved profile.
+    // This prevents a wrong default from creating duplicate profiles elsewhere.
+    // Live Appwrite diagnostics confirmed fundB_database exists. The other
+    // historical database identifiers returned database_not_found, so skip them.
+    const knownProfileTableIds = [
+      '6afea0720025daaed040',
+      '6afbee8500163626863a',
+      '6afd028f002b30f3902b'
+    ];
+    // Discover the real internal table ID from Appwrite itself instead of
+    // relying on IDs copied from old screenshots or earlier guesses. This is
+    // read-only and selects only the exact Profile table in the verified DB.
+    let discoveredProfileTableIds = [];
+    try {
+      const tableList = await appwriteRequest(
+        '/tablesdb/' + encodeURIComponent(DATABASE_ID) + '/tables?search=' + encodeURIComponent('Profile'),
+        'GET',
+        adminHeaders
+      );
+      discoveredProfileTableIds = (tableList.tables || [])
+        .filter(table => String(table.name || '').trim().toLowerCase() === 'profile')
+        .map(table => ({ tableId: table.$id || table.id, tableName: String(table.name || '').trim() }))
+        .filter(table => typeof table.tableId === 'string' && table.tableId.length > 0);
+      log('FundB Profile table discovery: ' + JSON.stringify({
+        databaseId: DATABASE_ID,
+        exactProfileTableMatches: discoveredProfileTableIds.length
+      }));
+    } catch (discoveryError) {
+      // Listing tables requires the tables.read API-key scope. If it is not
+      // granted, retain the safe read-only candidate checks below and report
+      // the permission failure without exposing the key.
+      log('FundB table listing unavailable; falling back to known read-only candidates: ' + JSON.stringify({
+        statusCode: Number(discoveryError && discoveryError.statusCode) || null,
+        type: discoveryError && discoveryError.type ? String(discoveryError.type).slice(0, 80) : null,
+        message: discoveryError && discoveryError.message ? String(discoveryError.message).slice(0, 140) : 'Unknown listing error'
+      }));
+    }
+    // Probe the verified database, discovered Profile ID, configured mapping,
+    // and historical IDs. Duplicate pairs are removed below.
+    const tableCandidates = [
+      ...discoveredProfileTableIds.map(table => ({ databaseId: DATABASE_ID, tableId: table.tableId, tableName: table.tableName })),
+      { databaseId: DATABASE_ID, tableId: PROFILE_TABLE_ID, tableName: PROFILE_TABLE_ID === 'Profile' ? 'Profile' : null },
+      ...knownProfileTableIds.map(tableId => ({ databaseId: DATABASE_ID, tableId, tableName: null }))
+    ];
+    const uniqueCandidates = tableCandidates.filter((candidate, index, all) =>
+      all.findIndex(item => item.databaseId === candidate.databaseId && item.tableId === candidate.tableId) === index
+    );
+    const validTables = [];
+    const candidateDiagnostics = [];
+    let lastTableError = null;
+    for (const candidate of uniqueCandidates) {
+      const candidatePath = '/tablesdb/' + encodeURIComponent(candidate.databaseId) +
+        '/tables/' + encodeURIComponent(candidate.tableId) + '/rows';
+      try {
+        const candidateRows = await appwriteRequest(candidatePath + '?' + queryString, 'GET', adminHeaders);
+        const candidateResult = {
+          databaseId: candidate.databaseId,
+          tableId: candidate.tableId,
+          tableName: candidate.tableName || null,
+          tablePath: candidatePath,
+          profile: (candidateRows.rows || [])[0] || null
+        };
+        validTables.push(candidateResult);
+        candidateDiagnostics.push({
+          databaseId: candidate.databaseId,
+          tableId: candidate.tableId,
+          status: 'reachable',
+          matchingProfile: Boolean(candidateResult.profile)
+        });
+      } catch (candidateError) {
+        lastTableError = candidateError;
+        candidateDiagnostics.push({
+          databaseId: candidate.databaseId,
+          tableId: candidate.tableId,
+          status: Number(candidateError && candidateError.statusCode) || null,
+          type: candidateError && candidateError.type ? String(candidateError.type).slice(0, 80) : null,
+          message: candidateError && candidateError.message ? String(candidateError.message).slice(0, 140) : 'Unknown lookup error'
+        });
+        // A bad or stale environment-variable mapping must not prevent
+        // discovery of the other known tables. All candidate operations here
+        // are read-only, so continue collecting diagnostics for every pair.
+        log('FundB table candidate lookup failed; safely checking the next known mapping: ' + JSON.stringify({
+          databaseId: candidate.databaseId,
+          tableId: candidate.tableId,
+          statusCode: Number(candidateError && candidateError.statusCode) || null,
+          type: candidateError && candidateError.type ? String(candidateError.type).slice(0, 80) : null,
+          message: candidateError && candidateError.message ? String(candidateError.message).replace(/[\r\n]+/g, ' ').slice(0, 140) : 'Unknown lookup error'
+        }));
+        continue;
+      }
+    }
+    const profileMatches = validTables.filter(candidate => candidate.profile);
+    const candidateSummary = candidateDiagnostics.map(item =>
+      item.databaseId + '/' + item.tableId + '=' +
+      (item.status === 'reachable' ? 'reachable' : (item.status === null ? 'unknown' : 'HTTP ' + item.status)) +
+      (item.type ? ':' + item.type : '') +
+      (item.message ? ':' + String(item.message).replace(/[;\r\n]+/g, ' ').slice(0, 100) : '') +
+      (item.matchingProfile ? ':profile-match' : '') +
+      (item.hasRows ? ':has-rows' : '')
+    ).join('; ');
+    // The dashboard's canonical FundB table is explicitly named "Profile"
+    // (capital P). If both legacy case-variant tables contain this user, use
+    // the unique exact-case canonical table. Do not merge, overwrite, or delete
+    // either row. If exact-case discovery is unavailable or ambiguous, stop.
+    const canonicalProfileMatches = profileMatches.filter(candidate => candidate.tableName === 'Profile');
+    if (profileMatches.length > 1 && canonicalProfileMatches.length !== 1) {
+      throw new Error('More than one candidate table contains this signed-in user profile, and the canonical Profile table could not be identified uniquely. No profile or referral data was changed. Candidates: ' + candidateSummary);
+    }
+    let selectedTable = profileMatches.length > 1 ? canonicalProfileMatches[0] : (profileMatches[0] || null);
+    if (!selectedTable && validTables.length === 1) {
+      // A single reachable table in the verified database is unambiguous.
+      // If several tables are reachable, never guess based on row counts:
+      // another FundB table may contain unrelated or legacy data.
+      selectedTable = validTables[0];
+    }
+    if (!selectedTable && validTables.length > 1) {
+      throw new Error('Multiple candidate FundB tables are reachable but none matched this user. No profile was created or changed. Candidates: ' + candidateSummary);
+    }
+    if (!selectedTable) {
+      const discoveryError = new Error('No supplied FundB table mapping was reachable. Candidates: ' + candidateSummary);
+      discoveryError.statusCode = lastTableError && lastTableError.statusCode ? lastTableError.statusCode : null;
+      discoveryError.type = 'FUNDB_TABLE_MAPPING_NOT_RESOLVED';
+      throw discoveryError;
+    }
+    const tablePath = selectedTable.tablePath;
+    let profile = selectedTable.profile;
+    log('Resolved FundB profile table: ' + JSON.stringify({
+      databaseId: selectedTable.databaseId,
+      tableId: selectedTable.tableId,
+      existingProfileFound: Boolean(profile)
+    }));
     if (profile) {
       log('Existing FundB profile found.');
       // A new account may have had its cloud profile created before the invite
@@ -386,19 +537,26 @@ module.exports = async ({ req, res, log, error }) => {
       projectConfigured: Boolean(PROJECT_ID)
     };
     error('FundB profile API diagnostic: ' + JSON.stringify(diagnostic));
-    // Return only non-secret Appwrite error metadata so the signed-in user can
-    // see the actual database/configuration failure without opening execution logs.
-    // Never include request headers, JWTs, API keys, or stack traces in the response.
-    const safeMessage = String(err && err.message || 'Unknown Appwrite error').slice(0, 240);
+    // Return only non-secret diagnostic fields so the signed-in user can report
+    // the exact failure without opening logs or exposing JWTs/API keys.
+    const safeDiagnostic = {
+      upstreamStatus: err && err.statusCode ? Number(err.statusCode) : null,
+      upstreamType: err && err.type ? String(err.type).slice(0, 100) : null,
+      upstreamMessage: err && err.message ? String(err.message).replace(/[\r\n]+/g, ' ').slice(0, 1200) : 'No upstream message was returned.',
+      causeCode: err && err.cause && err.cause.code ? String(err.cause.code).slice(0, 100) : null
+    };
+    // Older website builds display only the main message, so include the safe diagnostic there too.
+    const visibleDiagnostic = [
+      safeDiagnostic.upstreamStatus ? 'HTTP ' + safeDiagnostic.upstreamStatus : null,
+      safeDiagnostic.upstreamType,
+      safeDiagnostic.upstreamMessage,
+      safeDiagnostic.causeCode
+    ].filter(Boolean).join(' | ');
     return json(res, 500, {
       ok: false,
-      code: 'PROFILE_BACKEND_ERROR',
-      message: 'FundB could not load the saved profile: ' + safeMessage,
-      diagnostic: {
-        statusCode: Number(err && err.statusCode) || null,
-        type: String(err && err.type || '').slice(0, 100) || null,
-        causeCode: String(err && err.cause && err.cause.code || '').slice(0, 100) || null
-      }
+      code: err && err.statusCode ? 'APPWRITE_UPSTREAM_ERROR' : 'PROFILE_SERVICE_ERROR',
+      message: 'The FundB profile request failed.' + (visibleDiagnostic ? ' Diagnostic: ' + visibleDiagnostic : ''),
+      diagnostic: safeDiagnostic
     }, req.headers.origin || '');
   }
 };
