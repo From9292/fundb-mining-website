@@ -159,6 +159,31 @@ test('OPTIONS preflight is handled without contacting Appwrite and restricts ori
   assert.equal(badOriginRes.headers['Access-Control-Allow-Origin'], undefined);
 });
 
+test('POST requests from untrusted browser origins are rejected before Appwrite access', async () => {
+  process.env.APPWRITE_FUNCTION_PROJECT_ID = 'fundb-ci-test-project';
+  const calls = installMock();
+  delete require.cache[require.resolve('../index.js')];
+  const handler = require('../index.js');
+  const res = makeResponse();
+  await handler({
+    req: {
+      method: 'POST',
+      headers: {
+        origin: 'https://evil.example',
+        'x-appwrite-user-jwt': 'test-user-jwt',
+        'x-appwrite-key': 'test-function-key'
+      },
+      bodyJson: { action: 'transactionHistory' }
+    },
+    res,
+    log() {},
+    error() {}
+  });
+  assert.equal(res.statusCode, 403);
+  assert.equal(res.payload.ok, false);
+  assert.equal(calls.length, 0, 'untrusted origins must be rejected before contacting Appwrite');
+});
+
 test('missing auth headers fail closed before external requests', async () => {
   process.env.APPWRITE_FUNCTION_PROJECT_ID = 'fundb-ci-test-project';
   const calls = installMock();
