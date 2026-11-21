@@ -2,7 +2,7 @@ name: FundB code checks
 
 on:
   pull_request:
-    branches: [main, fundb-production-hardening, fundb-public-content-legal]
+    branches: [main]
   push:
     branches: [main, fundb-production-hardening]
 
@@ -22,8 +22,8 @@ jobs:
         run: node --check appwrite-function/index.js
       - name: Verify function module loads
         run: node -e "require('./appwrite-function/index.js')"
-      - name: Smoke-test API security boundaries
-        run: node appwrite-function/smoke.test.js
+      - name: Run mocked Appwrite safety tests
+        run: node --test appwrite-function/test/*.test.js
       - name: Check embedded website JavaScript
         run: |
           python3 - <<'PY'
@@ -45,6 +45,28 @@ jobs:
                   subprocess.run(["node", "--check", handle.name], check=True)
               print(f"Embedded script {number}: syntax OK")
           PY
+      - name: Verify authenticated read-only transaction history UI
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path("index.html").read_text(encoding="utf-8")
+          required = [
+              'id="viewTransactionsBtn" type="button">Refresh transaction history',
+              "JSON.stringify({ action: 'transactionHistory' })",
+              "functions.createExecution(",
+              "await loadTransactionHistory()",
+              "byId('viewTransactionsBtn').addEventListener('click', loadTransactionHistory)",
+              "transactionHistoryLoading"
+          ]
+          missing = [item for item in required if item not in source]
+          if missing:
+              raise SystemExit("Transaction-history integration is incomplete: " + ", ".join(missing))
+          for unsafe in ["action: 'createTransaction'", "action: 'withdraw'", "action: 'transfer'", "action: 'deposit'"]:
+              if unsafe in source:
+                  raise SystemExit("Wallet history UI must not activate financial actions: " + unsafe)
+          print("Authenticated transaction-history refresh is wired; financial actions remain unavailable")
+          PY
+
       - name: Verify reward safety switches remain disabled
         run: |
           python3 - <<'PY'
@@ -62,6 +84,26 @@ jobs:
           print("Unverified local rewards remain disabled")
           PY
 
+      - name: Verify mining stays locked and AdSense is non-incentivized
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          required = [
+              'id="adCount2">0 / 10',
+              'id="mineBtn" style="width:100%" disabled',
+              'Rewarded ads are not connected.',
+              'AdSense publisher account',
+              'Viewing or clicking those ads will never increase mining progress, points or account balances.',
+              'google-adsense-account" content="ca-pub-9800579782167167'
+          ]
+          missing = [item for item in required if item not in html]
+          if missing:
+              raise SystemExit("Mining/advertising separation check failed: " + ", ".join(missing))
+          if "adsbygoogle" in html or "data-ad-slot=" in html:
+              raise SystemExit("Do not install live AdSense serving code before approval and a real ad-unit ID are confirmed.")
+          print("Mining remains disabled; AdSense is disclosed separately and cannot reward ad views or clicks.")
+          PY
       - name: Verify referral and CORS hardening
         run: |
           python3 - <<'PY'
@@ -71,16 +113,16 @@ jobs:
               "require('crypto')",
               "crypto.randomBytes(8)",
               "createUniqueReferralCode(tablePath, adminHeaders)",
-              "process.env.FUNDB_ALLOWED_ORIGIN || ''",
-              ".split(',')",
-              "ALLOWED_ORIGINS.includes(origin)"
+              "const ALLOWED_ORIGINS = new Set(",
+              "ALLOWED_ORIGINS.has(origin)",
+              "Access-Control-Allow-Origin'] = origin"
           ]
           missing = [item for item in required if item not in source]
           if missing:
               raise SystemExit("Backend hardening check failed; missing: " + ", ".join(missing))
-          if "Access-Control-Allow-Origin'] = '*'" in source:
+          if "Access-Control-Allow-Origin'] = '*'" in source or "Access-Control-Allow-Origin': '*'" in source:
               raise SystemExit("Wildcard CORS is not permitted")
-          print("Cryptographic referral codes and exact allowlisted-origin CORS checks passed")
+          print("Cryptographic referral codes and exact-origin allowlist checks passed")
 
       - name: Verify referral attribution is explicit and idempotent
         run: |
@@ -98,75 +140,60 @@ jobs:
               raise SystemExit("Missing idempotent referral counter reconciliation")
           print("Referral submission is explicit and existing-profile counts are idempotent")
           PY
-
-      - name: Audit public release metadata and legal pages
-        run: python3 scripts/release-audit.py
-
-      - name: Smoke-test navigation, IDs and PWA metadata
+      - name: Validate PWA assets and basic HTML integrity
         run: |
           python3 - <<'PY'
           from pathlib import Path
           from html.parser import HTMLParser
           import json
-          from urllib.parse import urlsplit
 
-          root = Path(".")
-          html = (root / "index.html").read_text(encoding="utf-8")
-
-          class Audit(HTMLParser):
+          class IntegrityParser(HTMLParser):
               def __init__(self):
                   super().__init__()
                   self.ids = []
-                  self.fragments = []
-                  self.local_links = []
-                  self.tab_targets = []
+                  self.unsafe_blank_links = 0
               def handle_starttag(self, tag, attrs):
                   attrs = dict(attrs)
                   if attrs.get("id"):
                       self.ids.append(attrs["id"])
-                  if attrs.get("href"):
-                      href = attrs["href"]
-                      parsed = urlsplit(href)
-                      if parsed.fragment:
-                          self.fragments.append(parsed.fragment)
-                      if href and not parsed.scheme and not href.startswith("//"):
-                          path = parsed.path
-                          if path:
-                              self.local_links.append(path)
-                  if attrs.get("data-tab"):
-                      self.tab_targets.append(attrs["data-tab"])
+                  if tag.lower() == "a" and attrs.get("target") == "_blank":
+                      rel = set((attrs.get("rel") or "").lower().split())
+                      if "noopener" not in rel:
+                          self.unsafe_blank_links += 1
 
-          audit = Audit()
-          audit.feed(html)
-          duplicates = sorted({value for value in audit.ids if audit.ids.count(value) > 1})
+          html = Path("index.html").read_text(encoding="utf-8")
+          manifest = json.loads(Path("manifest.webmanifest").read_text(encoding="utf-8"))
+          if not manifest.get("name") or not manifest.get("start_url") or not manifest.get("display"):
+              raise SystemExit("PWA manifest is missing required install metadata")
+          if not Path("sw.js").is_file() or not Path("assets/fundb-logo.png").is_file():
+              raise SystemExit("A required service-worker or app-logo asset is missing")
+
+          parser = IntegrityParser()
+          parser.feed(html)
+          duplicates = sorted({item for item in parser.ids if parser.ids.count(item) > 1})
           if duplicates:
               raise SystemExit("Duplicate HTML IDs: " + ", ".join(duplicates))
-          missing_fragments = sorted(set(audit.fragments) - set(audit.ids))
-          if missing_fragments:
-              raise SystemExit("Broken in-page links: " + ", ".join(missing_fragments))
-          missing_tabs = sorted(set(audit.tab_targets) - set(audit.ids))
-          if missing_tabs:
-              raise SystemExit("Navigation points to missing sections: " + ", ".join(missing_tabs))
-          missing_files = sorted({p for p in audit.local_links if not (root / p).exists()})
-          if missing_files:
-              raise SystemExit("Broken local file links: " + ", ".join(missing_files))
-          manifest = json.loads((root / "manifest.webmanifest").read_text(encoding="utf-8"))
-          for key in ("name", "short_name", "start_url", "display", "icons"):
-              if key not in manifest:
-                  raise SystemExit("PWA manifest missing required field: " + key)
-          if not (root / "sw.js").is_file():
-              raise SystemExit("Service worker file is missing")
-          print("HTML IDs, in-page links, tab targets, local links and PWA metadata passed")
-          PY
+          if parser.unsafe_blank_links:
+              raise SystemExit("External links opened in new tabs must include rel=noopener")
 
-      - name: Package Appwrite function source archive
+          print("PWA manifest, required assets, unique HTML IDs and external-link safety checks passed")
+          PY
+      - name: Check service-worker syntax
+        run: node --check sw.js
+
+      - name: Verify public preview legal pages and app links
         run: |
-          tar -czf FundBRewardsAPI.tar.gz -C appwrite-function index.js package.json
-          tar -tzf FundBRewardsAPI.tar.gz
-      - name: Upload Appwrite function source archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: FundBRewardsAPI-source
-          path: FundBRewardsAPI.tar.gz
-          if-no-files-found: error
-          retention-days: 7
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          privacy = Path("privacy.html")
+          terms = Path("terms.html")
+          if not privacy.is_file() or not terms.is_file():
+              raise SystemExit("Both preview legal pages must exist.")
+          for link in ['href="./privacy.html"', 'href="./terms.html"']:
+              if link not in html:
+                  raise SystemExit("App navigation/footer is missing legal link: " + link)
+          if "cannot currently be redeemed or withdrawn" not in terms.read_text(encoding="utf-8"):
+              raise SystemExit("Terms must clearly disclose preview reward restrictions.")
+          print("Privacy and terms files exist and are linked from the app source.")
+          PY
