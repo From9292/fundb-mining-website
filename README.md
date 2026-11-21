@@ -43,6 +43,22 @@ For the existing FundB Appwrite project, the previously supplied database ID is 
 
 Never store Appwrite API keys, user passwords, session tokens, or JWTs in this repository. Configure secrets and allowed website origin in the Appwrite Console.
 
+## Transaction ledger contract (read-only stage)
+
+The authenticated `transactionHistory` action is now implemented as a read-only query, but it remains unavailable until a dedicated Appwrite TablesDB ledger table is provisioned and its internal table ID is configured. Set `FUNDB_TRANSACTIONS_TABLE_ID` to that internal ID (not the display name; no spaces). The API intentionally returns HTTP 503 when this value is missing or malformed and never falls back to the Profile table.
+
+The dedicated table must contain these attributes before enabling the setting:
+
+- `userId`: required string, indexed for equality queries.
+- `type`: string (for example, `reward`, `withdrawal`).
+- `amount`: numeric amount; the API returns only finite, non-negative values.
+- `status`: string.
+- `reference`: string.
+- `description`: string.
+- `createdAt`: sortable date/time string, with an index supporting descending order.
+
+Create a composite index for `userId` (ascending) and `createdAt` (descending), or the equivalent indexes supported by the Appwrite TablesDB console. Every ledger row must be written by a trusted server process with the authenticated owner's `userId`; never accept a client-supplied owner ID. The current API only reads the latest 50 rows belonging to the authenticated user. It does not create transactions, award points, or enable deposits, withdrawals, transfers, or mining rewards. Do not configure the table ID until the schema and indexes have been verified in the existing database.
+
 ## Advertising compliance
 
 Do not incentivize users to view or click ordinary AdSense ads. If points are later offered for ads, use only a provider and rewarded-ad format that explicitly permit incentivized rewards and verify the reward server-side. Keep ordinary non-incentivized ads separate.
