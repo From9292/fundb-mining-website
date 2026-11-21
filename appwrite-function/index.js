@@ -135,13 +135,38 @@ module.exports = async ({ req, res, log, error }) => {
       requestBody = {};
     }
     if (requestBody.action === 'transactionHistory') {
-      // Transaction storage is not wired to this function yet. Fail explicitly
-      // rather than returning a fake empty history that could mislead users.
-      return json(res, 501, {
-        ok: false,
-        code: 'TRANSACTION_HISTORY_NOT_CONFIGURED',
-        message: 'Transaction history is not connected yet. No rewards, deposits or withdrawals are active.'
-      }, origin);
+      // Never guess a table ID or fall back to the Profile table. This must be
+      // the Appwrite internal ID of a separately provisioned ledger table.
+      const transactionsTableId = String(process.env.FUNDB_TRANSACTIONS_TABLE_ID || '').trim();
+      if (!transactionsTableId || /\\s/.test(transactionsTableId)) {
+        return json(res, 503, {
+          ok: false,
+          code: 'TRANSACTION_LEDGER_NOT_CONFIGURED',
+          message: 'Transaction history is not connected: configure FUNDB_TRANSACTIONS_TABLE_ID with the internal ID of the dedicated FundB Transactions table. No rewards, deposits or withdrawals are active.'
+        }, origin);
+      }
+      const ledgerPath = '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
+        '/tables/' + encodeURIComponent(transactionsTableId) + '/rows';
+      const ledgerQueries = [
+        { method: 'equal', attribute: 'userId', values: [user.$id] },
+        { method: 'orderDesc', attribute: 'createdAt' },
+        { method: 'limit', values: [50] }
+      ];
+      const ledgerQueryString = ledgerQueries
+        .map(query => 'queries[]=' + encodeURIComponent(JSON.stringify(query))).join('&');
+      const ledgerResult = await appwriteRequest(ledgerPath + '?' + ledgerQueryString, 'GET', {
+        'X-Appwrite-Project': PROJECT_ID,
+        'X-Appwrite-Key': functionKey
+      });
+      const transactions = (ledgerResult.rows || []).map(row => ({
+        type: String(row.type || 'Transaction').slice(0, 40),
+        amount: Number(row.amount),
+        status: String(row.status || 'pending').slice(0, 30),
+        reference: String(row.reference || '').slice(0, 120),
+        description: String(row.description || '').slice(0, 240),
+        createdAt: row.createdAt || row.$createdAt || null
+      })).filter(row => Number.isFinite(row.amount) && row.amount >= 0);
+      return json(res, 200, { ok: true, transactions }, origin);
     }
 
     const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase();
