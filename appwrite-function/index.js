@@ -156,7 +156,7 @@ module.exports = async ({ req, res, log, error }) => {
     if (requestBody.action === 'transactionHistory') {
       // Never guess a table ID or fall back to the Profile table. This must be
       // the Appwrite internal ID of a separately provisioned ledger table.
-      const transactionsTableId = String(process.env.FUNDB_TRANSACTIONS_TABLE_ID || '').trim();
+      const transactionsTableId = String(process.env.FUNDB_TRANSACTIONS_TABLE_ID || 'fundB_transactions').trim();
       if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,35}$/.test(transactionsTableId)) {
         return json(res, 503, {
           ok: false,
