@@ -116,6 +116,7 @@ test('transaction history reads only the verified user rows and filters invalid 
   const queries = new URLSearchParams(ledgerCall.search).getAll('queries[]').map(value => JSON.parse(value));
   const ownerQuery = queries.find(query => query.attribute === 'userId');
   assert.deepEqual(ownerQuery.values, ['verified-user-42'], 'owner filter must come from Appwrite-verified identity, never request JSON');
+  assert.ok(queries.some(query => query.method === 'orderDesc' && query.attribute === '$createdAt'), 'sort by Appwrite system creation timestamp');
   assert.ok(queries.some(query => query.method === 'limit' && query.values[0] === 50));
   assert.equal(calls.filter(call => call.method === 'POST' || call.method === 'PATCH').length, 0, 'history endpoint must remain read-only');
 });
