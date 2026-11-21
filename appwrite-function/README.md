@@ -48,7 +48,7 @@ The website's transaction-history refresh calls the authenticated `transactionHi
 - It reads the existing profile before creating one.
 - New profile rows use the authenticated user's ID as a stable row ID to reduce duplicate creation during simultaneous requests.
 - New referral codes are generated with Node's cryptographic random source and checked against existing codes before assignment; existing users' codes are never changed.
-- CORS is fail-closed: only the exact allowed origins are emitted.
+- Browser requests with an `Origin` header outside the exact allowlist are rejected with HTTP 403 before any Appwrite API request. Approved origins receive the matching CORS header; server-to-server requests without an `Origin` header remain supported.
 - It never accepts a balance or reward amount from the browser.
 - It does not issue mining, daily, ad, referral, transfer, withdrawal, or token rewards.
 
