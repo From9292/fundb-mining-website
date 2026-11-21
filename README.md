@@ -5,7 +5,7 @@ FundB Mining is a mobile-friendly web app prototype. This repository contains th
 ## Version labels
 
 - **App interface:** V2.2 Community Edition (the label shown in the current page header).
-- **Service-worker cache:** `fundb-mining-v2-6-0` (a cache invalidation name; it is not the app feature version).
+- **Service-worker cache:** `fundb-mining-v2-6-1` (a cache invalidation name; it is not the app feature version).
 - **Appwrite profile API:** package version 1.1.0.
 
 These version numbers refer to different parts of the project and must not be treated as interchangeable.
@@ -27,7 +27,7 @@ The Appwrite profile function verifies a signed-in account and loads or initiali
 - Rewarded advertisements and server-verified ad callbacks
 - Mining sessions and server-authoritative reward calculations
 - Daily rewards and task completion credits
-- Referral attribution, fraud checks and referral bonuses
+- Referral bonuses and fraud controls (the profile API supports one-time referral attribution only; no referral rewards are issued)
 - Wallet transfers, withdrawals, token issuance or exchange conversion
 - Customer support ticketing, notifications and global moderation
 
@@ -37,7 +37,7 @@ Do not promise users earnings, guaranteed token value, or withdrawals until thos
 
 The Cloudflare Pages site is connected to this repository. Work on `fundb-production-hardening` is a development preview and should be reviewed before merging into `main`.
 
-The Appwrite function source is separate from the static Pages deployment. Use the existing Appwrite function **FundB Rewards API**; configure its root directory as `appwrite-function`, entrypoint as `index.js`, build command as `npm install`, and grant only the required dynamic API key scopes (`rows.read`, `rows.write`). The function's `userId` profile attribute must be indexed. Do not create a duplicate project, database, or profile table.
+The Appwrite function source is separate from the static Pages deployment. Use the existing Appwrite function **FundB Rewards API**; configure its root directory as `appwrite-function`, entrypoint as `index.js`, build command as `npm install`, and grant the required dynamic API key scopes (`rows.read`, `rows.write`, and `tables.read` for read-only Profile-table discovery). The function's `userId` profile attribute must be indexed. Do not create a duplicate project, database, or profile table.
 
 Never store Appwrite API keys, user passwords, session tokens, or JWTs in this repository. Configure secrets and allowed website origin in the Appwrite Console.
 
