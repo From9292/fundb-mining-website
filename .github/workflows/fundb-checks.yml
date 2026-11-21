@@ -84,6 +84,26 @@ jobs:
           print("Unverified local rewards remain disabled")
           PY
 
+      - name: Verify mining stays locked and AdSense is non-incentivized
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          required = [
+              'id="adCount2">0 / 10',
+              'id="mineBtn" style="width:100%" disabled',
+              'Rewarded ads are not connected.',
+              'AdSense publisher account',
+              'Viewing or clicking those ads will never increase mining progress, points or account balances.',
+              'google-adsense-account" content="ca-pub-9800579782167167'
+          ]
+          missing = [item for item in required if item not in html]
+          if missing:
+              raise SystemExit("Mining/advertising separation check failed: " + ", ".join(missing))
+          if "adsbygoogle" in html or "data-ad-slot=" in html:
+              raise SystemExit("Do not install live AdSense serving code before approval and a real ad-unit ID are confirmed.")
+          print("Mining remains disabled; AdSense is disclosed separately and cannot reward ad views or clicks.")
+          PY
       - name: Verify referral and CORS hardening
         run: |
           python3 - <<'PY'
