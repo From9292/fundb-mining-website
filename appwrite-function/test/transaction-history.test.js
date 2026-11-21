@@ -56,6 +56,12 @@ function makeResponse() {
       this.statusCode = status;
       this.headers = headers;
       return value;
+    },
+    text(value, status, headers) {
+      this.payload = value;
+      this.statusCode = status;
+      this.headers = headers;
+      return value;
     }
   };
 }
@@ -82,7 +88,7 @@ function invoke(handler, bodyJson = {}, bodyOverrides = {}) {
 test('transaction history fails closed when ledger table ID is missing or is a display label', async () => {
   process.env.APPWRITE_FUNCTION_PROJECT_ID = 'fundb-ci-test-project';
   process.env.APPWRITE_FUNCTION_API_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
-  for (const value of [undefined, 'FUNDB TRANSACTIONS']) {
+  for (const value of [undefined, 'FUNDB TRANSACTIONS', '.invalid', '-invalid', '_invalid', 'x'.repeat(37)]) {
     restoreEnv('FUNDB_TRANSACTIONS_TABLE_ID', value);
     const calls = installMock();
     delete require.cache[require.resolve('../index.js')];
@@ -136,6 +142,33 @@ test('transaction history recognizes an already-parsed req.body object', async (
   assert.deepEqual(res.payload, { ok: true, transactions: [] });
   assert.ok(calls.some(call => call.path.endsWith('/tables/ledger_internal_42/rows')),
     'parsed req.body action must reach the ledger endpoint rather than profile sync');
+});
+
+test('OPTIONS preflight is handled without contacting Appwrite and restricts origin echo', async () => {
+  process.env.APPWRITE_FUNCTION_API_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
+  const calls = installMock();
+  delete require.cache[require.resolve('../index.js')];
+  const handler = require('../index.js');
+  const res = makeResponse();
+  await handler({ req: { method: 'OPTIONS', headers: { origin: 'https://fundb-production-hardening.fundb-mining-website.pages.dev' } }, res, log() {}, error() {} });
+  assert.equal(res.statusCode, 204);
+  assert.equal(res.headers['Access-Control-Allow-Origin'], 'https://fundb-production-hardening.fundb-mining-website.pages.dev');
+  assert.equal(calls.length, 0);
+  const badOriginRes = makeResponse();
+  await handler({ req: { method: 'OPTIONS', headers: { origin: 'https://evil.example' } }, res: badOriginRes, log() {}, error() {} });
+  assert.equal(badOriginRes.headers['Access-Control-Allow-Origin'], undefined);
+});
+
+test('missing auth headers fail closed before external requests', async () => {
+  process.env.APPWRITE_FUNCTION_PROJECT_ID = 'fundb-ci-test-project';
+  const calls = installMock();
+  delete require.cache[require.resolve('../index.js')];
+  const handler = require('../index.js');
+  const res = makeResponse();
+  await handler({ req: { method: 'POST', headers: {} }, res, log() {}, error() {} });
+  assert.equal(res.statusCode, 401);
+  assert.equal(res.payload.ok, false);
+  assert.equal(calls.length, 0);
 });
 
 test.after(() => {
