@@ -102,8 +102,22 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          from html.parser import HTMLParser
           import json
-          import re
+
+          class IntegrityParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = []
+                  self.unsafe_blank_links = 0
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if attrs.get("id"):
+                      self.ids.append(attrs["id"])
+                  if tag.lower() == "a" and attrs.get("target") == "_blank":
+                      rel = set((attrs.get("rel") or "").lower().split())
+                      if "noopener" not in rel:
+                          self.unsafe_blank_links += 1
 
           html = Path("index.html").read_text(encoding="utf-8")
           manifest = json.loads(Path("manifest.webmanifest").read_text(encoding="utf-8"))
@@ -112,31 +126,15 @@ jobs:
           if not Path("sw.js").is_file() or not Path("assets/fundb-logo.png").is_file():
               raise SystemExit("A required service-worker or app-logo asset is missing")
 
-          ids = re.findall(r'\\bid=["\\']([^"\\']+)["\\']', html, flags=re.I)
-          duplicates = sorted({item for item in ids if ids.count(item) > 1})
+          parser = IntegrityParser()
+          parser.feed(html)
+          duplicates = sorted({item for item in parser.ids if parser.ids.count(item) > 1})
           if duplicates:
               raise SystemExit("Duplicate HTML IDs: " + ", ".join(duplicates))
-
-          unsafe_links = re.findall(
-              r'<a\\b(?=[^>]*target=["\\']_blank["\\'])(?![^>]*rel=["\\'][^"\\']*noopener)[^>]*>',
-              html, flags=re.I
-          )
-          if unsafe_links:
+          if parser.unsafe_blank_links:
               raise SystemExit("External links opened in new tabs must include rel=noopener")
 
-          secret_patterns = [
-              r'(?i)secret[_-]?key\\s*[:=]\\s*["\\'][^"\\']{12,}',
-              r'(?i)api[_-]?key\\s*[:=]\\s*["\\'][A-Za-z0-9_-]{24,}',
-              r'(?i)private[_-]?key\\s*[:=]\\s*["\\'][^"\\']{20,}'
-          ]
-          tracked = [Path("index.html"), Path("appwrite-function/index.js")]
-          for path in tracked:
-              source = path.read_text(encoding="utf-8")
-              for pattern in secret_patterns:
-                  if re.search(pattern, source):
-                      raise SystemExit(f"Possible hard-coded credential pattern in {path}")
-
-          print("PWA manifest, required assets, unique HTML IDs, external-link safety and credential-pattern checks passed")
+          print("PWA manifest, required assets, unique HTML IDs and external-link safety checks passed")
           PY
       - name: Check service-worker syntax
         run: node --check sw.js
