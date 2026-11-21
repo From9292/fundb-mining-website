@@ -80,14 +80,43 @@ input,textarea,select{border-radius:14px!important}
 </div></section>
 
 <section id="mining" hidden>
-<div class="card"><div class="eyebrow">Mining eligibility</div><h2>24-hour mining session · not yet active</h2><p class="muted">FundB is preparing a secure mining programme. A session will only unlock after its eligibility rules, approved advertising arrangement and server-side reward ledger have been implemented and tested.</p>
-<div class="grid"><div class="stat"><span class="eyebrow">Verified ad completions</span><strong id="adCount2">0 / 10</strong></div><div class="stat"><span class="eyebrow">Planned requirement</span><strong>10 ads</strong></div></div><div class="progress"><div class="bar" id="adProgress"></div></div>
-<div class="notice" role="status"><b>Rewarded ads are not connected.</b> No advertisement is currently served or counted here. The counter is intentionally locked at zero until an approved provider, signed server callback, replay protection and a tested reward ledger are connected.</div>
-<button class="secondary" style="width:100%" disabled aria-disabled="true">Rewarded-ad programme · coming after provider approval</button>
+<div class="card">
+  <div class="eyebrow">FundB rewards · preview status</div>
+  <h2>Mining is not active yet</h2>
+  <p class="muted">The 24-hour mining programme is a planned feature, not a live earning service. It will remain unavailable until the reward rules, an eligible advertising provider, server-verified completion callbacks, anti-replay protection and the secure points ledger have all been implemented and independently tested.</p>
+  <div class="grid">
+    <div class="stat"><span class="eyebrow">Verified ad completions</span><strong id="adCount2">0 / 10</strong></div>
+    <div class="stat"><span class="eyebrow">Planned eligibility step</span><strong>10 completions</strong></div>
+  </div>
+  <div class="progress" role="progressbar" aria-label="Verified rewarded-ad completions" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><div class="bar" id="adProgress"></div></div>
+  <div class="notice" role="status"><b>Rewarded ads are not connected.</b> No rewarded advertisement is currently being served, verified or counted. This counter is display-only and stays at zero until a compliant provider sends a signed server callback and the backend safely records an eligible completion.</div>
+  <button class="secondary" style="width:100%" disabled aria-disabled="true">Rewarded-ad programme · unavailable in preview</button>
 </div>
-<div class="card"><div class="eyebrow">Separate advertising channel</div><h2>FundB website advertising</h2><p class="muted">FundB has an AdSense publisher account, but site approval and live ad serving have not been confirmed. The publisher verification ID is present; an ad unit and serving code are not yet installed.</p><p class="muted">If Google approves the site, standard display ads may be placed in suitable content areas as ordinary, non-incentivized advertising. Viewing or clicking those ads will never increase mining progress, points or account balances.</p><span class="pill">AdSense · approval / ad serving pending</span>
+
+<div class="card">
+  <div class="eyebrow">Advertising · separate from rewards</div>
+  <h2>Google AdSense website ads</h2>
+  <p class="muted">FundB has an AdSense publisher account and its publisher verification ID is included in the website. This confirms the publisher identifier only; it does not confirm that Google has approved the site or enabled ad serving.</p>
+  <div class="grid">
+    <div class="stat"><span class="eyebrow">Site approval</span><strong>Not confirmed</strong></div>
+    <div class="stat"><span class="eyebrow">Live ad serving</span><strong>Not active</strong></div>
+  </div>
+  <p class="muted">No AdSense ad unit or serving script is installed in this preview. If the site is approved, standard display ads can be added only in suitable content areas and must remain ordinary, non-incentivized ads.</p>
+  <div class="notice" role="note"><b>Important:</b> Viewing or clicking those ads will never increase mining progress, points or account balances. Never click your own ads or ask anyone to click them.</div>
+  <span class="pill">AdSense · approval and ad serving pending</span>
 </div>
-<div class="card"><h2>Mining session</h2><div class="balance" id="miningBalance">0.00</div><div class="unit">FUND-B Points · preview balance</div><p class="muted">FundB Points have no established cash value and cannot currently be redeemed or withdrawn. No mining points are accruing in this preview.</p><div class="progress"><div class="bar" id="progress2"></div></div><div class="row"><span class="muted" id="sessionLabel">Mining is not active</span><span class="muted" id="timeLeft2">Not started</span></div><button class="primary" id="mineBtn" style="width:100%" disabled aria-disabled="true">Mining unavailable · secure rewards not enabled</button><p class="muted">A future session must use server-authoritative timestamps and ledger entries. Browser timers, ad impressions and client-side counters are not proof of eligible activity.</p></div>
+
+<div class="card">
+  <div class="eyebrow">Points balance · preview only</div>
+  <h2>Mining session</h2>
+  <div class="balance" id="miningBalance">0.00</div>
+  <div class="unit">FUND-B Points · preview balance</div>
+  <p class="muted">FundB Points have no established cash value and cannot currently be redeemed or withdrawn. No mining points are accruing in this preview.</p>
+  <div class="progress" role="progressbar" aria-label="Mining session progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" id="progress2"></div></div>
+  <div class="row"><span class="muted" id="sessionLabel">Mining is not active</span><span class="muted" id="timeLeft2">Not started</span></div>
+  <button class="primary" id="mineBtn" style="width:100%" disabled aria-disabled="true">Mining unavailable · secure rewards not enabled</button>
+  <p class="muted">A future session must use server-authoritative timestamps and ledger entries. Browser timers, ad impressions and client-side counters are not proof of eligible activity.</p>
+</div>
 </section>
 
 <section id="wallet" hidden>
