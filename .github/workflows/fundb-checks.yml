@@ -160,3 +160,20 @@ jobs:
           PY
       - name: Check service-worker syntax
         run: node --check sw.js
+
+      - name: Verify public preview legal pages and app links
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          privacy = Path("privacy.html")
+          terms = Path("terms.html")
+          if not privacy.is_file() or not terms.is_file():
+              raise SystemExit("Both preview legal pages must exist.")
+          for link in ['href="./privacy.html"', 'href="./terms.html"']:
+              if link not in html:
+                  raise SystemExit("App navigation/footer is missing legal link: " + link)
+          if "cannot currently be redeemed or withdrawn" not in terms.read_text(encoding="utf-8"):
+              raise SystemExit("Terms must clearly disclose preview reward restrictions.")
+          print("Privacy and terms files exist and are linked from the app source.")
+          PY
