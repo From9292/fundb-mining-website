@@ -156,6 +156,7 @@ test('OPTIONS preflight is handled without contacting Appwrite and restricts ori
   assert.equal(calls.length, 0);
   const badOriginRes = makeResponse();
   await handler({ req: { method: 'OPTIONS', headers: { origin: 'https://evil.example' } }, res: badOriginRes, log() {}, error() {} });
+  assert.equal(badOriginRes.statusCode, 403);
   assert.equal(badOriginRes.headers['Access-Control-Allow-Origin'], undefined);
 });
 
