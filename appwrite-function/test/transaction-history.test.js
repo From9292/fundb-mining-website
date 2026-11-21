@@ -60,7 +60,7 @@ function makeResponse() {
   };
 }
 
-function invoke(handler, bodyJson = {}) {
+function invoke(handler, bodyJson = {}, bodyOverrides = {}) {
   const res = makeResponse();
   return handler({
     req: {
@@ -70,7 +70,8 @@ function invoke(handler, bodyJson = {}) {
         'x-appwrite-user-jwt': 'test-user-jwt',
         'x-appwrite-key': 'test-function-key'
       },
-      bodyJson
+      bodyJson,
+      ...bodyOverrides
     },
     res,
     log() {},
@@ -119,6 +120,22 @@ test('transaction history reads only the verified user rows and filters invalid 
   assert.ok(queries.some(query => query.method === 'orderDesc' && query.attribute === '$createdAt'), 'sort by Appwrite system creation timestamp');
   assert.ok(queries.some(query => query.method === 'limit' && query.values[0] === 50));
   assert.equal(calls.filter(call => call.method === 'POST' || call.method === 'PATCH').length, 0, 'history endpoint must remain read-only');
+});
+
+
+test('transaction history recognizes an already-parsed req.body object', async () => {
+  process.env.APPWRITE_FUNCTION_PROJECT_ID = 'fundb-ci-test-project';
+  process.env.APPWRITE_FUNCTION_API_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
+  process.env.FUNDB_TRANSACTIONS_TABLE_ID = 'ledger_internal_42';
+  const calls = installMock([]);
+  delete require.cache[require.resolve('../index.js')];
+  const handler = require('../index.js');
+  const res = await invoke(handler, undefined, { bodyJson: undefined, body: { action: 'transactionHistory' } });
+
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.payload, { ok: true, transactions: [] });
+  assert.ok(calls.some(call => call.path.endsWith('/tables/ledger_internal_42/rows')),
+    'parsed req.body action must reach the ledger endpoint rather than profile sync');
 });
 
 test.after(() => {
