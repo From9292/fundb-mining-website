@@ -39,6 +39,8 @@ The Cloudflare Pages site is connected to this repository. Work on `fundb-produc
 
 The Appwrite function source is separate from the static Pages deployment. Use the existing Appwrite function **FundB Rewards API**; configure its root directory as `appwrite-function`, entrypoint as `index.js`, build command as `npm install`, and grant the required dynamic API key scopes (`rows.read`, `rows.write`, and `tables.read` for read-only Profile-table discovery). The function's `userId` profile attribute must be indexed. Do not create a duplicate project, database, or profile table.
 
+For the existing FundB Appwrite project, the previously supplied database ID is `6aedcd650007f44a070f`. The function now reads `FUNDB_DATABASE_ID` first and supports the already-used `FUNBDATAID` variable as a backward-compatible fallback. Prefer `FUNDB_DATABASE_ID` for future configuration; do not replace the existing database with a newly created one.
+
 Never store Appwrite API keys, user passwords, session tokens, or JWTs in this repository. Configure secrets and allowed website origin in the Appwrite Console.
 
 ## Advertising compliance
