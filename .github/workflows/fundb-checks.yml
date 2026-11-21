@@ -45,6 +45,20 @@ jobs:
                   subprocess.run(["node", "--check", handle.name], check=True)
               print(f"Embedded script {number}: syntax OK")
           PY
+      - name: Verify unavailable transaction history stays non-operational
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path("index.html").read_text(encoding="utf-8")
+          if "action: 'transactionHistory'" in source or 'action: "transactionHistory"' in source:
+              raise SystemExit("Frontend must not call the unsupported transactionHistory endpoint")
+          if 'id="viewTransactionsBtn" type="button" disabled' not in source:
+              raise SystemExit("Transaction-history control must remain disabled until a ledger is implemented")
+          if "Transaction history is not available yet." not in source:
+              raise SystemExit("The UI must clearly disclose that transaction history is unavailable")
+          print("No unsupported transaction-history requests; UI remains accurately disabled")
+          PY
+
       - name: Verify reward safety switches remain disabled
         run: |
           python3 - <<'PY'
