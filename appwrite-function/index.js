@@ -128,17 +128,31 @@ module.exports = async ({ req, res, log, error }) => {
     // Existing profiles are never retroactively reassigned by a URL parameter.
     let requestBody = {};
     try {
-      requestBody = req.bodyJson && typeof req.bodyJson === 'object'
-        ? req.bodyJson
-        : (typeof req.body === 'string' && req.body ? JSON.parse(req.body) : {});
+      if (req.bodyJson && typeof req.bodyJson === 'object' && !Array.isArray(req.bodyJson)) {
+        requestBody = req.bodyJson;
+      } else if (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) {
+        // Some Appwrite runtimes expose parsed JSON through req.body rather
+        // than req.bodyJson. Do not silently turn an action into profile sync.
+        requestBody = req.body;
+      } else if (typeof req.body === 'string' && req.body.trim()) {
+        requestBody = JSON.parse(req.body);
+      } else if (typeof req.bodyRaw === 'string' && req.bodyRaw.trim()) {
+        requestBody = JSON.parse(req.bodyRaw);
+      }
+      if (!requestBody || typeof requestBody !== 'object' || Array.isArray(requestBody)) requestBody = {};
     } catch (_) {
       requestBody = {};
     }
+    log('FundB request action diagnostics: ' + JSON.stringify({
+      bodyJsonPresent: Boolean(req.bodyJson),
+      bodyObjectPresent: Boolean(req.body && typeof req.body === 'object'),
+      action: typeof requestBody.action === 'string' ? requestBody.action : 'profileSync'
+    }));
     if (requestBody.action === 'transactionHistory') {
       // Never guess a table ID or fall back to the Profile table. This must be
       // the Appwrite internal ID of a separately provisioned ledger table.
       const transactionsTableId = String(process.env.FUNDB_TRANSACTIONS_TABLE_ID || '').trim();
-      if (!transactionsTableId || /\\s/.test(transactionsTableId)) {
+      if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,35}$/.test(transactionsTableId)) {
         return json(res, 503, {
           ok: false,
           code: 'TRANSACTION_LEDGER_NOT_CONFIGURED',
