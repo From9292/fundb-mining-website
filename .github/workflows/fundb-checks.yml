@@ -100,9 +100,12 @@ jobs:
           missing = [item for item in required if item not in html]
           if missing:
               raise SystemExit("Mining/advertising separation check failed: " + ", ".join(missing))
-          if "adsbygoogle" in html or "data-ad-slot=" in html:
-              raise SystemExit("Do not install live AdSense serving code before approval and a real ad-unit ID are confirmed.")
-          print("Mining remains disabled; AdSense is disclosed separately and cannot reward ad views or clicks.")
+          verification = 'pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9800579782167167'
+          if verification not in html:
+              raise SystemExit("AdSense site-verification script is missing from the main page.")
+          if "data-ad-slot=" in html:
+              raise SystemExit("Do not add live ad units before site approval and a valid ad-unit ID are confirmed.")
+          print("Mining remains disabled; AdSense verification is installed, and no live ad units or incentivized ads are enabled.")
           PY
       - name: Verify referral and CORS hardening
         run: |
