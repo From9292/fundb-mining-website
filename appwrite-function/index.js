@@ -100,6 +100,11 @@ async function createUniqueReferralCode(tablePath, adminHeaders) {
 module.exports = async ({ req, res, log, error }) => {
   try {
     const origin = req.headers.origin || '';
+    // Reject browser-originated requests from sites outside the exact allowlist.
+    // Requests without an Origin header (server-to-server/Appwrite execution) remain supported.
+    if (origin && !ALLOWED_ORIGINS.has(origin)) {
+      return json(res, 403, { ok: false, message: 'This website origin is not allowed to access FundB.' }, origin);
+    }
     if (req.method === 'OPTIONS') {
       return res.text('', 204, responseHeaders(origin));
     }
