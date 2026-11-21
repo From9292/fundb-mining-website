@@ -55,9 +55,9 @@ The dedicated table must contain these attributes before enabling the setting:
 - `status`: string.
 - `reference`: string.
 - `description`: string.
-- `createdAt`: sortable date/time string, with an index supporting descending order.
+- Appwrite's built-in `$createdAt` timestamp is used for newest-first sorting; do not add a custom `createdAt` attribute for this endpoint.
 
-Create a composite index for `userId` (ascending) and `createdAt` (descending), or the equivalent indexes supported by the Appwrite TablesDB console. Every ledger row must be written by a trusted server process with the authenticated owner's `userId`; never accept a client-supplied owner ID. The current API only reads the latest 50 rows belonging to the authenticated user. It does not create transactions, award points, or enable deposits, withdrawals, transfers, or mining rewards. Do not configure the table ID until the schema and indexes have been verified in the existing database.
+Required indexes are a unique index on `idempotencyKey`, a key index on `userId`, and a key index on `reference`. No custom timestamp index is required for the current query. Every ledger row must be written by a trusted server process with the authenticated owner's `userId`; never accept a client-supplied owner ID. The current API only reads the latest 50 rows belonging to the authenticated user. The website's wallet preview now calls this authenticated read-only endpoint after sign-in and through its refresh button. An empty table correctly displays no transactions yet. It does not create transactions, award points, or enable deposits, withdrawals, transfers, or mining rewards.
 
 ## Advertising compliance
 
