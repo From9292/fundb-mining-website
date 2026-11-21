@@ -149,7 +149,7 @@ module.exports = async ({ req, res, log, error }) => {
         '/tables/' + encodeURIComponent(transactionsTableId) + '/rows';
       const ledgerQueries = [
         { method: 'equal', attribute: 'userId', values: [user.$id] },
-        { method: 'orderDesc', attribute: 'createdAt' },
+        { method: 'orderDesc', attribute: '$createdAt' },
         { method: 'limit', values: [50] }
       ];
       const ledgerQueryString = ledgerQueries
