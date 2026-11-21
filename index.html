@@ -89,7 +89,7 @@ input,textarea,select{border-radius:14px!important}
 
 <section id="wallet" hidden>
 <div class="card"><h2>FUND-B Wallet</h2><div class="balance" id="walletBalance">0.00</div><div class="unit">FundB Points · no blockchain connection yet</div><div class="notice">Wallet functions are preview-only. No deposit address exists yet. Do not send cryptocurrency to an address shown elsewhere claiming to be your FundB wallet.</div>
-<div class="two"><button class="secondary" disabled>Receive address — coming soon</button><button class="secondary" disabled>Send / transfer — coming soon</button><button class="secondary" disabled>Withdraw — coming soon</button><button class="secondary" id="viewTransactionsBtn" type="button" disabled>Transaction history — coming soon</button></div><div class="item"><h3>Transaction history</h3><p class="muted" id="transactionHistoryStatus">Sign in to load your secure transaction history. No rewards or withdrawals are enabled.</p><div id="transactionHistoryList" class="muted" aria-live="polite"></div></div><p class="muted">A real wallet requires a selected blockchain, audited smart contract or custody provider, key management, transaction monitoring and applicable compliance checks.</p></div>
+<div class="two"><button class="secondary" disabled>Receive address — coming soon</button><button class="secondary" disabled>Send / transfer — coming soon</button><button class="secondary" disabled>Withdraw — coming soon</button><button class="secondary" id="viewTransactionsBtn" type="button">Refresh transaction history</button></div><div class="item"><h3>Transaction history</h3><p class="muted" id="transactionHistoryStatus">Sign in to load your secure transaction history. No rewards or withdrawals are enabled.</p><div id="transactionHistoryList" class="muted" aria-live="polite"></div></div><p class="muted">A real wallet requires a selected blockchain, audited smart contract or custody provider, key management, transaction monitoring and applicable compliance checks.</p></div>
 </section>
 
 <section id="tasks" hidden>
@@ -231,14 +231,58 @@ const syncCloudProfile = async (referralCodeOverride = '') => {
     cloudStatus.textContent = `Cloud profile could not load: ${err?.message || 'Please try again.'}`;
   }
 }
+let transactionHistoryLoading = false;
 const loadTransactionHistory = async () => {
   const statusEl = byId('transactionHistoryStatus');
   const listEl = byId('transactionHistoryList');
-  if (!statusEl || !listEl) return;
-  // Transaction storage is not implemented. Do not call the API's deliberate
-  // 501 response on every sign-in or imply that an empty list is a real ledger.
-  statusEl.textContent = 'Transaction history is not available yet. No rewards, deposits or withdrawals are active.';
+  const refreshBtn = byId('viewTransactionsBtn');
+  if (!statusEl || !listEl || transactionHistoryLoading) return;
+  transactionHistoryLoading = true;
+  if (refreshBtn) refreshBtn.disabled = true;
+  statusEl.textContent = 'Loading your secure transaction history…';
   listEl.replaceChildren();
+  try {
+    // Use the signed-in Appwrite SDK session. Appwrite forwards the user's
+    // session JWT to the function; the server scopes the query to that user.
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ action: 'transactionHistory' }),
+      false,
+      '/',
+      'POST'
+    );
+    let result = {};
+    try { result = execution.responseBody ? JSON.parse(execution.responseBody) : {}; }
+    catch (_) { throw new Error('The transaction service returned an unreadable response.'); }
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+      throw new Error(result.message || ('Transaction history request failed (' + (execution.responseStatusCode || 'no response') + ').'));
+    }
+    const rows = Array.isArray(result.transactions) ? result.transactions : [];
+    if (!rows.length) {
+      statusEl.textContent = 'No transactions have been recorded for this account yet. Rewards, deposits and withdrawals are not active.';
+      return;
+    }
+    statusEl.textContent = 'Showing your latest ' + rows.length + ' transaction(s).';
+    rows.forEach(row => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const heading = document.createElement('strong');
+      const amount = Number(row.amount);
+      heading.textContent = String(row.type || 'Transaction') + ' · ' + (Number.isFinite(amount) ? amount.toFixed(2) : '0.00') + ' FundB Points';
+      const detail = document.createElement('p');
+      detail.className = 'muted';
+      const date = row.createdAt ? new Date(row.createdAt) : null;
+      const dateText = date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : '';
+      detail.textContent = [String(row.status || 'Status unavailable'), String(row.reference || ''), String(row.description || ''), dateText].filter(Boolean).join(' · ');
+      item.append(heading, detail);
+      listEl.append(item);
+    });
+  } catch (err) {
+    statusEl.textContent = 'Transaction history could not be loaded: ' + (err?.message || 'Please try again.');
+  } finally {
+    transactionHistoryLoading = false;
+    if (refreshBtn) refreshBtn.disabled = false;
+  }
 };
 const showSignedIn = async (user, referralCode = '') => {
   byId('authForm').hidden=true; byId('signedInPanel').hidden=false;
