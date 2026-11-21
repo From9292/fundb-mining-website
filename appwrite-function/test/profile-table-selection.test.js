@@ -6,6 +6,10 @@ const { EventEmitter } = require('node:events');
 const originalRequest = https.request;
 const originalProjectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const originalEndpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
+const originalDatabaseId = process.env.FUNDB_DATABASE_ID;
+const originalLegacyDatabaseId = process.env.FUNBDATAID;
+delete process.env.FUNDB_DATABASE_ID;
+process.env.FUNBDATAID = '6aedcd650007f44a070f';
 process.env.APPWRITE_FUNCTION_PROJECT_ID = 'fundb-ci-test-project';
 process.env.APPWRITE_FUNCTION_API_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
 const user = { $id: 'user-existing-123' };
@@ -123,6 +127,7 @@ test('selects exact-case Profile and leaves both existing rows untouched', async
   });
 
   assert.equal(res.statusCode, 200);
+  assert.ok(requests.some(item => item.path.startsWith('/v1/tablesdb/6aedcd650007f44a070f/')), 'must use the existing FUNBDATAID database ID');
   assert.equal(res.payload.ok, true);
   assert.equal(res.payload.profile.points, 17);
   assert.equal(res.payload.profile.referralCode, 'FB12345678');
@@ -164,4 +169,8 @@ test.after(() => {
   else process.env.APPWRITE_FUNCTION_PROJECT_ID = originalProjectId;
   if (originalEndpoint === undefined) delete process.env.APPWRITE_FUNCTION_API_ENDPOINT;
   else process.env.APPWRITE_FUNCTION_API_ENDPOINT = originalEndpoint;
+  if (originalDatabaseId === undefined) delete process.env.FUNDB_DATABASE_ID;
+  else process.env.FUNDB_DATABASE_ID = originalDatabaseId;
+  if (originalLegacyDatabaseId === undefined) delete process.env.FUNBDATAID;
+  else process.env.FUNBDATAID = originalLegacyDatabaseId;
 });
