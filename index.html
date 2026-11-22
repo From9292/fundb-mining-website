@@ -371,6 +371,139 @@ const loadMyMissionSubmissions = async () => {
     });
   }
 };
+
+let fundbAdminMissionReviewLoading = false;
+const loadAdminMissionQueue = async () => {
+  if (fundbAdminMissionReviewLoading) return;
+  fundbAdminMissionReviewLoading = true;
+  try {
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ action: 'adminMissionQueue' }),
+      false,
+      '/',
+      'POST'
+    );
+    let result = {};
+    try { result = execution.responseBody ? JSON.parse(execution.responseBody) : {}; }
+    catch (_) { throw new Error('The reviewer service returned an unreadable response.'); }
+    if (execution.responseStatusCode === 403 || result.code === 'ADMIN_ONLY') return;
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+      throw new Error(result.message || 'The reviewer queue could not be loaded.');
+    }
+    const tasksSection = byId('tasks');
+    if (!tasksSection) return;
+    let panel = byId('fundbAdminMissionReview');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'fundbAdminMissionReview';
+      panel.className = 'card';
+      const heading = document.createElement('h2');
+      heading.textContent = 'Admin · Mission review';
+      const intro = document.createElement('p');
+      intro.className = 'muted';
+      intro.textContent = 'Authorized reviewer access confirmed by the server. Review evidence and reject only when necessary. Point approval and crediting are disabled.';
+      const refresh = document.createElement('button');
+      refresh.type = 'button';
+      refresh.className = 'secondary';
+      refresh.textContent = 'Refresh pending queue';
+      refresh.addEventListener('click', loadAdminMissionQueue);
+      const statusEl = document.createElement('p');
+      statusEl.id = 'fundbAdminMissionReviewStatus';
+      statusEl.className = 'muted';
+      statusEl.setAttribute('role', 'status');
+      const list = document.createElement('div');
+      list.id = 'fundbAdminMissionReviewList';
+      panel.append(heading, intro, refresh, statusEl, list);
+      tasksSection.append(panel);
+    }
+    const statusEl = byId('fundbAdminMissionReviewStatus');
+    const list = byId('fundbAdminMissionReviewList');
+    if (!statusEl || !list) return;
+    list.replaceChildren();
+    const submissions = Array.isArray(result.submissions) ? result.submissions : [];
+    statusEl.textContent = submissions.length
+      ? submissions.length + ' pending submission(s).'
+      : 'No submissions are waiting for review.';
+    submissions.forEach(submission => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const title = document.createElement('h3');
+      const missionName = Object.values(missionIds).includes(submission.missionId)
+        ? submission.missionId : 'Unknown mission';
+      title.textContent = missionName + ' · Pending';
+      const meta = document.createElement('p');
+      meta.className = 'muted';
+      const date = submission.submittedAt ? new Date(submission.submittedAt) : null;
+      meta.textContent = 'User ID: ' + String(submission.userId || 'Unavailable') +
+        (date && !Number.isNaN(date.getTime()) ? ' · Submitted: ' + date.toLocaleString() : '');
+      const evidenceLabel = document.createElement('p');
+      evidenceLabel.className = 'muted';
+      evidenceLabel.textContent = 'Submitted evidence:';
+      const evidence = document.createElement('p');
+      evidence.className = 'notice';
+      evidence.style.whiteSpace = 'pre-wrap';
+      evidence.style.overflowWrap = 'anywhere';
+      evidence.textContent = String(submission.evidence || '');
+      const reasonLabel = document.createElement('label');
+      reasonLabel.textContent = 'Reason for rejection (required, max 500 characters)';
+      const reason = document.createElement('textarea');
+      reason.maxLength = 500;
+      reason.placeholder = 'Explain what needs to be corrected...';
+      const reject = document.createElement('button');
+      reject.type = 'button';
+      reject.className = 'secondary';
+      reject.textContent = 'Reject submission';
+      const feedback = document.createElement('p');
+      feedback.className = 'muted';
+      feedback.setAttribute('role', 'status');
+      reject.addEventListener('click', async () => {
+        const rejectionReason = reason.value.trim();
+        if (!rejectionReason) {
+          feedback.textContent = 'Enter a clear reason before rejecting.';
+          reason.focus();
+          return;
+        }
+        reject.disabled = true;
+        feedback.textContent = 'Saving review decision…';
+        try {
+          const review = await functions.createExecution(
+            FUNDB_FUNCTION_ID,
+            JSON.stringify({
+              action: 'reviewMissionSubmission',
+              submissionId: submission.id,
+              decision: 'reject',
+              rejectionReason
+            }),
+            false,
+            '/',
+            'POST'
+          );
+          let reviewResult = {};
+          try { reviewResult = review.responseBody ? JSON.parse(review.responseBody) : {}; }
+          catch (_) { throw new Error('The review service returned an unreadable response.'); }
+          if (review.responseStatusCode < 200 || review.responseStatusCode >= 300 || !reviewResult.ok) {
+            throw new Error(reviewResult.message || 'The review decision could not be saved.');
+          }
+          feedback.textContent = 'Submission rejected and the reason was saved. No points were credited.';
+          await loadAdminMissionQueue();
+          await loadMyMissionSubmissions();
+        } catch (err) {
+          feedback.textContent = err?.message || 'Could not save this review decision.';
+          reject.disabled = false;
+        }
+      });
+      item.append(title, meta, evidenceLabel, evidence, reasonLabel, reason, reject, feedback);
+      list.append(item);
+    });
+  } catch (err) {
+    const statusEl = byId('fundbAdminMissionReviewStatus');
+    if (statusEl) statusEl.textContent = 'Reviewer queue unavailable: ' + (err?.message || 'Please try again.');
+  } finally {
+    fundbAdminMissionReviewLoading = false;
+  }
+};
+
 window.submitMissionLive = async number => {
   const missionId = missionIds[number];
   const evidenceBox = byId('missionProof' + number);
@@ -427,6 +560,7 @@ const showSignedIn = async (user, referralCode = '') => {
   status('Your FundB account is connected.');
   await syncCloudProfile(referralCode);
   await loadMyMissionSubmissions();
+  await loadAdminMissionQueue();
   showTab('home');
 };
 const showSignedOut = () => { Object.keys(missionIds).forEach(number => { const statusEl = byId('missionStatus' + number); const button = byId('submitMissionBtn' + number); if (statusEl) statusEl.textContent = 'Sign in to submit missions and view your submission status.'; if (button) button.disabled = false; }); byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
