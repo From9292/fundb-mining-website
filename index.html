@@ -338,7 +338,8 @@ const showSignedOut = () => { byId('refCode').textContent='Sign in to view your 
 const getError = e => e?.message || 'Something went wrong. Please try again.';
 try { const user=await account.get(); await showSignedIn(user); }
 catch(e){ showSignedOut(); status('Appwrite is ready. Create an account or sign in.', false); }
-const setAuthBusy=(busy,label='Please wait…')=>{['registerBtn','loginBtn','resetPasswordBtn'].forEach(id=>{const b=byId(id);if(b){b.disabled=busy;if(busy&&id==='registerBtn')b.dataset.old=b.textContent;b.textContent=busy&&id==='registerBtn'?label:(busy?'Please wait…':(b.dataset.old||b.textContent));}});};\nbyId('registerBtn').addEventListener('click', async()=>{
+const setAuthBusy=(busy,label='Please wait…')=>{['registerBtn','loginBtn','resetPasswordBtn'].forEach(id=>{const b=byId(id);if(b){b.disabled=busy;if(busy&&id==='registerBtn')b.dataset.old=b.textContent;b.textContent=busy&&id==='registerBtn'?label:(busy?'Please wait…':(b.dataset.old||b.textContent));}});};
+byId('registerBtn').addEventListener('click', async()=>{
   const name=byId('authName').value.trim(); const email=byId('authEmail').value.trim(); const password=byId('authPassword').value;
   if(!name || !email || password.length<8){status('Enter your display name, a valid email and a password of at least 8 characters.',true);return;}
   try { setAuthBusy(true,'Creating account…'); const referralCode = getPendingReferralCode(); status(referralCode ? 'Creating your account with the invitation code…' : 'Creating your secure account…'); await account.create(ID.unique(),email,password,name); await account.createEmailPasswordSession(email,password); const user=await account.get(); await showSignedIn(user, referralCode); byId('authPassword').value=''; byId('signupReferralCode').value=''; }
