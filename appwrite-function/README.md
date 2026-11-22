@@ -41,6 +41,30 @@ Appwrite automatically provides `APPWRITE_FUNCTION_PROJECT_ID`, the ephemeral ke
 
 The website's transaction-history refresh calls the authenticated `transactionHistory` action. Configure `FUNDB_TRANSACTIONS_TABLE_ID` with the internal ID `fundB_transactions` for the existing dedicated ledger table. The function verifies the signed-in user and returns only rows whose `userId` matches that verified account, newest first, up to 50 rows. An empty table correctly returns an empty history. The endpoint does not create ledger rows or enable rewards, deposits, transfers, or withdrawals.
 
+
+## Mission submissions (pending review only)
+
+The authenticated API supports four actions:
+
+- `submitMission`: accepts a mission ID and evidence text (maximum 2,000 characters). The user ID is always taken from the verified Appwrite session. The server sets `status=pending`, `approvedPoints=0`, and the submission timestamp; it ignores caller-supplied reviewer, status, points, and user ID.
+- `myMissionSubmissions`: returns only the signed-in user's submissions.
+- `adminMissionQueue`: returns pending submissions only to user IDs explicitly listed in `FUNDB_ADMIN_USER_IDS`.
+- `reviewMissionSubmission`: currently supports rejection with a required reason. Approval and point crediting remain disabled until a server-side rewards ledger and atomic credit flow are implemented and tested.
+
+Configure these optional environment variables on the existing **FundB Rewards API** function:
+
+- `FUNDB_MISSION_SUBMISSIONS_TABLE_ID` (defaults to the existing table ID `fundb_mission_submissions`)
+- `FUNDB_ADMIN_USER_IDS` (comma-separated Appwrite user IDs authorized to view the review queue and reject submissions; do not use email addresses or expose this setting to the browser)
+
+The existing `fundb_mission_submissions` table must retain the verified columns: `userId` (string, 36), `missionId` (string, 64), `evidence` (string, 2,000), `status` (string, 20), `reviewer` (string, 36), `approvedPoints` (integer, 0–70), `submittedAt` (datetime), `reviewedAt` (datetime), and `rejectionReason` (string, 500). Pending rows intentionally omit `reviewedAt`; Appwrite Datetime fields must not receive an empty string.
+
+Required indexes:
+
+- `user_mission_unique`: **Unique**, columns `userId` ASC + `missionId` ASC. A unique index on `missionId` alone is incorrect because it would prevent different users from submitting the same mission.
+- `status_submittedAt`: **Key**, columns `status` ASC + `submittedAt` DESC, used by the pending review queue.
+
+Keep table permissions empty and row-level security disabled; the API uses the function's server-side key after verifying the caller. Never grant public table access. The function does not award points, approve rewards, or create transaction-ledger rows.
+
 ## Security behavior
 
 - The function rejects requests without a signed-in user's JWT.
