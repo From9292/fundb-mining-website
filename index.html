@@ -126,13 +126,13 @@ input,textarea,select{border-radius:14px!important}
 </section>
 
 <section id="tasks" hidden>
-<div class="card"><h2>FundB missions</h2><p class="muted">Complete a mission and submit evidence for review. Each mission displays its proposed reward; points are not credited until a secure, reviewed rewards service is connected.</p><div class="notice"><b>Reward proposal:</b> 70 FundB Points per approved mission. This preview does not yet verify submissions or credit points. Ads are never a condition of earning task rewards.</div>
-<div class="item"><div class="row"><h3>Mission 1 · Digital safety checklist</h3><span class="pill">70 points · proposed</span></div><p class="muted">Describe three ways you protect your online accounts and avoid scams.</p><label for="missionProof1">Your response / evidence</label><textarea id="missionProof1" placeholder="Write your response here..."></textarea><button class="secondary" onclick="submitMissionPreview(1)">Submit for review (preview)</button><p id="missionStatus1" class="muted" role="status"></p></div>
-<div class="item"><div class="row"><h3>Mission 2 · Community contribution</h3><span class="pill">70 points · proposed</span></div><p class="muted">Suggest one practical improvement for FundB or explain a helpful community contribution.</p><label for="missionProof2">Your response / evidence</label><textarea id="missionProof2" placeholder="Share your idea or contribution..."></textarea><button class="secondary" onclick="submitMissionPreview(2)">Submit for review (preview)</button><p id="missionStatus2" class="muted" role="status"></p></div>
-<div class="item"><div class="row"><h3>Mission 3 · Scam awareness</h3><span class="pill">70 points · proposed</span></div><p class="muted">Identify warning signs of a fake crypto reward or phishing message.</p><label for="missionProof3">Your response / evidence</label><textarea id="missionProof3" placeholder="Describe the warning signs..."></textarea><button class="secondary" onclick="submitMissionPreview(3)">Submit for review (preview)</button><p id="missionStatus3" class="muted" role="status"></p></div>
-<div class="item"><div class="row"><h3>Mission 4 · Learning reflection</h3><span class="pill">70 points · proposed</span></div><p class="muted">Share one useful skill you learned and how you would apply it.</p><label for="missionProof4">Your response / evidence</label><textarea id="missionProof4" placeholder="Describe what you learned..."></textarea><button class="secondary" onclick="submitMissionPreview(4)">Submit for review (preview)</button><p id="missionStatus4" class="muted" role="status"></p></div>
-<div class="item"><div class="row"><h3>Mission 5 · Product feedback</h3><span class="pill">70 points · proposed</span></div><p class="muted">Provide constructive feedback about one FundB feature. Honest feedback is welcome; positive reviews are not required.</p><label for="missionProof5">Your response / evidence</label><textarea id="missionProof5" placeholder="Your feedback..."></textarea><button class="secondary" onclick="submitMissionPreview(5)">Submit for review (preview)</button><p id="missionStatus5" class="muted" role="status"></p></div>
-<p class="muted">Mission submissions in this preview are handled only on this device. No server review, points, payment or token allocation occurs. Do not upload private documents, passwords, recovery phrases or sensitive information. Rewards cannot be tied to ad clicks or required ad viewing.</p></div></section>
+<div class="card"><h2>FundB missions</h2><p class="muted">Complete a mission and submit your evidence securely for review. You must be signed in. Each mission displays a proposed reward; submissions remain pending until reviewed, and points are not credited in this release.</p><div class="notice"><b>Reward proposal:</b> 70 FundB Points per approved mission. Submissions are stored in the secure FundB review queue. Reward approval and point crediting remain disabled until the audited rewards ledger is ready. Ads are never a condition of earning task rewards.</div>
+<div class="item"><div class="row"><h3>Mission 1 · Digital safety checklist</h3><span class="pill">70 points · proposed</span></div><p class="muted">Describe three ways you protect your online accounts and avoid scams.</p><label for="missionProof1">Your response / evidence</label><textarea id="missionProof1" placeholder="Write your response here..."></textarea><button class="secondary" id="submitMissionBtn1" onclick="submitMissionLive(1)">Submit for review</button><p id="missionStatus1" class="muted" role="status"></p></div>
+<div class="item"><div class="row"><h3>Mission 2 · Community contribution</h3><span class="pill">70 points · proposed</span></div><p class="muted">Suggest one practical improvement for FundB or explain a helpful community contribution.</p><label for="missionProof2">Your response / evidence</label><textarea id="missionProof2" placeholder="Share your idea or contribution..."></textarea><button class="secondary" id="submitMissionBtn2" onclick="submitMissionLive(2)">Submit for review</button><p id="missionStatus2" class="muted" role="status"></p></div>
+<div class="item"><div class="row"><h3>Mission 3 · Scam awareness</h3><span class="pill">70 points · proposed</span></div><p class="muted">Identify warning signs of a fake crypto reward or phishing message.</p><label for="missionProof3">Your response / evidence</label><textarea id="missionProof3" placeholder="Describe the warning signs..."></textarea><button class="secondary" id="submitMissionBtn3" onclick="submitMissionLive(3)">Submit for review</button><p id="missionStatus3" class="muted" role="status"></p></div>
+<div class="item"><div class="row"><h3>Mission 4 · Learning reflection</h3><span class="pill">70 points · proposed</span></div><p class="muted">Share one useful skill you learned and how you would apply it.</p><label for="missionProof4">Your response / evidence</label><textarea id="missionProof4" placeholder="Describe what you learned..."></textarea><button class="secondary" id="submitMissionBtn4" onclick="submitMissionLive(4)">Submit for review</button><p id="missionStatus4" class="muted" role="status"></p></div>
+<div class="item"><div class="row"><h3>Mission 5 · Product feedback</h3><span class="pill">70 points · proposed</span></div><p class="muted">Provide constructive feedback about one FundB feature. Honest feedback is welcome; positive reviews are not required.</p><label for="missionProof5">Your response / evidence</label><textarea id="missionProof5" placeholder="Your feedback..."></textarea><button class="secondary" id="submitMissionBtn5" onclick="submitMissionLive(5)">Submit for review</button><p id="missionStatus5" class="muted" role="status"></p></div>
+<p class="muted">Your submissions are saved to the FundB server and can be checked from your account. They remain pending until reviewed. No points, payment or token allocation are made by this release. Do not submit private documents, passwords, recovery phrases or other sensitive information. Rewards are never tied to ad clicks or required ad viewing.</p></div></section>
 
 <section id="inbox" hidden><div class="card"><h2>Notifications & messages</h2><p class="muted">Project announcements and account messages will appear here when a notification backend is connected.</p><div class="item"><span class="pill">WELCOME</span><h3>Welcome to FundB Mining</h3><p class="muted">You are viewing the Version 2.6.2 community preview. Follow official project channels for verified updates. Never share your password or recovery phrase with support.</p></div><div class="item"><span class="pill">PROJECT UPDATE</span><h3>2028 target</h3><p class="muted">The token launch is a target subject to development, security, legal and market conditions. No value or listing is guaranteed.</p></div></div></section>
 
@@ -192,7 +192,7 @@ $('claimBtn').onclick=()=>toast('Daily rewards are not active yet. Please check 
 $('copyBtn').onclick=async()=>{const code=$('refCode').textContent.trim();if(!$('copyBtn').disabled && /^FB[A-Z0-9]{8}$/.test(code)){const link=location.origin+location.pathname+'?ref='+encodeURIComponent(code);try{await navigator.clipboard.writeText(link);toast('FundB invite link copied')}catch{toast('Share this invite link: '+link)}}else{toast('Sign in and load your cloud profile first.')}};
 // Display-name saving is handled by the authenticated Appwrite account flow below.
 
-function submitMissionPreview(n){const box=$('missionProof'+n),statusEl=$('missionStatus'+n);const text=box.value.trim();if(text.length<30){statusEl.textContent='Please provide a fuller response (at least 30 characters) before submitting.';return;}statusEl.textContent='Preview submission saved on this device only. Secure review and reward credit are not connected; no points have been awarded.';toast('Preview submission recorded on this device');}
+function submitMissionPreview(n){const statusEl=$('missionStatus'+n);statusEl.textContent='The secure mission service is loading. Please try again in a moment.';}
 function sendSupportEmail(){const topic=$('supportTopic').value.trim()||'FundB support request';const msg=$('supportMsg').value.trim();const from=$('supportEmail').value.trim();const body=(from?'My email: '+from+'\n\n':'')+msg+'\n\nSent from FundB Mining';location.href='mailto:luckyutu9@gmail.com?subject='+encodeURIComponent(topic)+'&body='+encodeURIComponent(body)}
 function enterMedia(){const v=$('mediaLanguage').value;if(!v){$('mediaLanguageStatus').textContent='Please choose your language before entering FundB Media.';$('mediaLanguage').focus();return}try{localStorage.setItem('fundb_media_language',v)}catch(e){}$('chosenLanguage').textContent=v;$('mediaInside').hidden=false;$('mediaLanguageStatus').textContent='Language selected: '+v;$('mediaInside').scrollIntoView({behavior:'smooth',block:'start'});toast('Welcome to FundB Media')}
 function postCommunity(){const box=$('communityPost');const value=box.value.trim();if(!value)return;const feed=$('communityFeed');const item=document.createElement('div');item.className='item media-feed';item.textContent=value;feed.prepend(item);box.value='';toast('Added to this device preview only')}
@@ -321,6 +321,94 @@ const loadTransactionHistory = async () => {
     if (refreshBtn) refreshBtn.disabled = false;
   }
 };
+
+const missionIds = {
+  1: 'digital-safety-checklist',
+  2: 'community-contribution',
+  3: 'scam-awareness',
+  4: 'learning-reflection',
+  5: 'product-feedback'
+};
+const loadMyMissionSubmissions = async () => {
+  try {
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ action: 'myMissionSubmissions' }),
+      false,
+      '/',
+      'POST'
+    );
+    let result = {};
+    try { result = execution.responseBody ? JSON.parse(execution.responseBody) : {}; }
+    catch (_) { throw new Error('The mission service returned an unreadable response.'); }
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+      throw new Error(result.message || ('Mission history request failed (' + (execution.responseStatusCode || 'no response') + ').'));
+    }
+    const latest = new Map();
+    (Array.isArray(result.submissions) ? result.submissions : []).forEach(row => {
+      if (row && row.missionId && !latest.has(row.missionId)) latest.set(row.missionId, row);
+    });
+    Object.entries(missionIds).forEach(([number, missionId]) => {
+      const row = latest.get(missionId);
+      const statusEl = byId('missionStatus' + number);
+      const button = byId('submitMissionBtn' + number);
+      if (!statusEl) return;
+      if (!row) {
+        statusEl.textContent = 'No submission recorded yet.';
+        if (button) button.disabled = false;
+        return;
+      }
+      const state = String(row.status || 'pending').toLowerCase();
+      statusEl.textContent = state === 'rejected'
+        ? 'Your submission was rejected. Reviewer note: ' + (row.rejectionReason || 'No reason was provided.')
+        : 'Your submission is saved and pending review. No points have been credited.';
+      if (button) button.disabled = true;
+    });
+  } catch (err) {
+    Object.keys(missionIds).forEach(number => {
+      const statusEl = byId('missionStatus' + number);
+      if (statusEl) statusEl.textContent = 'Could not load submission status: ' + (err?.message || 'Please try again.');
+    });
+  }
+};
+window.submitMissionLive = async number => {
+  const missionId = missionIds[number];
+  const evidenceBox = byId('missionProof' + number);
+  const statusEl = byId('missionStatus' + number);
+  const button = byId('submitMissionBtn' + number);
+  if (!missionId || !evidenceBox || !statusEl) return;
+  const evidence = evidenceBox.value.trim();
+  if (evidence.length < 30) {
+    statusEl.textContent = 'Please provide a fuller response (at least 30 characters) before submitting.';
+    evidenceBox.focus();
+    return;
+  }
+  try {
+    await account.get();
+    if (button) button.disabled = true;
+    statusEl.textContent = 'Sending your mission evidence securely…';
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ action: 'submitMission', missionId, evidence }),
+      false,
+      '/',
+      'POST'
+    );
+    let result = {};
+    try { result = execution.responseBody ? JSON.parse(execution.responseBody) : {}; }
+    catch (_) { throw new Error('The mission service returned an unreadable response.'); }
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+      throw new Error(result.message || ('Submission failed (' + (execution.responseStatusCode || 'no response') + ').'));
+    }
+    statusEl.textContent = result.duplicate
+      ? 'This mission was already submitted. Current status: ' + (result.submission?.status || 'pending') + '.'
+      : 'Your submission was saved securely and is pending review. No points have been credited.';
+    await loadMyMissionSubmissions();
+  } catch (err) {
+    statusEl.textContent = (err?.message || 'Could not submit this mission. Please sign in and try again.');
+    if (button) button.disabled = false;
+  }
+};
 const showSignedIn = async (user, referralCode = '') => {
   byId('authForm').hidden=true; byId('signedInPanel').hidden=false;
   byId('accountDetails').textContent=`Signed in as ${user.name || 'FundB member'} · ${user.email}`;
@@ -334,9 +422,10 @@ const showSignedIn = async (user, referralCode = '') => {
   byId('profileStatus').textContent = user.name ? 'Display name loaded from your FundB account.' : 'Choose a display name and save it to your FundB account.';
   status('Your FundB account is connected.');
   await syncCloudProfile(referralCode);
+  await loadMyMissionSubmissions();
   showTab('home');
 };
-const showSignedOut = () => { byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
+const showSignedOut = () => { Object.keys(missionIds).forEach(number => { const statusEl = byId('missionStatus' + number); const button = byId('submitMissionBtn' + number); if (statusEl) statusEl.textContent = 'Sign in to submit missions and view your submission status.'; if (button) button.disabled = false; }); byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
 const getError = e => e?.message || 'Something went wrong. Please try again.';
 try { const user=await account.get(); await showSignedIn(user); }
 catch(e){ showSignedOut(); status('Appwrite is ready. Create an account or sign in.', false); }
