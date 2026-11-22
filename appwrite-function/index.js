@@ -7,10 +7,11 @@ const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 // before falling back to the placeholder database name, without changing data.
 const DATABASE_ID = process.env.FUNDB_DATABASE_ID || process.env.FUNBDATAID || 'fundB_database';
 const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || 'profile';
+const MISSION_SUBMISSIONS_TABLE_ID = process.env.FUNDB_MISSION_SUBMISSIONS_TABLE_ID || 'fundb_mission_submissions';
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
 const ALLOWED_ORIGINS = new Set(
   (process.env.FUNDB_ALLOWED_ORIGIN ||
-    'https://cosmic-cupcake-cc56c4.netlify.app,https://fundb-production-hardening.fundb-mining-website.pages.dev,https://fundb-public-content-legal.fundb-mining-website.pages.dev')
+    'https://cosmic-cupcake-cc56c4.netlify.app,https://fundb-production-hardening.fundb-mining-website.pages.dev,https://fundb-public-content-legal.fundb-mining-website.pages.dev,https://fundb-mission-submissions-ha.fundb-mining-website.pages.dev')
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean)
@@ -32,6 +33,23 @@ function responseHeaders(origin) {
 
 function json(res, statusCode, payload, origin) {
   return res.json(payload, statusCode, responseHeaders(origin));
+}
+
+function missionSubmissionsTablePath() {
+  return '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
+    '/tables/' + encodeURIComponent(MISSION_SUBMISSIONS_TABLE_ID) + '/rows';
+}
+function appwriteQueryString(queries) {
+  return queries.map(query => 'queries[]=' + encodeURIComponent(JSON.stringify(query))).join('&');
+}
+async function listMissionSubmissions(queries, adminHeaders) {
+  const suffix = appwriteQueryString(queries);
+  const result = await appwriteRequest(
+    missionSubmissionsTablePath() + (suffix ? '?' + suffix : ''),
+    'GET',
+    adminHeaders
+  );
+  return result.rows || [];
 }
 
 function appwriteRequest(path, method, headers, body) {
@@ -198,6 +216,201 @@ module.exports = async ({ req, res, log, error }) => {
         createdAt: row.createdAt || row.$createdAt || null
       })).filter(row => Number.isFinite(row.amount) && row.amount >= 0);
       return json(res, 200, { ok: true, transactions }, origin);
+    }
+
+
+    // Mission submissions use the authenticated Appwrite account ID. The
+    // caller cannot choose a userId, status, reviewer, or reward amount.
+    const missionActions = new Set([
+      'submitMission',
+      'myMissionSubmissions',
+      'adminMissionQueue',
+      'reviewMissionSubmission'
+    ]);
+    if (missionActions.has(requestBody.action)) {
+      const missionHeaders = {
+        'X-Appwrite-Project': PROJECT_ID,
+        'X-Appwrite-Key': functionKey
+      };
+      const submissionsPath = missionSubmissionsTablePath();
+
+      if (requestBody.action === 'submitMission') {
+        const missionId = String(requestBody.missionId || '').trim();
+        const evidence = String(requestBody.evidence || '').trim();
+        if (!/^[A-Za-z0-9_-]{1,64}$/.test(missionId)) {
+          return json(res, 400, {
+            ok: false, code: 'INVALID_MISSION_ID',
+            message: 'A valid mission ID is required.'
+          }, origin);
+        }
+        if (!evidence || evidence.length > 2000) {
+          return json(res, 400, {
+            ok: false, code: 'INVALID_EVIDENCE',
+            message: 'Evidence is required and must be 2,000 characters or fewer.'
+          }, origin);
+        }
+        // Stable row ID makes retries idempotent for this user + mission pair.
+        const rowId = crypto.createHash('sha256')
+          .update(user.$id + ':' + missionId)
+          .digest('hex')
+          .slice(0, 32);
+        try {
+          const created = await appwriteRequest(submissionsPath, 'POST', missionHeaders, {
+            rowId,
+            data: {
+              userId: user.$id,
+              missionId,
+              evidence,
+              status: 'pending',
+              reviewer: '',
+              approvedPoints: 0,
+              submittedAt: new Date().toISOString(),
+              rejectionReason: ''
+              // reviewedAt is intentionally omitted until a reviewer acts.
+            }
+          });
+          return json(res, 201, {
+            ok: true,
+            submission: {
+              id: created.$id,
+              missionId: created.missionId,
+              status: created.status,
+              submittedAt: created.submittedAt
+            },
+            rewardsEnabled: false
+          }, origin);
+        } catch (createError) {
+          if (createError && (createError.statusCode === 409 || createError.type === 'row_already_exists')) {
+            try {
+              const existing = await appwriteRequest(
+                submissionsPath + '/' + encodeURIComponent(rowId),
+                'GET',
+                missionHeaders
+              );
+              return json(res, 200, {
+                ok: true,
+                duplicate: true,
+                submission: {
+                  id: existing.$id,
+                  missionId: existing.missionId,
+                  status: existing.status,
+                  submittedAt: existing.submittedAt
+                },
+                rewardsEnabled: false
+              }, origin);
+            } catch (_) {
+              // A conflict without this user's deterministic row usually means
+              // the unique index is too broad (e.g. missionId alone).
+              return json(res, 409, {
+                ok: false,
+                code: 'MISSION_UNIQUE_INDEX_MISCONFIGURED',
+                message: 'The mission uniqueness index must contain both userId and missionId. No submission was created.'
+              }, origin);
+            }
+          }
+          throw createError;
+        }
+      }
+
+      if (requestBody.action === 'myMissionSubmissions') {
+        const rows = await listMissionSubmissions([
+          { method: 'equal', attribute: 'userId', values: [user.$id] },
+          { method: 'orderDesc', attribute: 'submittedAt' },
+          { method: 'limit', values: [100] }
+        ], missionHeaders);
+        return json(res, 200, {
+          ok: true,
+          submissions: rows.map(row => ({
+            id: row.$id,
+            missionId: row.missionId,
+            evidence: row.evidence,
+            status: row.status,
+            submittedAt: row.submittedAt,
+            reviewedAt: row.reviewedAt || null,
+            approvedPoints: Number(row.approvedPoints || 0),
+            rejectionReason: row.rejectionReason || ''
+          })),
+          rewardsEnabled: false
+        }, origin);
+      }
+
+      const adminIds = (process.env.FUNDB_ADMIN_USER_IDS || '')
+        .split(',')
+        .map(value => value.trim())
+        .filter(Boolean);
+      if (!adminIds.includes(user.$id)) {
+        return json(res, 403, {
+          ok: false,
+          code: 'ADMIN_ONLY',
+          message: 'This action is restricted to authorized FundB reviewers.'
+        }, origin);
+      }
+
+      if (requestBody.action === 'adminMissionQueue') {
+        const rows = await listMissionSubmissions([
+          { method: 'equal', attribute: 'status', values: ['pending'] },
+          { method: 'orderDesc', attribute: 'submittedAt' },
+          { method: 'limit', values: [100] }
+        ], missionHeaders);
+        return json(res, 200, {
+          ok: true,
+          submissions: rows.map(row => ({
+            id: row.$id,
+            userId: row.userId,
+            missionId: row.missionId,
+            evidence: row.evidence,
+            status: row.status,
+            submittedAt: row.submittedAt
+          })),
+          rewardsEnabled: false
+        }, origin);
+      }
+
+      const submissionId = String(requestBody.submissionId || '').trim();
+      const decision = String(requestBody.decision || '').trim().toLowerCase();
+      const reason = String(requestBody.rejectionReason || '').trim();
+      if (!/^[A-Za-z0-9_-]{1,36}$/.test(submissionId) ||
+          decision !== 'reject' || !reason || reason.length > 500) {
+        return json(res, 400, {
+          ok: false,
+          code: 'INVALID_REVIEW',
+          message: 'Only rejection with a reason (up to 500 characters) is enabled. Point approval remains disabled until the rewards ledger is verified.'
+        }, origin);
+      }
+      const target = await appwriteRequest(
+        submissionsPath + '/' + encodeURIComponent(submissionId),
+        'GET',
+        missionHeaders
+      );
+      if (target.status !== 'pending') {
+        return json(res, 409, {
+          ok: false,
+          code: 'ALREADY_REVIEWED',
+          message: 'This submission is no longer pending.'
+        }, origin);
+      }
+      const updated = await appwriteRequest(
+        submissionsPath + '/' + encodeURIComponent(submissionId),
+        'PATCH',
+        missionHeaders,
+        {
+          data: {
+            status: 'rejected',
+            reviewer: user.$id,
+            reviewedAt: new Date().toISOString(),
+            rejectionReason: reason
+          }
+        }
+      );
+      return json(res, 200, {
+        ok: true,
+        submission: {
+          id: updated.$id,
+          status: updated.status,
+          reviewedAt: updated.reviewedAt
+        },
+        rewardsEnabled: false
+      }, origin);
     }
 
     const submittedReferralCode = String(requestBody.referralCode || '').trim().toUpperCase();

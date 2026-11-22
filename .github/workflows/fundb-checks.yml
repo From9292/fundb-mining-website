@@ -2,9 +2,9 @@ name: FundB code checks
 
 on:
   pull_request:
-    branches: [main]
-  push:
     branches: [main, fundb-production-hardening]
+  push:
+    branches: [main, fundb-production-hardening, fundb-mission-submissions-hardening-2026-11-22]
 
 jobs:
   appwrite-function:
@@ -45,6 +45,38 @@ jobs:
                   subprocess.run(["node", "--check", handle.name], check=True)
               print(f"Embedded script {number}: syntax OK")
           PY
+      - name: Verify authenticated mission submission UI
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          backend = Path("appwrite-function/index.js").read_text(encoding="utf-8")
+          required_html = [
+              'onclick="submitMissionLive(1)"',
+              'onclick="submitMissionLive(5)"',
+              "JSON.stringify({ action: 'submitMission'",
+              "JSON.stringify({ action: 'myMissionSubmissions' })",
+              "await account.get()",
+              "pending review"
+          ]
+          missing = [item for item in required_html if item not in html]
+          if missing:
+              raise SystemExit("Mission UI is not connected to authenticated submissions: " + ", ".join(missing))
+          required_backend = [
+              "'submitMission'",
+              "'myMissionSubmissions'",
+              "userId: user.$id",
+              "status: 'pending'",
+              "MISSION_UNIQUE_INDEX_MISCONFIGURED"
+          ]
+          missing = [item for item in required_backend if item not in backend]
+          if missing:
+              raise SystemExit("Mission API safety boundary is incomplete: " + ", ".join(missing))
+          if "Preview submission saved on this device only" in html:
+              raise SystemExit("Old local-only mission preview handler is still advertised")
+          print("Mission UI calls the authenticated API; pending rewards remain disabled.")
+          PY
+
       - name: Verify authenticated read-only transaction history UI
         run: |
           python3 - <<'PY'
