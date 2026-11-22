@@ -11,7 +11,7 @@ Use the existing Appwrite function **FundB Rewards API**. Do not create another 
 - Entrypoint: `index.js`
 - Build command: `npm install`
 - Function execution access: `Any` (the endpoint itself requires a valid signed-in user's JWT)
-- Dynamic API key scopes: `rows.read`, `rows.write`, and `tables.read` (the last scope is needed for read-only table-name discovery)
+- Dynamic API key scopes: `rows.read`, `rows.write`, and `tables.read`. `tables.read` is required for read-only discovery of the exact Profile and FundB Transactions tables; `rows.read` supports profile, referral, mission and transaction-history lookups; `rows.write` supports the existing profile, referral-attribution and mission-submission writes. The transaction-history action itself is read-only.
 
 The source folder is in this repository at [appwrite-function](https://github.com/From9292/fundb-mining-website/tree/fundb-production-hardening/appwrite-function).
 
@@ -32,14 +32,13 @@ The previously supplied Profile-table screenshot showed `userId`, `points`, `ref
 Optional environment variables:
 - `FUNDB_DATABASE_ID` (defaults to `fundB_database`)
 - `FUNDB_PROFILE_TABLE_ID` (legacy fallback table ID)
-- `FUNDB_TRANSACTIONS_TABLE_ID` (required internal ID of the dedicated FundB Transactions table; for the existing table, use `fundB_transactions`)
 - `FUNDB_ALLOWED_ORIGIN` (optional comma-separated exact-origin allowlist. Defaults to the known Netlify and Cloudflare Pages FundB origins; set it to your current exact website origin(s) if the hosting domain changes.)
 
 Appwrite automatically provides `APPWRITE_FUNCTION_PROJECT_ID`, the ephemeral key in `x-appwrite-key`, and the authenticated user's JWT in `x-appwrite-user-jwt`. Do not put API keys, passwords, or JWTs in GitHub.
 
 ## Transaction history (read-only)
 
-The website's transaction-history refresh calls the authenticated `transactionHistory` action. Configure `FUNDB_TRANSACTIONS_TABLE_ID` with the internal ID `fundB_transactions` for the existing dedicated ledger table. The function verifies the signed-in user and returns only rows whose `userId` matches that verified account, newest first, up to 50 rows. An empty table correctly returns an empty history. The endpoint does not create ledger rows or enable rewards, deposits, transfers, or withdrawals.
+The website's transaction-history refresh calls the authenticated `transactionHistory` action. The function searches the configured `fundB_database` for exactly one table whose display name is **FundB Transactions**, then uses the internal table ID returned by Appwrite. It does not assume that the display name and internal ID are the same. The function verifies the signed-in user and returns only rows whose `userId` matches that verified account, newest first, up to 50 rows. An empty table correctly returns an empty history. If the table is missing or duplicated, the request fails closed and reads no ledger rows. This action is read-only: it does not create ledger rows or enable rewards, deposits, transfers, or withdrawals.
 
 
 ## Mission submissions (pending review only)
