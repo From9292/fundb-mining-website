@@ -20,7 +20,7 @@ The Appwrite profile function verifies a signed-in account and loads or initiali
 - Mining sessions and server-authoritative reward calculations
 - Daily rewards and task completion credits
 - Referral bonuses (the profile API supports referral attribution only; no referral rewards are issued)
-- Wallet address issuance, deposits, transfers, withdrawals, token issuance or exchange conversion
+- Wallet address issuance, deposits, transfers, withdrawals, BEP-20 token issuance or exchange conversion
 - Customer support ticketing, notifications and global moderation
 
 Do not promise users earnings, guaranteed token value, token allocation or withdrawals until those services have been implemented, tested and approved for launch.
@@ -47,8 +47,8 @@ If the table is not present or its schema is not ready, transaction history will
 
 Wallet features must remain disabled until all relevant components are selected, implemented and tested:
 
-1. **Receive address:** choose the launch blockchain and wallet/custody model; deploy and verify the token contract; issue addresses through a trusted provider or audited wallet implementation; test address ownership and deposit confirmations.
-2. **Withdrawal address:** select a supported network; validate addresses for that network; verify account ownership and user confirmation; implement risk checks, limits, fee disclosure, payout signing and reconciliation.
+1. **Receive address:** the selected target is BNB Smart Chain (BSC), using the BEP-20 token standard (mainnet chain ID 56; BSC Testnet chain ID 97; native gas asset BNB). This is a network decision only—not a deployed token. Select a wallet/custody model; deploy and independently verify the BEP-20 contract; issue addresses through a trusted provider or audited wallet implementation; test address ownership, deposit monitoring and confirmations.
+2. **Withdrawal address:** support BNB Smart Chain only for the initial target; validate the BSC address format and require users to confirm the network; verify account ownership and user confirmation; implement risk checks, limits, fee disclosure, secure payout signing and reconciliation. Keep withdrawals disabled until all components are live and tested.
 3. **Internal transfer:** implement a server-authoritative balance ledger with atomic debit/credit, unique idempotency keys, authorization, rate limits, fraud controls and immutable audit records.
 4. **Transaction history:** write ledger entries only from trusted server processes and show each signed-in user only their own entries.
 
