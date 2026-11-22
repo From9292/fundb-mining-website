@@ -609,7 +609,7 @@ const showSignedOut = () => {
   byId('authGate').hidden=false; byId('appShell').hidden=true; Object.keys(missionIds).forEach(number => { const statusEl = byId('missionStatus' + number); const button = byId('submitMissionBtn' + number); if (statusEl) statusEl.textContent = 'Sign in to submit missions and view your submission status.'; if (button) button.disabled = false; }); byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
 const getError = e => e?.message || 'Something went wrong. Please try again.';
 try { const user=await account.get(); await showSignedIn(user); }
-catch(e){ showSignedOut(); status('Appwrite is ready. Create an account or sign in.', false); }
+catch(e){ showSignedOut(); status('Appwrite is ready. Create an account or sign in.', false); byId('gateAuthStatus').textContent='Your secure FundB connection is ready. Create an account or sign in to continue.'; }
 const gateStatus=(message,bad=false)=>{const el=byId('gateAuthStatus');el.textContent=message;el.style.borderColor=bad?'#9b4545':'#6b5423';};
 const gateBusy=busy=>['gateRegisterBtn','gateLoginBtn','gateResetBtn'].forEach(id=>byId(id).disabled=busy);
 byId('gateRegisterBtn').addEventListener('click',async()=>{
