@@ -57,7 +57,9 @@ jobs:
               "JSON.stringify({ action: 'submitMission'",
               "JSON.stringify({ action: 'myMissionSubmissions' })",
               "await account.get()",
-              "pending review"
+              "pending review",
+              'maxlength="2000"',
+              "window.submitMissionLive"
           ]
           missing = [item for item in required_html if item not in html]
           if missing:
@@ -72,8 +74,8 @@ jobs:
           missing = [item for item in required_backend if item not in backend]
           if missing:
               raise SystemExit("Mission API safety boundary is incomplete: " + ", ".join(missing))
-          if "Preview submission saved on this device only" in html:
-              raise SystemExit("Old local-only mission preview handler is still advertised")
+          if "Preview submission saved on this device only" in html or "submitMissionPreview" in html:
+              raise SystemExit("Old local-only mission preview handler is still present")
           print("Mission UI calls the authenticated API; pending rewards remain disabled.")
           PY
 
