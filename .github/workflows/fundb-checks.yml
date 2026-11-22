@@ -141,6 +141,30 @@ jobs:
               raise SystemExit("Do not add live ad units before site approval and a valid ad-unit ID are confirmed.")
           print("Mining remains disabled; AdSense verification is installed, and no live ad units or incentivized ads are enabled.")
           PY
+      - name: Verify preview wording does not imply active earning or live AdSense units
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          required = [
+              "Explore missions",
+              "AdSense publisher verification script is present",
+              "no ad units are installed",
+              "No streaming points are currently offered or accruing",
+              "not cash or an exchange rate"
+          ]
+          missing = [item for item in required if item not in html]
+          if missing:
+              raise SystemExit("Preview wording check failed: " + ", ".join(missing))
+          forbidden = [
+              "No AdSense ad unit or serving script is installed",
+              "The proposed 35 FundB Points per eligible hour"
+          ]
+          present = [item for item in forbidden if item in html]
+          if present:
+              raise SystemExit("Outdated or misleading preview wording remains: " + ", ".join(present))
+          print("Preview earning, AdSense and points-reference wording is accurate.")
+          PY
       - name: Verify referral and CORS hardening
         run: |
           python3 - <<'PY'
