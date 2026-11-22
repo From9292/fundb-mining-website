@@ -11,7 +11,7 @@ const MISSION_SUBMISSIONS_TABLE_ID = process.env.FUNDB_MISSION_SUBMISSIONS_TABLE
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
 const ALLOWED_ORIGINS = new Set(
   (process.env.FUNDB_ALLOWED_ORIGIN ||
-    'https://cosmic-cupcake-cc56c4.netlify.app,https://fundb-production-hardening.fundb-mining-website.pages.dev,https://fundb-public-content-legal.fundb-mining-website.pages.dev')
+    'https://cosmic-cupcake-cc56c4.netlify.app,https://fundb-production-hardening.fundb-mining-website.pages.dev,https://fundb-public-content-legal.fundb-mining-website.pages.dev,https://fundb-mission-submissions-ha.fundb-mining-website.pages.dev')
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean)
