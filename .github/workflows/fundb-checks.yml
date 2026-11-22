@@ -2,9 +2,9 @@ name: FundB code checks
 
 on:
   pull_request:
-    branches: [main]
-  push:
     branches: [main, fundb-production-hardening]
+  push:
+    branches: [main, fundb-production-hardening, fundb-mission-submissions-hardening-2026-11-22]
 
 jobs:
   appwrite-function:
