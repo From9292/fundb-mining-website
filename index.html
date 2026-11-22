@@ -332,6 +332,7 @@ const showSignedIn = async (user, referralCode = '') => {
   byId('profileStatus').textContent = user.name ? 'Display name loaded from your FundB account.' : 'Choose a display name and save it to your FundB account.';
   status('Your FundB account is connected.');
   await syncCloudProfile(referralCode);
+  showTab('home');
 };
 const showSignedOut = () => { byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
 const getError = e => e?.message || 'Something went wrong. Please try again.';
