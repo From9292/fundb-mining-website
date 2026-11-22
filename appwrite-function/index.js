@@ -349,7 +349,7 @@ module.exports = async ({ req, res, log, error }) => {
       if (requestBody.action === 'adminMissionQueue') {
         const rows = await listMissionSubmissions([
           { method: 'equal', attribute: 'status', values: ['pending'] },
-          { method: 'orderAsc', attribute: 'submittedAt' },
+          { method: 'orderDesc', attribute: 'submittedAt' },
           { method: 'limit', values: [100] }
         ], missionHeaders);
         return json(res, 200, {
