@@ -19,10 +19,37 @@ jobs:
   contract-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "20"
-      - run: npm install --ignore-scripts
-      - run: npx hardhat compile
-      - run: npx hardhat test
+          node-version: "22"
+      - name: Install pinned direct dependencies
+        run: npm install --ignore-scripts --no-audit
+      - name: Report dependency vulnerabilities for remediation
+        shell: bash
+        run: |
+          npm audit --json > npm-audit.json || true
+          node <<'NODE'
+          const report = require('./npm-audit.json');
+          const counts = report.metadata?.vulnerabilities || {};
+          console.log('Dependency vulnerability totals:', JSON.stringify(counts));
+          for (const [name, item] of Object.entries(report.vulnerabilities || {})) {
+            console.log(JSON.stringify({
+              package: name,
+              severity: item.severity,
+              direct: item.isDirect,
+              range: item.range,
+              fixAvailable: item.fixAvailable,
+              via: item.via.map(v => typeof v === 'string' ? v : {
+                name: v.name,
+                title: v.title,
+                url: v.url,
+                range: v.range
+              })
+            }));
+          }
+          NODE
+      - name: Compile contracts
+        run: npx hardhat compile
+      - name: Run contract tests
+        run: npx hardhat test
