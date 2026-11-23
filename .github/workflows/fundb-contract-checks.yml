@@ -5,6 +5,8 @@ on:
     branches:
       - fundb-contract-audit-tests
   pull_request:
+    branches:
+      - fundb-contract-audit-tests
   workflow_dispatch:
 
 permissions:
@@ -31,3 +33,11 @@ jobs:
 
       - name: Run FundB contract tests
         run: npm test
+
+      - name: Preserve compiled contract artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fundb-token-testnet-build
+          path: artifacts/contracts/FundBToken.sol/FundBToken.json
+          if-no-files-found: error
+          retention-days: 14
