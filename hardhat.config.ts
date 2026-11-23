@@ -1,8 +1,9 @@
 import { defineConfig } from "hardhat/config";
-import hardhatToolboxMochaEthers from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import hardhatEthers from "@nomicfoundation/hardhat-ethers";
+import hardhatNodeTestRunner from "@nomicfoundation/hardhat-node-test-runner";
 
 export default defineConfig({
-  plugins: [hardhatToolboxMochaEthers],
+  plugins: [hardhatEthers, hardhatNodeTestRunner],
   solidity: {
     version: "0.8.24",
     settings: {
