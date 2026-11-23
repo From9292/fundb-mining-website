@@ -38,3 +38,5 @@ jobs:
           # Keep all findings visible and fail on medium, high, and critical issues.
           # Low/informational findings remain visible for explicit review.
           fail-on: medium
+          # Exclude findings that apply only to the pinned OpenZeppelin dependency sources.
+          slither-args: --exclude-dependencies
