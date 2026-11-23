@@ -34,4 +34,3 @@ jobs:
         uses: crytic/slither-action@v0.4.2
         with:
           node-version: 22.13.0
-          fail-on: none
