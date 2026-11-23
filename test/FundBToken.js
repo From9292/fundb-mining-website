@@ -17,7 +17,7 @@ describe("FundBToken", function () {
     const { token } = await deploy();
     assert.equal(await token.name(), "FundB");
     assert.equal(await token.symbol(), "FUNDB");
-    assert.equal(await token.decimals(), 18);
+    assert.equal(await token.decimals(), 18n);
   });
 
   it("mints exactly 10 billion tokens once to the nominated recipient", async function () {
@@ -30,12 +30,10 @@ describe("FundBToken", function () {
 
   it("rejects a zero initial holder", async function () {
     const { Factory } = await deploy();
-    await assert.rejects(
-      async () => {
-        const invalid = await Factory.deploy(ethers.ZeroAddress);
-        await invalid.waitForDeployment();
-      }
-    );
+    await assert.rejects(async () => {
+      const invalid = await Factory.deploy(ethers.ZeroAddress);
+      await invalid.waitForDeployment();
+    });
   });
 
   it("supports standard transfers and allowance-based transfers", async function () {
@@ -65,8 +63,8 @@ describe("FundBToken", function () {
 
   it("rejects transfers to the zero address", async function () {
     const { token, recipient } = await deploy();
-    await assert.rejects(
-      async () => (await token.connect(recipient).transfer(ethers.ZeroAddress, 1n)).wait()
+    await assert.rejects(async () =>
+      (await token.connect(recipient).transfer(ethers.ZeroAddress, 1n)).wait()
     );
   });
 });
