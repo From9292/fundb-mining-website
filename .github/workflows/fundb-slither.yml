@@ -34,7 +34,6 @@ jobs:
         uses: crytic/slither-action@v0.4.2
         with:
           node-version: 22.13.0
-          # Keep all Slither findings visible; fail CI on high/critical severity.
-          # Current low-severity pragma-range notices are from OpenZeppelin's
-          # compatible ^0.8.20 source pragmas; the build pins solc 0.8.24.
-          fail-on: high
+          # Keep all findings visible and fail on medium, high, and critical issues.
+          # Low/informational findings remain visible for explicit review.
+          fail-on: medium
