@@ -6,6 +6,7 @@ on:
       - fundb-contract-audit-tests
     paths:
       - 'contracts/**'
+      - 'test/**'
       - 'package.json'
       - 'package-lock.json'
       - 'hardhat.config.ts'
