@@ -1,0 +1,33 @@
+name: FundB contract checks
+
+on:
+  push:
+    branches:
+      - fundb-contract-audit-tests
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Compile FundB contract
+        run: npm run compile
+
+      - name: Run FundB contract tests
+        run: npm test
