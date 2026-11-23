@@ -36,12 +36,14 @@ describe("FundBToken", function () {
     });
   });
 
-  it("supports standard transfers and allowance-based transfers", async function () {
+  it("supports standard transfers and allowance-based transfers without changing total supply", async function () {
     const { token, recipient, outsider } = await deploy();
+    const supply = ethers.parseUnits("10000000000", 18);
     const amount = ethers.parseUnits("125", 18);
     await (await token.connect(recipient).transfer(outsider.address, amount)).wait();
     assert.equal(await token.balanceOf(recipient.address), ethers.parseUnits("9999999875", 18));
     assert.equal(await token.balanceOf(outsider.address), amount);
+    assert.equal(await token.totalSupply(), supply);
 
     const allowance = ethers.parseUnits("25", 18);
     await (await token.connect(recipient).approve(outsider.address, allowance)).wait();
@@ -49,6 +51,7 @@ describe("FundBToken", function () {
     assert.equal(await token.balanceOf(recipient.address), ethers.parseUnits("9999999850", 18));
     assert.equal(await token.balanceOf(outsider.address), ethers.parseUnits("150", 18));
     assert.equal(await token.allowance(recipient.address, outsider.address), 0n);
+    assert.equal(await token.totalSupply(), supply);
   });
 
   it("does not expose privileged mint, owner, or upgrade entry points", async function () {
