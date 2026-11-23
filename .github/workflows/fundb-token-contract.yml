@@ -1,0 +1,29 @@
+name: FundB token contract tests
+
+on:
+  pull_request:
+    paths:
+      - "contracts/**"
+      - "test/**"
+      - "hardhat.config.js"
+      - "package.json"
+      - ".github/workflows/fundb-token-contract.yml"
+  push:
+    branches:
+      - fundb-contract-foundation
+
+permissions:
+  contents: read
+
+jobs:
+  contract-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm install --ignore-scripts
+      - run: npx hardhat compile
+      - run: npx hardhat test
