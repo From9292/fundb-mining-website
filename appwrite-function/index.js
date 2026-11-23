@@ -135,10 +135,10 @@ module.exports = async ({ req, res, log, error }) => {
     const jwt = req.headers['x-appwrite-user-jwt'];
     const functionKey = req.headers['x-appwrite-key'];
     // Log presence only. Never log JWTs or API keys.
-    log('Auth diagnostics: ' + JSON.stringify({ projectConfigured: Boolean(PROJECT_ID), userJwtPresent: Boolean(jwt), functionKeyPresent: Boolean(functionKey), jwtSource: jwt ? 'header' : 'missing', headerNames: Object.keys(req.headers || {}) }));
+    log('Authentication request received; required credential/configuration presence checked.');
     if (!PROJECT_ID || !jwt || !functionKey) {
       const missing = [!PROJECT_ID && 'project configuration', !jwt && 'user JWT header', !functionKey && 'function key header'].filter(Boolean);
-      return json(res, 401, { ok: false, message: 'Authentication request is missing: ' + missing.join(', ') + '. Please retry from the signed-in FundB website.' }, origin);
+      return json(res, 401, { ok: false, message: 'Authentication is unavailable. Please retry from the signed-in FundB website.' }, origin);
     }
 
     // Verify the user's short-lived JWT using Appwrite's Account REST endpoint.
