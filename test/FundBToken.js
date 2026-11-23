@@ -56,9 +56,12 @@ describe("FundBToken", function () {
 
   it("does not expose privileged mint, owner, or upgrade entry points", async function () {
     const { token } = await deploy();
-    expect(token.interface.getFunction("mint")).to.equal(null);
-    expect(token.interface.getFunction("owner")).to.equal(null);
-    expect(token.interface.getFunction("upgradeTo")).to.equal(null);
+    const functionNames = token.interface.fragments
+      .filter((fragment) => fragment.type === "function")
+      .map((fragment) => fragment.name);
+    expect(functionNames).not.to.include("mint");
+    expect(functionNames).not.to.include("owner");
+    expect(functionNames).not.to.include("upgradeTo");
   });
 
   it("rejects transfers to the zero address", async function () {
