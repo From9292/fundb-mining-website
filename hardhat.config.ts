@@ -5,10 +5,11 @@ import hardhatNodeTestRunner from "@nomicfoundation/hardhat-node-test-runner";
 export default defineConfig({
   plugins: [hardhatEthers, hardhatNodeTestRunner],
   solidity: {
-    version: "0.8.24",
+    version: "0.8.39",
     settings: {
       optimizer: { enabled: true, runs: 200 },
-      viaIR: false
+      viaIR: false,
+      evmVersion: "osaka"
     }
   },
   paths: {
