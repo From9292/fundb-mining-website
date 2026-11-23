@@ -159,7 +159,8 @@ test('fails closed when table discovery is unavailable and no configured mapping
   });
 
   assert.equal(res.statusCode, 500);
-  assert.match(res.payload.message, /No supplied FundB table mapping was reachable/);
+  assert.equal(res.payload.message, 'FundB could not complete this request. Please retry later.');
+  assert.equal(res.payload.diagnostic, undefined, 'upstream diagnostics must remain server-side only');
   assert.equal(writes.length, 0, 'ambiguous profile lookup must never mutate user data');
 });
 
