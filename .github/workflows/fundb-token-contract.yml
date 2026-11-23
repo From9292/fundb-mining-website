@@ -23,32 +23,12 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
-      - name: Install pinned direct dependencies
-        run: npm install --ignore-scripts --no-audit
-      - name: Report dependency vulnerabilities for remediation
-        shell: bash
-        run: |
-          npm audit --json > npm-audit.json || true
-          node <<'NODE'
-          const report = require('./npm-audit.json');
-          const counts = report.metadata?.vulnerabilities || {};
-          console.log('Dependency vulnerability totals:', JSON.stringify(counts));
-          for (const [name, item] of Object.entries(report.vulnerabilities || {})) {
-            console.log(JSON.stringify({
-              package: name,
-              severity: item.severity,
-              direct: item.isDirect,
-              range: item.range,
-              fixAvailable: item.fixAvailable,
-              via: item.via.map(v => typeof v === 'string' ? v : {
-                name: v.name,
-                title: v.title,
-                url: v.url,
-                range: v.range
-              })
-            }));
-          }
-          NODE
+      - name: Resolve exact dependency tree
+        run: npm install --package-lock-only --ignore-scripts --no-audit
+      - name: Install from generated lockfile
+        run: npm ci --ignore-scripts --no-audit
+      - name: Enforce clean dependency audit
+        run: npm audit --audit-level=low
       - name: Compile contracts
         run: npx hardhat compile
       - name: Run contract tests
