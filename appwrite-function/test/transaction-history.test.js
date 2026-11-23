@@ -157,7 +157,8 @@ test('transaction history fails closed if the exact ledger table is missing or a
     const res = await invoke(loadHandler());
     assert.equal(res.statusCode, 500);
     assert.equal(res.payload.ok, false);
-    assert.match(res.payload.message, /FundB Transactions table|More than one table is named FundB Transactions/);
+    assert.equal(res.payload.message, 'FundB could not complete this request. Please retry later.');
+    assert.equal(res.payload.diagnostic, undefined, 'ledger discovery details must not be returned to the browser');
     assert.equal(calls.filter(call => call.path.includes('/rows')).length, 0, 'must not read from an unknown or ambiguous ledger');
   }
 });
