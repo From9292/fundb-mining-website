@@ -28,7 +28,7 @@ The supply is a fixed design parameter. It is not a promise of market value, liq
 
 ## Required implementation and independent review
 
-Before deployment, implement the token using a pinned, audited OpenZeppelin ERC-20 dependency. Do not write a custom ERC-20 implementation. Compile with a pinned Solidity compiler and optimizer configuration. Commit the lockfile and reproducible build settings. Add automated tests for metadata, exact initial supply, transfers, allowance behavior, zero-address handling, and the absence of privileged mint/upgrade functions. Run static analysis and an independent smart-contract security review.
+Before deployment, implement the token using a pinned, audited OpenZeppelin ERC-20 dependency. Do not write a custom ERC-20 implementation. Compile with pinned Solidity compiler 0.8.39, target the BNB-supported Osaka EVM, and keep the optimizer configuration fixed and reproducible. Commit the lockfile and reproducible build settings. Add automated tests for metadata, exact initial supply, transfers, allowance behavior, zero-address handling, and the absence of privileged mint/upgrade functions. Run static analysis and an independent smart-contract security review.
 
 The deployment recipient must be a wallet controlled by the project owner. Deploy only from that wallet after the owner verifies the exact source, compiler settings, constructor recipient, and deployment transaction. Never ask for or place a seed phrase or private key in this repository, chat, website, or Appwrite.
 
