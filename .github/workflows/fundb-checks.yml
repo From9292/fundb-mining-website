@@ -91,11 +91,11 @@ jobs:
               raise SystemExit("Referral code must be passed explicitly by the registration flow")
           if "eligibleReferrer.$id) + '/total_referrals/increment'" in backend:
               raise SystemExit("Existing-profile referral attribution must not blindly increment counters")
-          if "Reconciled inviter referral counter after saving existing-profile attribution" not in backend:
+          if "const ownReferralCount = await countFor('referred_by', user.$id, adminHeaders);" not in backend:
               raise SystemExit("Missing idempotent existing-profile referral counter reconciliation")
-          if "Reconciled inviter referral counter after new-profile attribution" not in backend:
+          if "const inviterCount = await countFor('referred_by', inviterId, adminHeaders);" not in backend:
               raise SystemExit("Missing new-profile referral counter reconciliation")
-          if "Reconciled signed-in user referral counter" not in backend:
+          if "data: { total_referrals: ownReferralCount }" not in backend:
               raise SystemExit("Missing signed-in inviter dashboard referral counter reconciliation")
           if "total_referrals/increment" in backend:
               raise SystemExit("Referral counters must be reconciled from saved relationships, not blind increments")
