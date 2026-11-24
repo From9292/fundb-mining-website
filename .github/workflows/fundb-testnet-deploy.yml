@@ -1,0 +1,38 @@
+name: FundB testnet deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_deployment:
+        description: Type DEPLOY_TESTNET to authorize a testnet deployment
+        required: true
+        type: choice
+        options:
+          - NO
+          - DEPLOY_TESTNET
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-testnet:
+    if: ${{ inputs.confirm_deployment == 'DEPLOY_TESTNET' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out reviewed contract branch
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Compile contract
+        run: npm run compile
+      - name: Run contract tests
+        run: npm test
+      - name: Deploy to BNB Smart Chain Testnet and verify token state
+        env:
+          BSC_TESTNET_PRIVATE_KEY: ${{ secrets.BSC_TESTNET_PRIVATE_KEY }}
+        run: npx hardhat run --network bscTestnet scripts/deploy.ts
