@@ -12,6 +12,15 @@ export default defineConfig({
       evmVersion: "osaka"
     }
   },
+  networks: {
+    bscTestnet: {
+      type: "http",
+      chainType: "l1",
+      url: process.env.BSC_TESTNET_RPC_URL ?? "https://bsc-testnet-dataseed.bnbchain.org",
+      chainId: 97,
+      accounts: process.env.BSC_TESTNET_PRIVATE_KEY ? [process.env.BSC_TESTNET_PRIVATE_KEY] : []
+    }
+  },
   paths: {
     sources: "./contracts",
     tests: "./test",
