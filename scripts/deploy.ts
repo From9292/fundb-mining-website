@@ -2,7 +2,7 @@ import { network } from "hardhat";
 
 const EXPECTED_CHAIN_ID = 97n;
 const EXPECTED_DEPLOYER = "0xcF8294de3Ad14344FDb608360622af579FC15eE6";
-const INITIAL_HOLDER = "0x3E020945d3e89ed84F0Fca14e01C9328BC3b67A1";
+const INITIAL_HOLDER = "0xeccfc01cbf7dcbfad98f87485361f70c8080e833";
 const EXPECTED_SUPPLY = 10_000_000_000n * 10n ** 18n;
 
 async function main() {
@@ -10,24 +10,19 @@ async function main() {
     throw new Error("Missing BSC_TESTNET_PRIVATE_KEY GitHub Actions secret.");
   }
 
-  // The CLI selects bscTestnet with --network; connect() uses that selected network.
   const connection = await network.connect();
   const { ethers } = connection;
   const chain = await ethers.provider.getNetwork();
-
   if (chain.chainId !== EXPECTED_CHAIN_ID) {
     throw new Error(`Wrong network. Expected chain ID 97, received ${chain.chainId}.`);
   }
 
   const [deployer] = await ethers.getSigners();
   if (!deployer) throw new Error("No deployment signer is configured.");
-
   const actualDeployer = ethers.getAddress(deployer.address);
   const expectedDeployer = ethers.getAddress(EXPECTED_DEPLOYER);
   if (actualDeployer !== expectedDeployer) {
-    throw new Error(
-      `Wrong deployment wallet. Expected ${expectedDeployer}, received ${actualDeployer}. Refusing to deploy.`
-    );
+    throw new Error(`Wrong deployment wallet. Expected ${expectedDeployer}, received ${actualDeployer}. Refusing to deploy.`);
   }
 
   const balance = await ethers.provider.getBalance(deployer.address);
@@ -47,20 +42,9 @@ async function main() {
 
   const contractAddress = await token.getAddress();
   const [name, symbol, decimals, totalSupply, holderBalance] = await Promise.all([
-    token.name(),
-    token.symbol(),
-    token.decimals(),
-    token.totalSupply(),
-    token.balanceOf(INITIAL_HOLDER)
+    token.name(), token.symbol(), token.decimals(), token.totalSupply(), token.balanceOf(INITIAL_HOLDER)
   ]);
-
-  if (
-    name !== "FundB" ||
-    symbol !== "FUNDB" ||
-    decimals !== 18n ||
-    totalSupply !== EXPECTED_SUPPLY ||
-    holderBalance !== EXPECTED_SUPPLY
-  ) {
+  if (name !== "FundB" || symbol !== "FUNDB" || decimals !== 18n || totalSupply !== EXPECTED_SUPPLY || holderBalance !== EXPECTED_SUPPLY) {
     throw new Error("Post-deployment token checks failed. Do not use this deployment.");
   }
 
