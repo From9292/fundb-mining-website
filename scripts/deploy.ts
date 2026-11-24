@@ -1,4 +1,5 @@
 import { network } from "hardhat";
+import { assertInitialHolder } from "./deploy-guards.js";
 
 const EXPECTED_CHAIN_ID = 97n;
 const INITIAL_HOLDER = "0x3E020945d3e89ed84F0Fca14e01C9328BC3b67A1";
@@ -18,6 +19,8 @@ async function main() {
 
   const [deployer] = await ethers.getSigners();
   if (!deployer) throw new Error("No deployment signer is configured.");
+  // The deployment signer must be the nominated initial holder, not merely a funded testnet account.
+  assertInitialHolder(deployer.address, INITIAL_HOLDER);
 
   const balance = await ethers.provider.getBalance(deployer.address);
   if (balance === 0n) throw new Error("Deployment wallet has no testnet tBNB for gas.");
