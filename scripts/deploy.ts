@@ -1,8 +1,7 @@
 import { network } from "hardhat";
-import { assertInitialHolder } from "./deploy-guards.js";
+import { assertInitialHolder, INITIAL_HOLDER } from "./deploy-guards.js";
 
 const EXPECTED_CHAIN_ID = 97n;
-const INITIAL_HOLDER = "0x3E020945d3e89ed84F0Fca14e01C9328BC3b67A1";
 
 async function main() {
   if (!process.env.BSC_TESTNET_PRIVATE_KEY) {
