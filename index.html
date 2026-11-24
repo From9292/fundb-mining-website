@@ -26,7 +26,10 @@ input,textarea{width:100%;padding:12px;background:#090909;border:1px solid #5043
 
 /* FundB V2.2 visual refresh: original gold-and-obsidian interface */
 :root{--bg:#08090c;--panel:#15171c;--panel2:#101217;--gold:#edbd4b;--gold2:#ffe39a;--muted:#a8acb6;--line:#34302a}
-body{background:radial-gradient(ellipse at 50% -10%,#4a3516 0,#17130d 25%,#090a0e 62%);padding-bottom:94px}
+body{background:radial-gradient(ellipse at 50% -10%,#4a3516 0,#17130d 25%,#090a0e 62%);padding-bottom:94px;font-weight:600}
+body,button,input,textarea,select{font-weight:700}
+.muted{font-weight:600}
+.eyebrow{font-weight:900}
 header{position:relative;padding-top:18px;padding-bottom:14px}
 .logo{box-shadow:0 0 0 5px #edbd4b18,0 8px 24px #0008}
 .brand{font-size:22px;letter-spacing:-.5px}
@@ -54,28 +57,28 @@ input,textarea,select{border-radius:14px!important}
 
 </style></head>
 <body>
-<div role="status" style="margin:12px auto;max-width:1100px;padding:12px 16px;border:1px solid #9b7b35;border-radius:12px;background:#17130a;color:#f1d58a;font-size:14px;line-height:1.5">FundB is currently in preview mode. Mining rewards, daily claims, ad rewards, referrals and withdrawals are not active. Displayed wallet balances are not withdrawable funds.</div>
+<div role="status" style="margin:12px auto;max-width:1100px;padding:12px 16px;border:1px solid #9b7b35;border-radius:12px;background:#17130a;color:#f1d58a;font-size:14px;line-height:1.5">FUNDB COMMUNITY TESTNET · The token is deployed on BNB Smart Chain testnet. Mining rewards, daily claims, ad rewards, transfers and withdrawals are not enabled. Testnet tokens have no cash value.</div>
 <header><img class="logo" src="assets/fundb-logo.png" alt="FundB logo"><div><div class="brand">FundB Mining</div><div class="sub">MINE • PARTICIPATE • GROW</div></div><span style="margin-left:auto" class="pill">V2.2 COMMUNITY EDITION</span></header>
 <main>
-<div class="notice"><b>FUNDB POINTS NOTICE:</b> FundB Points are participation points in this preview, not cryptocurrency, cash, shares or a guaranteed airdrop. Points and eligible airdrop allocations will require published rules, server verification and a confirmed token launch. Some community features are previews until their secure services are connected.</div>
+<div class="notice"><b>TESTNET STATUS:</b> FUNDB shown here is a project test token, not a live market asset. The illustrative reference rate is $0.60 per FUNDB (5 FUNDB = $3); this is not a market price, redemption promise or guaranteed cash value. Rewards, transfers and withdrawals remain disabled until secure services and launch approvals are complete.</div>
 <nav class="nav" aria-label="Main navigation">
 <button class="active" data-tab="home">Home</button><button data-tab="media">FundB Media</button><button data-tab="mining">Mining</button><button data-tab="wallet">Wallet</button><button data-tab="tasks">Tasks</button><button data-tab="inbox">Inbox</button><button data-tab="support">Support</button><button data-tab="referral">Referral</button><button data-tab="how">How it works</button><button data-tab="whitepaper">Whitepaper</button><button data-tab="account">Account</button>
 </nav>
 
 <section id="home">
-<div class="card"><div class="eyebrow">Your FundB Points balance</div><div class="balance" id="balance">0.00</div><div class="unit">FUND-B Points · community participation points</div><p class="muted">FundB Points have no established cash value and cannot currently be redeemed or withdrawn.</p><div class="progress"><div class="bar" id="progress"></div></div><div class="row"><span class="muted" id="mineStatus">Mining is locked</span><span class="muted" id="timeLeft">24:00:00</span></div><p class="muted" id="adStatus" role="status">Planned requirement: 10 provider-verified rewarded ads. Ad integration is not active, so mining sessions cannot currently start.</p><button class="primary" style="width:100%" onclick="showTab('mining')">Go to mining</button></div>
-<div class="grid"><div class="stat"><span class="eyebrow">Today's points</span><strong id="today">0.00</strong></div><div class="stat"><span class="eyebrow">Mining rate</span><strong>Not active</strong></div><div class="stat"><span class="eyebrow">Daily check-ins</span><strong id="streak">Preview only</strong></div><div class="stat"><span class="eyebrow">Ad progress</span><strong id="adCount">0 / 10</strong></div></div>
-<div class="card"><div class="eyebrow">Quick access</div><div class="two" style="margin-top:12px"><button class="primary" onclick="showTab('tasks')">✦ Earn FundB Points</button><button class="secondary" onclick="showTab('media')">◎ Open FundB Media</button><button class="secondary" onclick="showTab('referral')">↗ Invite friends</button><button class="secondary" onclick="showTab('account')">♙ My account</button></div></div>
-<div class="card"><h2>Welcome to FundB Mining</h2><p class="muted">Welcome to FundB Mining — a global community built around learning, useful activities, transparent participation points and the proposed FundB ecosystem. Explore mining, tasks, games and FundB Media to connect with members worldwide. Our goal is to make participation accessible, rewarding and easy to understand.</p></div>
+<div class="card"><div class="eyebrow">Your FUNDB balance</div><div class="balance" id="balance">0.00 FUNDB</div><div class="unit">FUNDB · BNB Smart Chain testnet</div><div class="unit">💲 Estimated reference equivalent: <b id="balanceUsd">$0.00</b> · $0.60 / FUNDB (illustrative only)</div><p class="muted">Illustrative reference only: $0.60 per FUNDB. This is not a live market price or redeemable cash value.</p><div class="progress"><div class="bar" id="progress"></div></div><div class="row"><span class="muted" id="mineStatus">Mining is locked</span><span class="muted" id="timeLeft">24:00:00</span></div><p class="muted" id="adStatus" role="status">Planned requirement: 10 provider-verified rewarded ads. Ad integration is not active, so mining sessions cannot currently start.</p><button class="primary" style="width:100%" onclick="showTab('mining')">Go to mining</button></div>
+<div class="grid"><div class="stat"><span class="eyebrow">FUNDB earned today</span><strong id="today">0.00</strong></div><div class="stat"><span class="eyebrow">Mining rate</span><strong>3 FUNDB / 24h (planned)</strong></div><div class="stat"><span class="eyebrow">Daily check-ins</span><strong id="streak">Not enabled</strong></div><div class="stat"><span class="eyebrow">Ad progress</span><strong id="adCount">0 / 10</strong></div></div>
+<div class="card"><div class="eyebrow">Quick access</div><div class="two" style="margin-top:12px"><button class="primary" onclick="showTab('tasks')">✦ FUNDB activities</button><button class="secondary" onclick="showTab('media')">◎ Open FundB Media</button><button class="secondary" onclick="showTab('referral')">↗ Invite friends</button><button class="secondary" onclick="showTab('account')">♙ My account</button></div></div>
+<div class="card"><h2>Welcome to FundB Mining</h2><p class="muted">Welcome to FundB Mining — a global community built around learning, useful activities, transparent community participation and the proposed FundB ecosystem. Explore mining, tasks, games and FundB Media to connect with members worldwide. Our goal is to make participation accessible, rewarding and easy to understand.</p></div>
 </section>
 
 <section id="media" hidden>
-<div class="card"><div class="eyebrow">Global community · Learn · Create · Connect</div><h2>Welcome to FundB Media</h2><p class="muted">A planned multilingual community space inside FundB Mining. Choose your preferred language before entering. The selection is saved on this device in this preview.</p><label for="mediaLanguage">Choose your language</label><select id="mediaLanguage" style="width:100%;padding:12px;background:#090909;color:white;border:1px solid #504329;border-radius:10px;margin:8px 0 12px"><option value="">Select language to continue</option><option>English</option><option>Hausa</option><option>Yoruba</option><option>Igbo</option><option>French</option><option>Arabic</option><option>Spanish</option><option>Portuguese</option><option>Swahili</option><option>Amharic</option><option>German</option><option>Chinese (Simplified)</option><option>Chinese (Traditional)</option><option>Japanese</option><option>Korean</option><option>Hindi</option><option>Urdu</option><option>Bengali</option><option>Indonesian</option><option>Malay</option><option>Russian</option><option>Turkish</option><option>Italian</option><option>Dutch</option><option>Thai</option><option>Vietnamese</option><option>Filipino</option><option>Persian</option><option>Zulu</option><option>Other / request a language</option></select><button class="primary" style="width:100%" onclick="enterMedia()">Continue to FundB Media</button><p class="muted" id="mediaLanguageStatus">Select a language first. More languages can be added as translations are reviewed.</p></div>
+<div class="card"><div class="eyebrow">Global community · Learn · Create · Connect</div><h2>Welcome to FundB Media</h2><p class="muted">A planned multilingual community space inside FundB Mining. Choose your preferred language before entering. The selection is saved on this device.</p><label for="mediaLanguage">Choose your language</label><select id="mediaLanguage" style="width:100%;padding:12px;background:#090909;color:white;border:1px solid #504329;border-radius:10px;margin:8px 0 12px"><option value="">Select language to continue</option><option>English</option><option>Hausa</option><option>Yoruba</option><option>Igbo</option><option>French</option><option>Arabic</option><option>Spanish</option><option>Portuguese</option><option>Swahili</option><option>Amharic</option><option>German</option><option>Chinese (Simplified)</option><option>Chinese (Traditional)</option><option>Japanese</option><option>Korean</option><option>Hindi</option><option>Urdu</option><option>Bengali</option><option>Indonesian</option><option>Malay</option><option>Russian</option><option>Turkish</option><option>Italian</option><option>Dutch</option><option>Thai</option><option>Vietnamese</option><option>Filipino</option><option>Persian</option><option>Zulu</option><option>Other / request a language</option></select><button class="primary" style="width:100%" onclick="enterMedia()">Continue to FundB Media</button><p class="muted" id="mediaLanguageStatus">Select a language first. More languages can be added as translations are reviewed.</p></div>
 <div id="mediaInside" hidden>
 <div class="grid"><div class="stat"><span class="eyebrow">Community</span><strong>Global members</strong></div><div class="stat"><span class="eyebrow">Your language</span><strong id="chosenLanguage">—</strong></div></div>
-<div class="card"><h2>Community lounge</h2><p class="muted">Preview chat is stored only in this browser. Global messaging, friend requests and shared feeds need the secure realtime backend.</p><label for="communityPost">Write a community message</label><textarea id="communityPost" placeholder="Introduce yourself, ask a question or share a learning tip..."></textarea><button class="secondary" onclick="postCommunity()">Post to on this device</button><div id="communityFeed" class="item"><p class="muted">Welcome! Introduce yourself and share what you are learning about FundB.</p></div><p class="muted">Global chat, private messages, friend requests, groups, blocking and reporting: backend integration required.</p></div>
-<div class="card"><h2>FundB Games</h2><div class="item"><h3>🎡 Community spin wheel</h3><p class="muted">A multiplayer spin wheel is planned. The multiplayer wheel is being prepared. No paid spins or rewards are active yet.</p><button class="secondary" disabled>Multiplayer wheel — coming soon</button></div><div class="item"><h3>🧠 100-level knowledge quiz</h3><p class="muted">Progress through 100 learning levels. Proposed reward: 20 FundB Points per successfully verified level, subject to final rules.</p><div class="progress"><div class="bar" id="quizBar" style="width:0%"></div></div><div class="row"><span class="muted" id="quizLevel">Level 1 of 100</span><button class="secondary" onclick="nextQuiz()">Try sample level</button></div><p class="muted" id="quizStatus">Sample quiz progress is local only; it does not credit points.</p></div><div class="item"><h3>🏎️ FundB car racing</h3><p class="muted">A planned level-based racing game. Proposed reward: 20 FundB Points for each eligible level verified by the game server.</p><button class="secondary" disabled>Racing game — game engine integration required</button></div></div>
-<div class="card"><h2>Live streaming</h2><p class="muted">Planned creator livestream rooms with a visible one-hour session timer. The proposed 35 FundB Points per eligible hour would be issued only after server verification of a genuine stream, minimum watch/host activity, and anti-fraud checks.</p><div class="balance" id="streamClock" style="font-size:28px">01:00:00</div><button class="secondary" disabled>Start live stream — streaming provider not connected</button><p class="muted">No automatic rewards or countdown claims are active in this preview.</p></div>
+<div class="card"><h2>Community lounge</h2><p class="muted">Local chat is stored only in this browser. Global messaging, friend requests and shared feeds need the secure realtime backend.</p><label for="communityPost">Write a community message</label><textarea id="communityPost" placeholder="Introduce yourself, ask a question or share a learning tip..."></textarea><button class="secondary" onclick="postCommunity()">Post to on this device</button><div id="communityFeed" class="item"><p class="muted">Welcome! Introduce yourself and share what you are learning about FundB.</p></div><p class="muted">Global chat, private messages, friend requests, groups, blocking and reporting: backend integration required.</p></div>
+<div class="card"><h2>FundB Games</h2><div class="item"><h3>🎡 Community spin wheel</h3><p class="muted">A multiplayer spin wheel is planned. The multiplayer wheel is being prepared. No paid spins or rewards are active yet.</p><button class="secondary" disabled>Multiplayer wheel — coming soon</button></div><div class="item"><h3>🧠 100-level knowledge quiz</h3><p class="muted">Progress through 100 learning levels. Proposed reward: 20 FUNDB per successfully verified level, subject to final rules.</p><div class="progress"><div class="bar" id="quizBar" style="width:0%"></div></div><div class="row"><span class="muted" id="quizLevel">Level 1 of 100</span><button class="secondary" onclick="nextQuiz()">Try sample level</button></div><p class="muted" id="quizStatus">Sample quiz progress is local only; it does not credit points.</p></div><div class="item"><h3>🏎️ FundB car racing</h3><p class="muted">A planned level-based racing game. Proposed reward: 20 FUNDB for each eligible level verified by the game server.</p><button class="secondary" disabled>Racing game — game engine integration required</button></div></div>
+<div class="card"><h2>Live streaming</h2><p class="muted">Planned creator livestream rooms with a visible one-hour session timer. The proposed 35 FUNDB per eligible hour would be issued only after server verification of a genuine stream, minimum watch/host activity, and anti-fraud checks.</p><div class="balance" id="streamClock" style="font-size:28px">01:00:00</div><button class="secondary" disabled>Start live stream — streaming provider not connected</button><p class="muted">No automatic rewards or countdown claims are active in this community testnet.</p></div>
 <div class="card"><h2>Audio & video calls</h2><p class="muted">One-to-one audio and video calls with optional AI speech translation are planned. Translation availability and quality will depend on supported languages and connected speech services.</p><div class="two"><button class="secondary" disabled>Start audio call</button><button class="secondary" disabled>Start video call</button></div><p class="muted">Real-time calls require a secure calling provider, user permissions, moderation/reporting and privacy controls.</p></div>
 <div class="card"><h2>Creator and platform revenue</h2><p class="muted">FundB Media can build sustainable revenue through several transparent channels:</p><div class="item"><h3>1. Brand sponsorships</h3><p class="muted">Charge businesses for clearly labelled sponsored community posts, campaigns and creator partnerships.</p></div><div class="item"><h3>2. Non-incentivized advertising</h3><p class="muted">Earn from approved display or video ad placements that are not tied to points, clicks or required viewing. Follow each provider's policies.</p></div><div class="item"><h3>3. Premium memberships</h3><p class="muted">Optional paid creator tools, profile customization, larger community rooms or advanced features. Core safety and airdrop eligibility must not depend on payment.</p></div><div class="item"><h3>4. Creator subscriptions and gifts</h3><p class="muted">Allow voluntary fan subscriptions or gifts through a compliant payment provider, with transparent platform fees and creator payout rules.</p></div><div class="item"><h3>5. Ticketed events</h3><p class="muted">Host paid workshops, competitions or special streams with clear pricing and refund terms.</p></div><p class="notice">Revenue is not active yet. Payment processing, tax handling, creator verification, fraud prevention and terms must be configured before accepting money. Never ask users to pay to unlock a promised airdrop.</p></div>
 </div></section>
@@ -85,23 +88,23 @@ input,textarea,select{border-radius:14px!important}
 <div class="grid"><div class="stat"><span class="eyebrow">Verified ads</span><strong id="adCount2">0 / 10</strong></div><div class="stat"><span class="eyebrow">Required</span><strong>10 ads</strong></div></div><div class="progress"><div class="bar" id="adProgress"></div></div>
 <button class="secondary" style="width:100%" disabled>Rewarded ads — provider not connected</button><p class="muted">No ad is being shown or counted in this prototype. Do not use ordinary AdSense ads as incentivized ads; use a provider and ad format that expressly allow rewarded placements.</p>
 </div>
-<div class="card"><h2>Mining session</h2><div class="balance" id="miningBalance">0.00</div><div class="unit">FUND-B Points · FundB Points balance</div><p class="muted">FundB Points have no established cash value and cannot currently be redeemed or withdrawn.</p><div class="progress"><div class="bar" id="progress2"></div></div><div class="row"><span class="muted" id="sessionLabel">No active session</span><span class="muted" id="timeLeft2">24:00:00</span></div><button class="primary" id="mineBtn" style="width:100%" disabled>Waiting for ad integration</button><p class="muted">Mining uses server-authoritative timestamps in production. This browser preview cannot securely verify ad views or protect rewards across devices.</p></div>
+<div class="card"><h2>Mining session</h2><div class="balance" id="miningBalance">0.00</div><div class="unit">FUNDB testnet token balance</div><p class="muted">The testnet token has no cash value and cannot currently be redeemed or withdrawn.</p><div class="progress"><div class="bar" id="progress2"></div></div><div class="row"><span class="muted" id="sessionLabel">No active session</span><span class="muted" id="timeLeft2">24:00:00</span></div><button class="primary" id="mineBtn" style="width:100%" disabled>Waiting for ad integration</button><p class="muted">Mining uses server-authoritative timestamps in production. This browser preview cannot securely verify ad views or protect rewards across devices.</p></div>
 </section>
 
 <section id="wallet" hidden>
-<div class="card"><h2>FUND-B Wallet</h2><div class="balance" id="walletBalance">0.00</div><div class="unit">FundB Points · no blockchain connection yet</div><div class="notice">Wallet functions are preview-only. No deposit address exists yet. Do not send cryptocurrency to an address shown elsewhere claiming to be your FundB wallet.</div>
+<div class="card"><h2>FUND-B Wallet</h2><div class="balance" id="walletBalance">0.00 FUNDB</div><div class="unit">💲 Estimated reference equivalent: <b id="walletBalanceUsd">$0.00</b></div><div class="unit">Illustrative rate: 5 FUNDB = $3 · not a market price</div><div class="notice">Wallet functions are not enabled yet. No deposit address exists yet. Do not send cryptocurrency to an address shown elsewhere claiming to be your FundB wallet.</div>
 <div class="two"><button class="secondary" disabled>Receive address — coming soon</button><button class="secondary" disabled>Send / transfer — coming soon</button><button class="secondary" disabled>Withdraw — coming soon</button><button class="secondary" id="viewTransactionsBtn" type="button">Refresh transaction history</button></div><div class="item"><h3>Transaction history</h3><p class="muted" id="transactionHistoryStatus">Sign in to load your secure transaction history. No rewards or withdrawals are enabled.</p><div id="transactionHistoryList" class="muted" aria-live="polite"></div></div><p class="muted">A real wallet requires a selected blockchain, audited smart contract or custody provider, key management, transaction monitoring and applicable compliance checks.</p></div>
 </section>
 
 <section id="tasks" hidden>
-<div class="card"><h2>Community task centre</h2><p class="muted">Tasks will award points only after the required action is verified. The activities below are previews, not active reward offers.</p>
+<div class="card"><h2>Community task centre</h2><p class="muted">FUNDB activity credits require secure server verification. The activities below are not active reward offers.</p>
 <div class="item"><div class="row"><div><h3>Join official Telegram</h3><p class="muted">Follow project announcements and community updates.</p></div><span class="pill">No reward active</span></div><a class="btn secondary" href="https://t.me/fundBminingofficial" target="_blank" rel="noopener">Join official Telegram</a></div>
-<div class="item"><div class="row"><div><h3>Daily check-in</h3><p class="muted">Daily check-in rewards are planned but are not active. No points are credited by this preview.</p></div><span class="pill">Planned · reward not active</span></div><button class="primary" id="claimBtn" disabled>Daily check-in unavailable</button><p class="muted" id="claimStatus" role="status" aria-live="polite"></p></div>
+<div class="item"><div class="row"><div><h3>Daily check-in</h3><p class="muted">Daily check-in rewards are planned but are not enabled. No FUNDB is credited yet.</p></div><span class="pill">Planned · reward not active</span></div><button class="primary" id="claimBtn" disabled>Daily check-in unavailable</button><p class="muted" id="claimStatus" role="status" aria-live="polite"></p></div>
 <div class="item"><div class="row"><div><h3>Share feedback privately</h3><p class="muted">Send honest product feedback. No positive public rating is required.</p></div><span class="pill">Feedback</span></div><button class="secondary" onclick="showTab('support')">Send feedback</button></div>
 <div class="item"><div class="row"><div><h3>Invite friends</h3><p class="muted">Share your FundB referral code. Referral verification and bonuses are not active yet.</p></div><span class="pill">Coming soon</span></div><button class="secondary" onclick="showTab('referral')">View referral</button></div>
 </div></section>
 
-<section id="inbox" hidden><div class="card"><h2>Notifications & messages</h2><p class="muted">Project announcements and account messages will appear here when a notification backend is connected.</p><div class="item"><span class="pill">WELCOME</span><h3>Welcome to FundB Mining</h3><p class="muted">You are viewing the Version 2.2 community preview. Follow official project channels for verified updates. Never share your password or recovery phrase with support.</p></div><div class="item"><span class="pill">PROJECT UPDATE</span><h3>2028 target</h3><p class="muted">The token launch is a target subject to development, security, legal and market conditions. No value or listing is guaranteed.</p></div></div></section>
+<section id="inbox" hidden><div class="card"><h2>Notifications & messages</h2><p class="muted">Project announcements and account messages will appear here when a notification backend is connected.</p><div class="item"><span class="pill">WELCOME</span><h3>Welcome to FundB Mining</h3><p class="muted">You are viewing the FundB community testnet. Follow official project channels for verified updates. Never share your password or recovery phrase with support.</p></div><div class="item"><span class="pill">PROJECT UPDATE</span><h3>2028 target</h3><p class="muted">The token launch is a target subject to development, security, legal and market conditions. No value or listing is guaranteed.</p></div></div></section>
 
 <section id="support" hidden><div class="card"><h2>Customer care & feedback</h2><p class="muted">Contact the FundB team through the official email or Telegram community. The email button opens your email application with a prepared message.</p><label for="supportEmail">Your email (optional)</label><input id="supportEmail" type="email" placeholder="you@example.com"><label for="supportTopic">Subject</label><input id="supportTopic" placeholder="How can we help?"><label for="supportMsg">Message</label><textarea id="supportMsg" placeholder="Describe your question or feedback"></textarea><button class="primary" style="width:100%" onclick="sendSupportEmail()">Send support email</button><p class="muted">Official support: <a href="mailto:luckyutu9@gmail.com">luckyutu9@gmail.com</a></p><p><a class="btn secondary" href="https://t.me/fundBminingofficial" target="_blank" rel="noopener">Open official FundB Telegram</a></p><p class="muted">Never share your password, one-time code or wallet recovery phrase with anyone.</p></div></section>
 
@@ -110,11 +113,11 @@ input,textarea,select{border-radius:14px!important}
 <section id="how" hidden><div class="card"><h2>How FundB Mining works</h2><div class="item"><h3>1. Create and verify an account</h3><p class="muted">Register and sign in with an email address and password. Email verification and additional sign-in providers may be added after configuration.</p></div><div class="item"><h3>2. Complete rewarded ads</h3><p class="muted">Complete 10 eligible rewarded advertisements. The ad provider verifies each completion; ordinary ads must not be incentivized.</p></div><div class="item"><h3>3. Start a 24-hour session</h3><p class="muted">A verified session runs for 24 hours. The server records the start and end times so closing the app does not erase progress.</p></div><div class="item"><h3>4. Earn points and complete tasks</h3><p class="muted">Eligible activity is recorded in a secure ledger. Tasks are subject to verification and published rules.</p></div><div class="item"><h3>5. Token distribution preparation</h3><p class="muted">Before any token distribution, the project will publish eligibility, anti-fraud rules and the points-to-token formula. Points do not guarantee tokens.</p></div></div></section>
 
 <section id="whitepaper" hidden><div class="card"><h2>FUND-B MINING & MEDIA — PROJECT WHITEPAPER</h2><span class="pill">VERSION 2.2 · NOVEMBER 2026 · PROPOSAL</span>
-<h3 style="margin-top:16px">1. Executive summary</h3><p class="muted">FundB is a proposed global participation ecosystem combining FundB Mining, FundB Points and FundB Media. The vision is to bring people together to learn, create, communicate, play skill-based games and participate in community activities through one accessible mobile-first platform.</p>
+<h3 style="margin-top:16px">1. Executive summary</h3><p class="muted">FundB is a proposed global participation ecosystem combining FundB Mining, FUNDB and FundB Media. The vision is to bring people together to learn, create, communicate, play skill-based games and participate in community activities through one accessible mobile-first platform.</p>
 <h3>2. Mission and product</h3><p class="muted">FundB Mining is intended to support verified participation activities, learning tasks and community engagement. FundB Media is planned as a multilingual social space for profiles, messaging, friendships, community groups, educational content, games, live streaming and audio/video conversations. Features will be released in stages after safety, privacy and reliability testing.</p>
-<h3>3. FundB Points</h3><p class="muted">FundB Points are the project's proposed internal participation and reward accounting units. They are not currently cryptocurrency, legal tender, a deposit, an investment or a claim against the project. FundB Points have no established cash value, market price or redemption rate. They cannot currently be exchanged for cash or cryptocurrency. Any future token distribution would require a confirmed launch, published eligibility rules and a verified allocation process; no allocation is guaranteed.</p>
+<h3>3. FUNDB token and reference display</h3><p class="muted">FUNDB is currently deployed only on BNB Smart Chain testnet. The app's illustrative display rate of $0.60 per FUNDB is a design reference only, not a market price, redemption rate, investment value or claim against the project. Testnet tokens cannot be exchanged for cash or cryptocurrency. Any future token distribution would require a confirmed launch, published eligibility rules and a verified allocation process; no allocation is guaranteed.</p>
 <h3>4. Proposed community airdrop</h3><p class="muted">The project intends to explore a broad community airdrop for eligible users if a token is successfully created and launched. Potential eligibility factors may include verified account status, genuine participation, anti-fraud checks, regional availability and published campaign rules. No user is guaranteed an allocation, minimum amount, token price, exchange listing or profit. The final snapshot date, allocation formula, exclusions, appeal process and distribution schedule must be announced before any airdrop.</p>
-<h3>5. Reward programme design</h3><p class="muted">Potential activities include verified mining sessions, daily tasks, quizzes, completed game levels, community contributions and eligible streaming participation. Proposed examples in the product concept include 20 FundB Points for a verified game level and 35 FundB Points for an eligible one-hour streaming session. These are proposed rates only; they are not active reward entitlements until server-side verification, funding, anti-abuse limits and final terms are implemented.</p>
+<h3>5. Reward programme design</h3><p class="muted">Potential activities include verified mining sessions, daily tasks, quizzes, completed game levels, community contributions and eligible streaming participation. Proposed examples in the product concept include 20 FUNDB for a verified game level and 35 FundB Points for an eligible one-hour streaming session. These are proposed rates only; they are not active reward entitlements until server-side verification, funding, anti-abuse limits and final terms are implemented.</p>
 <h3>6. FundB Media and safety</h3><p class="muted">The planned media service will support language selection, community posts, direct messages, friend connections, moderated groups, games, creator content, livestreams and audio/video calls. AI translation may be offered where technically available. Users must be able to report, block and mute others. Age-appropriate safeguards, content moderation, privacy controls and clear community rules are required before public launch.</p>
 <h3>7. Revenue and sustainability</h3><p class="muted">Potential revenue sources include non-incentivized advertising placements that comply with each ad network's policies, clearly labelled sponsored posts and brand partnerships, optional premium memberships, creator subscriptions, virtual gifts or tips where lawful, and ticketed online events. Users must never be required to pay to access promised airdrops. Ordinary AdSense ads must not be rewarded or made conditional on earning points. Revenue sharing, fees and creator payouts will require published terms and payment-provider integration.</p>
 <h3>8. Technology and security</h3><p class="muted">The current community preview uses Appwrite for email/password authentication and saved cloud profiles, with the website deployed through Cloudflare Pages. Mining rewards, daily claims, ad rewards, referral attribution, wallet transfers and withdrawals are not active. Production requires server-authoritative point ledgers, strict database permissions, rate limits, anti-bot controls, verified rewarded-ad callbacks, secure messaging, moderation tools, backups and independent security testing. Client-side balances and browser timers are not valid proof of rewards.</p>
@@ -123,19 +126,19 @@ input,textarea,select{border-radius:14px!important}
 <h3>11. Risks and important disclosures</h3><p class="muted">The project may be delayed, changed or cancelled. Participation points may never convert into a token. Token value, liquidity, listing, revenue share, airdrop size and financial returns are not guaranteed. Do not pay anyone claiming they can guarantee FundB rewards or airdrop allocation. Users should not spend money based on anticipated future rewards.</p>
 <h3>12. Official contact</h3><p class="muted">Telegram: <a href="https://t.me/fundBminingofficial" target="_blank" rel="noopener">t.me/fundBminingofficial</a><br>Email: <a href="mailto:luckyutu9@gmail.com">luckyutu9@gmail.com</a></p><p class="muted"><b>FUND-B — Connect Globally. Learn Together. Build With Purpose.</b></p></div></section>
 
-<section id="account" hidden><div class="card"><h2>FundB account</h2><p class="muted">Secure email/password account powered by Appwrite. Use an email address you can access. Never share your password or verification code.</p><div id="authStatus" class="notice" role="status">Checking account connection…</div><div id="authForm"><label for="authName">Display name (for new accounts)</label><input id="authName" maxlength="40" autocomplete="name" placeholder="Your display name"><label for="authEmail">Email address</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"><label for="signupReferralCode">Referral code (optional)</label><input id="signupReferralCode" maxlength="10" autocomplete="off" placeholder="Enter inviter code, if you have one"><button class="primary" id="registerBtn" type="button" style="width:100%">Create account</button><button class="secondary" id="loginBtn" type="button" style="width:100%;margin-top:9px">Sign in</button><button class="ghost" id="resetPasswordBtn" type="button" style="width:100%;margin-top:9px">Send password reset email</button></div><div id="signedInPanel" hidden><p id="accountDetails" class="muted"></p><label for="existingReferralCode">Apply an invitation code to this account (only if not already linked)</label><input id="existingReferralCode" maxlength="10" autocomplete="off" placeholder="FB12345678"><button class="secondary" id="applyReferralBtn" type="button" style="width:100%">Link my account to inviter</button><p class="muted">Use this only if this account was created through an invitation but its inviter was not linked. Existing inviter links cannot be changed.</p><button class="secondary" id="logoutBtn" type="button" style="width:100%">Sign out</button></div><p class="muted">Account registration and sign-in use Appwrite authentication. The cloud profile below reads your saved profile; rewards are not enabled yet.</p></div><div class="card"><h2>Saved FundB cloud profile</h2><p class="muted">This information is loaded from your existing Appwrite profile after sign-in. It is separate from local FundB Points.</p><div class="eyebrow">Saved FundB Points</div><div class="balance" id="cloudPoints">—</div><div class="grid"><div class="stat"><span class="eyebrow">Referral code</span><strong id="cloudReferral">—</strong></div><div class="stat"><span class="eyebrow">Total referrals</span><strong id="cloudReferrals">—</strong></div></div><p class="muted" id="cloudReferralStatus" role="status">Referral status: —</p><p class="muted" id="cloudProfileStatus" role="status">Sign in to load your saved profile.</p><button class="secondary" id="refreshCloudProfileBtn" type="button" style="width:100%">Refresh saved profile</button></div></div><div class="card"><h2>My FundB profile</h2><label for="username">Display name</label><input id="username" maxlength="30" placeholder="Display name"><button class="secondary" id="saveName">Save display name</button><p class="muted" id="profileStatus" role="status">Sign in to load your saved FundB account name.</p></div></section>
-<div class="footer">FundB Mining V2.2 · FundB Points · Secure services are being connected</div>
+<section id="account" hidden><div class="card"><h2>FundB account</h2><p class="muted">Secure email/password account powered by Appwrite. Use an email address you can access. Never share your password or verification code.</p><div id="authStatus" class="notice" role="status">Checking account connection…</div><div id="authForm"><label for="authName">Display name (for new accounts)</label><input id="authName" maxlength="40" autocomplete="name" placeholder="Your display name"><label for="authEmail">Email address</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"><label for="signupReferralCode">Referral code (optional)</label><input id="signupReferralCode" maxlength="10" autocomplete="off" placeholder="Enter inviter code, if you have one"><button class="primary" id="registerBtn" type="button" style="width:100%">Create account</button><button class="secondary" id="loginBtn" type="button" style="width:100%;margin-top:9px">Sign in</button><button class="ghost" id="resetPasswordBtn" type="button" style="width:100%;margin-top:9px">Send password reset email</button></div><div id="signedInPanel" hidden><p id="accountDetails" class="muted"></p><label for="existingReferralCode">Apply an invitation code to this account (only if not already linked)</label><input id="existingReferralCode" maxlength="10" autocomplete="off" placeholder="FB12345678"><button class="secondary" id="applyReferralBtn" type="button" style="width:100%">Link my account to inviter</button><p class="muted">Use this only if this account was created through an invitation but its inviter was not linked. Existing inviter links cannot be changed.</p><button class="secondary" id="logoutBtn" type="button" style="width:100%">Sign out</button></div><p class="muted">Account registration and sign-in use Appwrite authentication. The cloud profile below reads your saved profile; rewards are not enabled yet.</p></div><div class="card"><h2>Saved FundB cloud profile</h2><p class="muted">This information is loaded from your existing Appwrite profile after sign-in. Your existing account and referral data are preserved.</p><div class="eyebrow">FUNDB app balance</div><div class="balance" id="cloudPoints">0.00 FUNDB</div><p class="muted">On-chain wallet balance display will be connected after secure wallet integration. Your testnet tokens remain in your external wallet.</p><div class="grid"><div class="stat"><span class="eyebrow">Referral code</span><strong id="cloudReferral">—</strong></div><div class="stat"><span class="eyebrow">Total referrals</span><strong id="cloudReferrals">—</strong></div></div><p class="muted" id="cloudReferralStatus" role="status">Referral status: —</p><p class="muted" id="cloudProfileStatus" role="status">Sign in to load your saved profile.</p><button class="secondary" id="refreshCloudProfileBtn" type="button" style="width:100%">Refresh saved profile</button></div></div><div class="card"><h2>My FundB profile</h2><label for="username">Display name</label><input id="username" maxlength="30" placeholder="Display name"><button class="secondary" id="saveName">Save display name</button><p class="muted" id="profileStatus" role="status">Sign in to load your saved FundB account name.</p></div></section>
+<div class="footer">FundB Mining · FUNDB TESTNET · Secure services are being prepared</div>
 </main>
 <nav class="bottom-nav" aria-label="Quick navigation">
   <button class="active" data-tab="home" aria-label="Home"><span class="nav-icon">⌂</span><span>Home</span></button>
   <button data-tab="mining" aria-label="Mining"><span class="nav-icon">⛏</span><span>Mining</span></button>
-  <button data-tab="tasks" aria-label="Earn FundB Points"><span class="nav-icon">✦</span><span>Earn</span></button>
+  <button data-tab="tasks" aria-label="FUNDB activities"><span class="nav-icon">✦</span><span>Earn</span></button>
   <button data-tab="media" aria-label="FundB Media"><span class="nav-icon">◎</span><span>Media</span></button>
   <button data-tab="wallet" aria-label="Wallet"><span class="nav-icon">◈</span><span>Wallet</span></button>
 </nav>
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
-const KEY='fundb_points_v3',SESSION=86400000,RATE=1,$=id=>document.getElementById(id);
+const KEY='fundb_points_v3',SESSION=86400000,RATE=1,REFERENCE_USD_PER_FUNDB=0.60,$=id=>document.getElementById(id);
 const newCode=()=>'FUNDB-'+Math.random().toString(36).slice(2,7).toUpperCase();
 function fresh(){return{points:0,today:0,day:new Date().toDateString(),start:0,end:0,claimed:'',streak:0,code:newCode(),name:'',adCount:0}}
 let state;
@@ -149,7 +152,188 @@ function showTab(id){document.querySelectorAll('[data-tab]').forEach(b=>b.classL
 window.showTab=showTab;
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 function render(){settle();let a=false,earned=0,total=0,pct=0;
-['balance','miningBalance','walletBalance'].forEach(id=>$(id).textContent=total.toFixed(2));$('today').textContent='0.00';$('streak').textContent=state.streak;$('adCount').textContent='0 / 10';$('adCount2').textContent='0 / 10';$('adProgress').style.width='0%';
+['balance','miningBalance','walletBalance'].forEach(id=>$(id).textContent=total.toFixed(2)+' FUNDB');['balanceUsd','miningBalanceUsd','walletBalanceUsd'].forEach(id=>{const el=$(id);if(el)el.textContent='$('today').textContent='0.00';$('streak').textContent=state.streak;$('adCount').textContent='0 / 10';$('adCount2').textContent='0 / 10';$('adProgress').style.width='0%';
+$('mineStatus').textContent=a?'24-hour session preview active':'Mining is locked';$('sessionLabel').textContent=a?'Session preview active':'No active session';$('mineBtn').disabled=true;$('mineBtn').textContent=a?'Session running':'Ad provider not connected';$('progress').style.width=pct+'%';$('progress2').style.width=pct+'%';
+let ms=a?state.end-Date.now():SESSION,h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),clock=[h,m,s].map(v=>String(v).padStart(2,'0')).join(':');$('timeLeft').textContent=clock;$('timeLeft2').textContent=clock;
+$('claimBtn').disabled=true;$('claimStatus').textContent='Daily rewards are paused until secure server-side reward verification is enabled.'}
+$('claimBtn').onclick=()=>toast('Daily rewards are not active yet. Please check back after secure rewards are enabled.');
+$('copyBtn').onclick=async()=>{const code=$('refCode').textContent.trim();if(!$('copyBtn').disabled && /^FB[A-Z0-9]{8}$/.test(code)){const link=location.origin+location.pathname+'?ref='+encodeURIComponent(code);try{await navigator.clipboard.writeText(link);toast('FundB invite link copied')}catch{toast('Share this invite link: '+link)}}else{toast('Sign in and load your cloud profile first.')}};
+// Display-name saving is handled by the authenticated Appwrite account flow below.
+
+function sendSupportEmail(){const topic=$('supportTopic').value.trim()||'FundB support request';const msg=$('supportMsg').value.trim();const from=$('supportEmail').value.trim();const body=(from?'My email: '+from+'\n\n':'')+msg+'\n\nSent from FundB Mining';location.href='mailto:luckyutu9@gmail.com?subject='+encodeURIComponent(topic)+'&body='+encodeURIComponent(body)}
+function enterMedia(){const v=$('mediaLanguage').value;if(!v){$('mediaLanguageStatus').textContent='Please choose your language before entering FundB Media.';$('mediaLanguage').focus();return}try{localStorage.setItem('fundb_media_language',v)}catch(e){}$('chosenLanguage').textContent=v;$('mediaInside').hidden=false;$('mediaLanguageStatus').textContent='Language selected: '+v;$('mediaInside').scrollIntoView({behavior:'smooth',block:'start'});toast('Welcome to FundB Media')}
+function postCommunity(){const box=$('communityPost');const value=box.value.trim();if(!value)return;const feed=$('communityFeed');const item=document.createElement('div');item.className='item media-feed';item.textContent=value;feed.prepend(item);box.value='';toast('Added to this device preview only')}
+let quizLevel=1;function nextQuiz(){if(quizLevel>=100){toast('You reached the end of the sample level preview');return}quizLevel++;$('quizLevel').textContent='Level '+quizLevel+' of 100';$('quizBar').style.width=quizLevel+'%';$('quizStatus').textContent='Sample progress saved for this page only. No FundB Points were credited. Verified quiz rewards require the secure rewards service.'}
+try{const savedLanguage=localStorage.getItem('fundb_media_language');if(savedLanguage){$('mediaLanguage').value=savedLanguage;$('chosenLanguage').textContent=savedLanguage;$('mediaInside').hidden=false;$('mediaLanguageStatus').textContent='Saved language: '+savedLanguage}}catch(e){}
+
+load();$('username').value=state.name||'';render();setInterval(render,1000);
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+<script type="module">
+import { Client, Account, ID, Functions } from 'https://cdn.jsdelivr.net/npm/appwrite@17.0.0/+esm';
+const APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
+const APPWRITE_PROJECT_ID = '6aedc1580001af2161b0';
+const client = new Client().setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID);
+const account = new Account(client);
+const functions = new Functions(client);
+const FUNDB_FUNCTION_ID = 'FundBRewardsAPI';
+const byId = id => document.getElementById(id);
+const REFERRAL_SESSION_KEY = 'fundb_pending_referral_v1';
+const referralParams = new URLSearchParams(location.search);
+const referralFromUrl = (referralParams.get('ref') || referralParams.get('referral') || referralParams.get('referralCode') || '').trim().toUpperCase();
+const isValidReferralCode = value => /^FB[A-Z0-9]{8}$/.test(String(value || '').trim().toUpperCase());
+const getPendingReferralCode = () => {
+  let saved = '';
+  try { saved = sessionStorage.getItem(REFERRAL_SESSION_KEY) || ''; } catch (_) {}
+  const entered = byId('signupReferralCode')?.value || '';
+  const candidate = referralFromUrl || entered || saved;
+  return isValidReferralCode(candidate) ? candidate.trim().toUpperCase() : '';
+};
+if (isValidReferralCode(referralFromUrl)) {
+  try { sessionStorage.setItem(REFERRAL_SESSION_KEY, referralFromUrl); } catch (_) {}
+  byId('signupReferralCode').value = referralFromUrl;
+  const inviteField = byId('existingReferralCode');
+  if (inviteField) inviteField.value = referralFromUrl;
+}
+const status = (message, bad=false) => { const el=byId('authStatus'); if(el){el.textContent=message;el.style.borderColor=bad?'#9b4545':'#6b5423';} };
+const syncCloudProfile = async (referralCodeOverride = '') => {
+  const cloudStatus = byId('cloudProfileStatus');
+  const referralCode = String(referralCodeOverride || '').trim().toUpperCase();
+  try {
+    cloudStatus.textContent = 'Loading your saved FundB profile…';
+    // Invoke through the signed-in Appwrite Client SDK. Appwrite automatically
+    // attaches the authenticated session and injects the function's ephemeral key.
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ referralCode }),
+      false,
+      '/',
+      'POST'
+    );
+    const result = execution.responseBody ? JSON.parse(execution.responseBody) : {};
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok || !result.profile) {
+      throw new Error(result.message || `Profile request failed (${execution.responseStatusCode || 'no response'}).`);
+    }
+    byId('cloudPoints').textContent = '0.00 FUNDB';
+    byId('cloudReferral').textContent = result.profile.referralCode || 'Not assigned';
+    byId('refCode').textContent = result.profile.referralCode || 'Not assigned';
+    byId('copyBtn').disabled = !result.profile.referralCode;
+    byId('copyBtn').textContent = result.profile.referralCode ? 'Copy invite link' : 'Referral code unavailable';
+    byId('cloudReferrals').textContent = String(result.profile.totalReferrals ?? 0);
+    byId('cloudReferralStatus').textContent = result.profile.referralLinked ? 'Referral status: Linked to an inviter.' : (referralCode ? 'Referral status: invitation code received, but no matching inviter was saved. Check the code and try again.' : 'Referral status: No inviter linked to this account.');
+    if (referralCode && result.profile.referralLinked) { try { sessionStorage.removeItem(REFERRAL_SESSION_KEY); } catch (_) {} }
+    cloudStatus.textContent = 'Saved cloud profile loaded. Reward earning is not enabled yet.';
+    await loadTransactionHistory();
+  } catch (err) {
+    byId('refCode').textContent = 'Code unavailable';
+    byId('copyBtn').disabled = true;
+    byId('copyBtn').textContent = 'Referral code unavailable';
+    cloudStatus.textContent = `Cloud profile could not load: ${err?.message || 'Please try again.'}`;
+  }
+}
+const loadTransactionHistory = async () => {
+  const statusEl = byId('transactionHistoryStatus');
+  const listEl = byId('transactionHistoryList');
+  if (!statusEl || !listEl) return;
+  try {
+    statusEl.textContent = 'Loading secure transaction history…';
+    listEl.replaceChildren();
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ action: 'transactionHistory' }),
+      false,
+      '/',
+      'POST'
+    );
+    const result = execution.responseBody ? JSON.parse(execution.responseBody) : {};
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+      throw new Error(result.message || 'Transaction history request failed.');
+    }
+    const rows = Array.isArray(result.transactions) ? result.transactions : [];
+    if (!rows.length) {
+      statusEl.textContent = 'No transactions recorded yet. This is normal: rewards and withdrawals are not active.';
+      return;
+    }
+    statusEl.textContent = 'Showing your latest ' + rows.length + ' transaction(s).';
+    rows.forEach(row => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const heading = document.createElement('strong');
+      heading.textContent = String(row.type || 'Transaction') + ' · ' + Number(row.amount || 0).toFixed(2);
+      const detail = document.createElement('p');
+      detail.className = 'muted';
+      detail.textContent = [row.status || 'Status unavailable', row.reference || '', row.description || '', row.createdAt ? new Date(row.createdAt).toLocaleString() : ''].filter(Boolean).join(' · ');
+      item.append(heading, detail);
+      listEl.append(item);
+    });
+  } catch (err) {
+    statusEl.textContent = 'Transaction history is temporarily unavailable: ' + (err?.message || 'Please try again.');
+  }
+};
+const showSignedIn = async (user, referralCode = '') => {
+  byId('authForm').hidden=true; byId('signedInPanel').hidden=false;
+  byId('accountDetails').textContent=`Signed in as ${user.name || 'FundB member'} · ${user.email}`;
+  const pendingInvite = getPendingReferralCode();
+  if (pendingInvite && byId('existingReferralCode')) byId('existingReferralCode').value = pendingInvite;
+  byId('username').value = user.name || '';
+  byId('profileStatus').textContent = user.name ? 'Display name loaded from your FundB account.' : 'Choose a display name and save it to your FundB account.';
+  status('Your FundB account is connected.');
+  await syncCloudProfile(referralCode || pendingInvite);
+};
+const showSignedOut = () => { byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='0.00 FUNDB'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
+const getError = e => e?.message || 'Something went wrong. Please try again.';
+try { const user=await account.get(); await showSignedIn(user); }
+catch(e){ showSignedOut(); status('Appwrite is ready. Create an account or sign in.', false); }
+byId('registerBtn').addEventListener('click', async()=>{
+  const name=byId('authName').value.trim(); const email=byId('authEmail').value.trim(); const password=byId('authPassword').value;
+  if(!name || !email || password.length<8){status('Enter your display name, a valid email and a password of at least 8 characters.',true);return;}
+  try { const referralCode = getPendingReferralCode(); status(referralCode ? 'Creating your account with the invitation code…' : 'Creating your secure account…'); await account.create(ID.unique(),email,password,name); await account.createEmailPasswordSession(email,password); const user=await account.get(); await showSignedIn(user, referralCode); byId('authPassword').value=''; byId('signupReferralCode').value=''; }
+  catch(e){status(getError(e),true);}
+});
+byId('loginBtn').addEventListener('click', async()=>{
+  const email=byId('authEmail').value.trim(); const password=byId('authPassword').value;
+  if(!email || !password){status('Enter your email and password to sign in.',true);return;}
+  try {status('Signing in…'); await account.createEmailPasswordSession(email,password); const user=await account.get(); showSignedIn(user); byId('authPassword').value='';}
+  catch(e){status(getError(e),true);}
+});
+byId('refreshCloudProfileBtn').addEventListener('click', syncCloudProfile);
+byId('viewTransactionsBtn').addEventListener('click', loadTransactionHistory);
+byId('applyReferralBtn').addEventListener('click', async () => {
+  const code = String(byId('existingReferralCode').value || '').trim().toUpperCase();
+  if (!isValidReferralCode(code)) { status('Enter a valid FundB invitation code (FB followed by 8 letters or numbers).', true); return; }
+  try {
+    status('Checking and linking your invitation…');
+    await syncCloudProfile(code);
+    const linked = byId('cloudReferralStatus').textContent.includes('Linked to an inviter');
+    status(linked ? 'Your invitation has been linked successfully.' : 'The invitation was not linked. Check that the code belongs to another FundB account and that this account has no inviter yet.', !linked);
+    if (linked) { try { sessionStorage.removeItem(REFERRAL_SESSION_KEY); } catch (_) {} }
+  } catch (err) { status(err?.message || 'Could not link the invitation.', true); }
+});
+byId('saveName').addEventListener('click', async()=>{
+  const name = byId('username').value.trim().slice(0,30);
+  const profileStatus = byId('profileStatus');
+  if (!name) {
+    profileStatus.textContent = 'Enter a display name before saving.';
+    byId('username').focus();
+    return;
+  }
+  try {
+    const user = await account.get();
+    await account.updateName(name);
+    byId('accountDetails').textContent = `Signed in as ${name} · ${user.email}`;
+    profileStatus.textContent = 'Display name saved to your FundB account and this device.';
+    status('Your FundB account is connected.');
+    toast('Display name saved to your account');
+  } catch (err) {
+    profileStatus.textContent = `Could not save to your FundB account: ${getError(err)}. Your device copy may still be saved.`;
+  }
+});
+byId('logoutBtn').addEventListener('click', async()=>{try{await account.deleteSession('current');showSignedOut();status('You have signed out.');}catch(e){status(getError(e),true);}});
+byId('resetPasswordBtn').addEventListener('click', async()=>{
+  const email=byId('authEmail').value.trim(); if(!email){status('Enter your email address first.',true);return;}
+  try{await account.createRecovery(email,location.origin+location.pathname);status('Password reset email requested. Check your inbox and spam folder.');}catch(e){status(getError(e),true);}
+});
+</script></body></html>+(total*REFERENCE_USD_PER_FUNDB).toFixed(2);});$('today').textContent='0.00';$('streak').textContent=state.streak;$('adCount').textContent='0 / 10';$('adCount2').textContent='0 / 10';$('adProgress').style.width='0%';
 $('mineStatus').textContent=a?'24-hour session preview active':'Mining is locked';$('sessionLabel').textContent=a?'Session preview active':'No active session';$('mineBtn').disabled=true;$('mineBtn').textContent=a?'Session running':'Ad provider not connected';$('progress').style.width=pct+'%';$('progress2').style.width=pct+'%';
 let ms=a?state.end-Date.now():SESSION,h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),clock=[h,m,s].map(v=>String(v).padStart(2,'0')).join(':');$('timeLeft').textContent=clock;$('timeLeft2').textContent=clock;
 $('claimBtn').disabled=true;$('claimStatus').textContent='Daily rewards are paused until secure server-side reward verification is enabled.'}
