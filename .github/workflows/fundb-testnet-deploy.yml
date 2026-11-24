@@ -14,10 +14,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: fundb-bsc-testnet-deployment
+  cancel-in-progress: false
+
 jobs:
   deploy-testnet:
     if: ${{ inputs.confirm_deployment == 'DEPLOY_TESTNET' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Check out main branch source
         uses: actions/checkout@v4
@@ -35,4 +40,4 @@ jobs:
       - name: Deploy to BNB Smart Chain Testnet and verify token state
         env:
           BSC_TESTNET_PRIVATE_KEY: ${{ secrets.BSC_TESTNET_PRIVATE_KEY }}
-        run: npx hardhat run scripts/deploy.ts
+        run: npx hardhat run scripts/deploy.ts --network bscTestnet
