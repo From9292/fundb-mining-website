@@ -9,7 +9,8 @@ async function main() {
     throw new Error("Missing BSC_TESTNET_PRIVATE_KEY GitHub Actions secret.");
   }
 
-  const connection = await network.create("bscTestnet");
+  // The CLI selects bscTestnet with --network; connect() uses that selected network.
+  const connection = await network.connect();
   const { ethers } = connection;
   const chain = await ethers.provider.getNetwork();
 
