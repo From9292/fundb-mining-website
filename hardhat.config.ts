@@ -9,7 +9,8 @@ export default defineConfig({
     settings: {
       optimizer: { enabled: true, runs: 200 },
       viaIR: false,
-      evmVersion: "osaka"
+      // Use a conservative EVM target supported by BNB Smart Chain testnet.
+      evmVersion: "shanghai"
     }
   },
   networks: {
