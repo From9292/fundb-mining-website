@@ -26,7 +26,10 @@ input,textarea{width:100%;padding:12px;background:#090909;border:1px solid #5043
 
 /* FundB V2.2 visual refresh: original gold-and-obsidian interface */
 :root{--bg:#08090c;--panel:#15171c;--panel2:#101217;--gold:#edbd4b;--gold2:#ffe39a;--muted:#a8acb6;--line:#34302a}
-body{background:radial-gradient(ellipse at 50% -10%,#4a3516 0,#17130d 25%,#090a0e 62%);padding-bottom:94px;font-weight:600}\nbody,button,input,textarea,select{font-weight:700}\n.muted{font-weight:600}\n.eyebrow{font-weight:900}
+body{background:radial-gradient(ellipse at 50% -10%,#4a3516 0,#17130d 25%,#090a0e 62%);padding-bottom:94px;font-weight:600}
+body,button,input,textarea,select{font-weight:700}
+.muted{font-weight:600}
+.eyebrow{font-weight:900}
 header{position:relative;padding-top:18px;padding-bottom:14px}
 .logo{box-shadow:0 0 0 5px #edbd4b18,0 8px 24px #0008}
 .brand{font-size:22px;letter-spacing:-.5px}
@@ -210,7 +213,7 @@ const syncCloudProfile = async (referralCodeOverride = '') => {
     if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok || !result.profile) {
       throw new Error(result.message || `Profile request failed (${execution.responseStatusCode || 'no response'}).`);
     }
-    byId('cloudPoints').textContent = Number(result.profile.points || 0).toFixed(2);
+    byId('cloudPoints').textContent = '0.00 FUNDB';
     byId('cloudReferral').textContent = result.profile.referralCode || 'Not assigned';
     byId('refCode').textContent = result.profile.referralCode || 'Not assigned';
     byId('copyBtn').disabled = !result.profile.referralCode;
@@ -276,7 +279,7 @@ const showSignedIn = async (user, referralCode = '') => {
   status('Your FundB account is connected.');
   await syncCloudProfile(referralCode || pendingInvite);
 };
-const showSignedOut = () => { byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
+const showSignedOut = () => { byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='0.00 FUNDB'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
 const getError = e => e?.message || 'Something went wrong. Please try again.';
 try { const user=await account.get(); await showSignedIn(user); }
 catch(e){ showSignedOut(); status('Appwrite is ready. Create an account or sign in.', false); }
