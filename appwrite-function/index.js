@@ -566,97 +566,97 @@ module.exports = async ({ req, res, log, error }) => {
       if (!profileTableWasDiscovered) {
         log('Found an existing profile through a legacy table candidate; keeping this fallback read-only until exact Profile table discovery succeeds.');
       } else {
-      log('Existing FundB profile found.');
-      // A new account may have had its cloud profile created before the invite
-      // code arrived. Allow one-time attribution only while referred_by is empty.
-      const existingReferrer = String(profile.referred_by || '').trim();
-      if (!existingReferrer && /^FB[A-Z0-9]{8}$/.test(submittedReferralCode)) {
-        const referralQuery = [
-          { method: 'equal', attribute: 'referralCode', values: [submittedReferralCode] },
-          { method: 'limit', values: [1] }
-        ];
-        const referralQueryString = referralQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
-        const referralMatches = await appwriteRequest(tablePath + '?' + referralQueryString, 'GET', adminHeaders);
-        const candidate = (referralMatches.rows || [])[0];
-        const eligibleReferrer = candidate && candidate.userId && candidate.userId !== user.$id ? candidate : null;
-        log('Existing-profile referral lookup: ' + JSON.stringify({ matchingReferrerFound: Boolean(eligibleReferrer), selfReferralRejected: Boolean(candidate && candidate.userId === user.$id) }));
-        if (eligibleReferrer) {
-          const updatedProfile = await appwriteRequest(
-            tablePath + '/' + encodeURIComponent(profile.$id),
-            'PATCH', adminHeaders, { data: { referred_by: eligibleReferrer.userId } }
-          );
-          profile = updatedProfile;
-          log('Saved referral attribution on existing profile.');
+        log('Existing FundB profile found.');
+        // A new account may have had its cloud profile created before the invite
+        // code arrived. Allow one-time attribution only while referred_by is empty.
+        const existingReferrer = String(profile.referred_by || '').trim();
+        if (!existingReferrer && /^FB[A-Z0-9]{8}$/.test(submittedReferralCode)) {
+          const referralQuery = [
+            { method: 'equal', attribute: 'referralCode', values: [submittedReferralCode] },
+            { method: 'limit', values: [1] }
+          ];
+          const referralQueryString = referralQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+          const referralMatches = await appwriteRequest(tablePath + '?' + referralQueryString, 'GET', adminHeaders);
+          const candidate = (referralMatches.rows || [])[0];
+          const eligibleReferrer = candidate && candidate.userId && candidate.userId !== user.$id ? candidate : null;
+          log('Existing-profile referral lookup: ' + JSON.stringify({ matchingReferrerFound: Boolean(eligibleReferrer), selfReferralRejected: Boolean(candidate && candidate.userId === user.$id) }));
+          if (eligibleReferrer) {
+            const updatedProfile = await appwriteRequest(
+              tablePath + '/' + encodeURIComponent(profile.$id),
+              'PATCH', adminHeaders, { data: { referred_by: eligibleReferrer.userId } }
+            );
+            profile = updatedProfile;
+            log('Saved referral attribution on existing profile.');
+            try {
+              // Recompute from saved relationships instead of incrementing. This
+              // makes concurrent profile refreshes idempotent and prevents a
+              // duplicate count if two requests attach the same existing profile.
+              const referredQuery = [
+                { method: 'equal', attribute: 'referred_by', values: [eligibleReferrer.userId] },
+                { method: 'limit', values: [1] }
+              ];
+              const referredQueryString = referredQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+              const referredRows = await appwriteRequest(tablePath + '?' + referredQueryString, 'GET', adminHeaders);
+              const exactReferralCount = Number(referredRows.total);
+              if (!Number.isInteger(exactReferralCount) || exactReferralCount < 0) {
+                throw new Error('Appwrite returned an invalid referral relationship count.');
+              }
+              await appwriteRequest(
+                tablePath + '/' + encodeURIComponent(eligibleReferrer.$id),
+                'PATCH', adminHeaders, { data: { total_referrals: exactReferralCount } }
+              );
+              log('Reconciled inviter referral counter after saving existing-profile attribution: ' + JSON.stringify({ relationshipCount: exactReferralCount }));
+            } catch (reconcileError) {
+              log('Referral attribution saved, but inviter counter reconciliation failed: ' + JSON.stringify({
+                statusCode: reconcileError && reconcileError.statusCode,
+                type: reconcileError && reconcileError.type,
+                message: reconcileError && reconcileError.message
+              }));
+            }
+          }
+        } else if (existingReferrer) {
+          log('Existing profile already has a referrer; attribution was not changed.');
+          // Reconcile the inviter's counter from the saved relationship on every
+          // profile sync. This is idempotent and does not depend on the invite URL
+          // still being present after the first registration.
           try {
-            // Recompute from saved relationships instead of incrementing. This
-            // makes concurrent profile refreshes idempotent and prevents a
-            // duplicate count if two requests attach the same existing profile.
-            const referredQuery = [
-              { method: 'equal', attribute: 'referred_by', values: [eligibleReferrer.userId] },
+            const inviterQuery = [
+              { method: 'equal', attribute: 'userId', values: [existingReferrer] },
               { method: 'limit', values: [1] }
             ];
-            const referredQueryString = referredQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
-            const referredRows = await appwriteRequest(tablePath + '?' + referredQueryString, 'GET', adminHeaders);
-            const exactReferralCount = Number(referredRows.total);
-            if (!Number.isInteger(exactReferralCount) || exactReferralCount < 0) {
-              throw new Error('Appwrite returned an invalid referral relationship count.');
+            const inviterQueryString = inviterQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+            const inviterMatches = await appwriteRequest(tablePath + '?' + inviterQueryString, 'GET', adminHeaders);
+            const inviter = (inviterMatches.rows || [])[0];
+            if (inviter && inviter.userId !== user.$id) {
+              const referredQuery = [
+                { method: 'equal', attribute: 'referred_by', values: [existingReferrer] },
+                { method: 'limit', values: [1] }
+              ];
+              const referredQueryString = referredQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
+              const referredRows = await appwriteRequest(tablePath + '?' + referredQueryString, 'GET', adminHeaders);
+              const exactReferralCount = Number(referredRows.total);
+              if (Number.isInteger(exactReferralCount) && exactReferralCount >= 0) {
+                await appwriteRequest(
+                  tablePath + '/' + encodeURIComponent(inviter.$id),
+                  'PATCH', adminHeaders, { data: { total_referrals: exactReferralCount } }
+                );
+                log('Reconciled inviter referral counter from saved referral relationships: ' + JSON.stringify({ relationshipCount: exactReferralCount }));
+              } else {
+                log('Referral counter reconciliation skipped: Appwrite returned an invalid relationship count.');
+              }
+            } else {
+              log('Referral counter reconciliation skipped: saved inviter profile was not found.');
             }
-            await appwriteRequest(
-              tablePath + '/' + encodeURIComponent(eligibleReferrer.$id),
-              'PATCH', adminHeaders, { data: { total_referrals: exactReferralCount } }
-            );
-            log('Reconciled inviter referral counter after saving existing-profile attribution: ' + JSON.stringify({ relationshipCount: exactReferralCount }));
           } catch (reconcileError) {
-            log('Referral attribution saved, but inviter counter reconciliation failed: ' + JSON.stringify({
+            log('Referral counter reconciliation failed without blocking profile load: ' + JSON.stringify({
               statusCode: reconcileError && reconcileError.statusCode,
               type: reconcileError && reconcileError.type,
               message: reconcileError && reconcileError.message
             }));
           }
+        } else {
+          log('Existing profile has no referrer and no valid referral code was submitted.');
         }
-      } else if (existingReferrer) {
-        log('Existing profile already has a referrer; attribution was not changed.');
-        // Reconcile the inviter's counter from the saved relationship on every
-        // profile sync. This is idempotent and does not depend on the invite URL
-        // still being present after the first registration.
-        try {
-          const inviterQuery = [
-            { method: 'equal', attribute: 'userId', values: [existingReferrer] },
-            { method: 'limit', values: [1] }
-          ];
-          const inviterQueryString = inviterQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
-          const inviterMatches = await appwriteRequest(tablePath + '?' + inviterQueryString, 'GET', adminHeaders);
-          const inviter = (inviterMatches.rows || [])[0];
-          if (inviter && inviter.userId !== user.$id) {
-            const referredQuery = [
-              { method: 'equal', attribute: 'referred_by', values: [existingReferrer] },
-              { method: 'limit', values: [1] }
-            ];
-            const referredQueryString = referredQuery.map(q => 'queries[]=' + encodeURIComponent(JSON.stringify(q))).join('&');
-            const referredRows = await appwriteRequest(tablePath + '?' + referredQueryString, 'GET', adminHeaders);
-            const exactReferralCount = Number(referredRows.total);
-            if (Number.isInteger(exactReferralCount) && exactReferralCount >= 0) {
-              await appwriteRequest(
-                tablePath + '/' + encodeURIComponent(inviter.$id),
-                'PATCH', adminHeaders, { data: { total_referrals: exactReferralCount } }
-              );
-              log('Reconciled inviter referral counter from saved referral relationships: ' + JSON.stringify({ relationshipCount: exactReferralCount }));
-            } else {
-              log('Referral counter reconciliation skipped: Appwrite returned an invalid relationship count.');
-            }
-          } else {
-            log('Referral counter reconciliation skipped: saved inviter profile was not found.');
-          }
-        } catch (reconcileError) {
-          log('Referral counter reconciliation failed without blocking profile load: ' + JSON.stringify({
-            statusCode: reconcileError && reconcileError.statusCode,
-            type: reconcileError && reconcileError.type,
-            message: reconcileError && reconcileError.message
-          }));
-        }
-      } else {
-        log('Existing profile has no referrer and no valid referral code was submitted.');
-      }
       }
     } else {
       log('No existing FundB profile found; attempting first-time profile creation.');
