@@ -68,7 +68,7 @@ jobs:
           required = [
               "require('crypto')",
               "crypto.randomBytes(8)",
-              "createUniqueReferralCode(tablePath, adminHeaders)",
+              "uniqueReferralCode(adminHeaders)",
               "process.env.FUNDB_ALLOWED_ORIGIN || ''",
               "if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN)"
           ]
