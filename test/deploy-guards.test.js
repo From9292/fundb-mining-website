@@ -1,10 +1,16 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { assertInitialHolder } from "../scripts/deploy-guards.js";
+import { network } from "hardhat";
+import { assertInitialHolder, INITIAL_HOLDER } from "../scripts/deploy-guards.js";
 
-const HOLDER = "0x3E020945d3e89ed84F0Fca14e01C9328BC3b67A1";
+const { ethers } = await network.create();
+const HOLDER = INITIAL_HOLDER;
 
 describe("testnet deployment holder guard", function () {
+  it("uses a valid EIP-55 checksum for the nominated holder", function () {
+    assert.equal(ethers.getAddress(HOLDER), HOLDER);
+  });
+
   it("accepts the nominated holder address regardless of hex letter casing", function () {
     assert.doesNotThrow(() => assertInitialHolder(HOLDER, HOLDER.toLowerCase()));
   });
