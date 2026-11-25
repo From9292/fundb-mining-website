@@ -151,11 +151,11 @@ jobs:
               "AdSense publisher verification script is present",
               "no ad units are installed",
               "No streaming rewards are currently issued",
-              "not a market price"
+              "FUNDB balances are community tracking units only"
           ]
           missing = [item for item in required if item not in html]
           if missing:
-              raise SystemExit("Preview wording check failed: " + ", ".join(missing))
+              raise SystemExit("Current public wording check failed: " + ", ".join(missing))
           forbidden = [
               "No AdSense ad unit or serving script is installed",
               "The proposed 35 FundB Points per eligible hour"
