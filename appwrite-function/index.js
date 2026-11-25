@@ -556,12 +556,17 @@ module.exports = async ({ req, res, log, error }) => {
     }
     const tablePath = selectedTable.tablePath;
     let profile = selectedTable.profile;
+    // Legacy candidate IDs are read-only unless Appwrite itself confirmed the exact Profile table.
+    const profileTableWasDiscovered = discoveredProfileTableIds.some(table => table.tableId === selectedTable.tableId);
     log('Resolved FundB profile table: ' + JSON.stringify({
       databaseId: selectedTable.databaseId,
       tableId: selectedTable.tableId,
       existingProfileFound: Boolean(profile)
     }));
     if (profile) {
+      if (!profileTableWasDiscovered) {
+        log('Found an existing profile through a legacy table candidate; keeping this fallback read-only until exact Profile table discovery succeeds.');
+      } else {
       log('Existing FundB profile found.');
       // A new account may have had its cloud profile created before the invite
       // code arrived. Allow one-time attribution only while referred_by is empty.
@@ -653,10 +658,14 @@ module.exports = async ({ req, res, log, error }) => {
       } else {
         log('Existing profile has no referrer and no valid referral code was submitted.');
       }
+      }
     } else {
       log('No existing FundB profile found; attempting first-time profile creation.');
     }
     if (!profile) {
+      if (!profileTableWasDiscovered) {
+        throw new Error('The exact Profile table could not be verified; no profile or referral data was changed.');
+      }
       try {
         let referrer = null;
         if (/^FB[A-Z0-9]{8}$/.test(submittedReferralCode)) {

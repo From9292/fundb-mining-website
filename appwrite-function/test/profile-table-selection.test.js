@@ -44,7 +44,7 @@ function installAppwriteMock(options = {}) {
       const parsed = new URL(url);
       const path = parsed.pathname;
       const method = requestOptions.method;
-      requests.push({ path, method });
+      requests.push({ path, search: parsed.search, method });
       let status = 200;
       let payload = {};
       if (path.endsWith('/account') && method === 'GET') {
@@ -58,6 +58,17 @@ function installAppwriteMock(options = {}) {
         payload = { rows: [canonicalProfile], total: 1 };
       } else if (path.endsWith('/tables/legacy-lower-id/rows') && method === 'GET') {
         payload = { rows: [legacyProfile], total: 1 };
+      } else if (options.legacyFallbackReachable && path.endsWith('/tables/6afea0720025daaed040/rows') && method === 'GET') {
+        const queries = new URLSearchParams(parsed.search).getAll('queries[]').map(value => JSON.parse(value));
+        const userLookup = queries.some(query => query.attribute === 'userId');
+        const referralLookup = queries.some(query => query.attribute === 'referralCode');
+        if (options.legacyFallbackProfile && userLookup) {
+          payload = { rows: [options.legacyFallbackProfile], total: 1 };
+        } else if (options.legacyFallbackProfile && referralLookup) {
+          payload = { rows: [{ $id: 'referrer-row', userId: 'other-user-456', referralCode: 'FB12345678', total_referrals: 0 }], total: 1 };
+        } else {
+          payload = { rows: [], total: 0 };
+        }
       } else if (path.includes('/tables/') && path.endsWith('/rows') && method === 'GET') {
         status = 404;
         payload = { message: 'Table not found', type: 'table_not_found' };
@@ -161,6 +172,63 @@ test('fails closed when table discovery is unavailable and no configured mapping
   assert.equal(res.statusCode, 500);
   assert.match(res.payload.message, /No supplied FundB table mapping was reachable/);
   assert.equal(writes.length, 0, 'ambiguous profile lookup must never mutate user data');
+});
+
+
+
+test('does not create a new profile in a legacy candidate when exact table discovery is denied', async () => {
+  installAppwriteMock({ discoveryDenied: true, legacyFallbackReachable: true });
+  delete require.cache[require.resolve('../index.js')];
+  const handler = require('../index.js');
+  const res = makeResponse();
+  await handler({
+    req: {
+      method: 'POST',
+      headers: {
+        origin: 'https://fundb-production-hardening.fundb-mining-website.pages.dev',
+        'x-appwrite-user-jwt': 'test-jwt',
+        'x-appwrite-key': 'test-function-key'
+      },
+      bodyJson: {}
+    },
+    res,
+    log() {},
+    error() {}
+  });
+
+  assert.equal(res.statusCode, 500);
+  assert.match(res.payload.message, /exact Profile table could not be verified/);
+  assert.equal(writes.length, 0, 'a reachable legacy table must never receive a new profile write');
+  const fallbackReads = requests.filter(item => item.path.endsWith('/tables/6afea0720025daaed040/rows') && item.method === 'GET');
+  assert.equal(fallbackReads.length, 1, 'legacy fallback may be checked only once for the existing profile; it must not be used for referral-code allocation');
+});
+
+test('legacy fallback may read an existing profile but must not change referral relationships', async () => {
+  installAppwriteMock({ discoveryDenied: true, legacyFallbackReachable: true, legacyFallbackProfile: legacyProfile });
+  delete require.cache[require.resolve('../index.js')];
+  const handler = require('../index.js');
+  const res = makeResponse();
+  await handler({
+    req: {
+      method: 'POST',
+      headers: {
+        origin: 'https://fundb-production-hardening.fundb-mining-website.pages.dev',
+        'x-appwrite-user-jwt': 'test-jwt',
+        'x-appwrite-key': 'test-function-key'
+      },
+      bodyJson: { referralCode: 'FB12345678' }
+    },
+    res,
+    log() {},
+    error() {}
+  });
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.payload.profile.points, 999);
+  assert.equal(res.payload.rewardsEnabled, false);
+  assert.equal(writes.length, 0, 'legacy fallback profile reads must not attach referrals or update counters');
+  const referralReads = requests.filter(item => item.path.endsWith('/tables/6afea0720025daaed040/rows') && item.search.includes('referralCode'));
+  assert.equal(referralReads.length, 0, 'referral lookup must wait for exact Profile table discovery');
 });
 
 test.after(() => {

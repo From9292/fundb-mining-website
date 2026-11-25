@@ -17,7 +17,7 @@ The source folder is in this repository at [appwrite-function](https://github.co
 
 ## Existing database configuration
 
-The verified existing FundB database ID is `fundB_database`. The function first attempts a read-only TablesDB listing to resolve the internal ID of the exact table named **Profile**, then probes its known table candidates. Do not delete or recreate existing rows or tables.
+The verified existing FundB database ID is `fundB_database`. The function first attempts a read-only TablesDB listing to resolve the internal ID of the exact table named **Profile**. If discovery is unavailable, known candidate IDs may be checked only to read an already-existing matching profile; a legacy fallback is never used to create a profile or change referral relationships. New profile creation and referral writes require exact Profile table discovery through `tables.read`. Do not delete or recreate existing rows or tables.
 
 The selected Profile table must have these columns before profile creation and referral lookup can work:
 
@@ -31,7 +31,7 @@ The previously supplied Profile-table screenshot showed `userId`, `points`, `ref
 
 Optional environment variables:
 - `FUNDB_DATABASE_ID` (defaults to `fundB_database`)
-- `FUNDB_PROFILE_TABLE_ID` (legacy fallback table ID)
+- `FUNDB_PROFILE_TABLE_ID` (legacy read-only fallback candidate; it is not used for profile creation or referral writes unless exact Profile table discovery confirms the same internal ID)
 - `FUNDB_ALLOWED_ORIGIN` (optional comma-separated exact-origin allowlist. Defaults to the known Netlify and Cloudflare Pages FundB origins; set it to your current exact website origin(s) if the hosting domain changes.)
 
 Appwrite automatically provides `APPWRITE_FUNCTION_PROJECT_ID`, the ephemeral key in `x-appwrite-key`, and the authenticated user's JWT in `x-appwrite-user-jwt`. Do not put API keys, passwords, or JWTs in GitHub.
@@ -69,6 +69,7 @@ Keep table permissions empty and row-level security disabled; the API uses the f
 - The function rejects requests without a signed-in user's JWT.
 - It obtains the user ID from Appwrite's verified account, never from browser input.
 - It reads the existing profile before creating one.
+- If exact Profile table discovery is unavailable, legacy candidate IDs are read-only: existing profiles may be returned, but new profile creation and referral relationship/counter writes are blocked until `tables.read` discovery succeeds.
 - New profile rows use the authenticated user's ID as a stable row ID to reduce duplicate creation during simultaneous requests.
 - New referral codes are generated with Node's cryptographic random source and checked against existing codes before assignment; existing users' codes are never changed.
 - Browser requests with an `Origin` header outside the exact allowlist are rejected with HTTP 403 before any Appwrite API request. Approved origins receive the matching CORS header; server-to-server requests without an `Origin` header remain supported.
@@ -81,6 +82,6 @@ Real rewards require separate server-side transaction records, idempotency keys,
 
 ## Referral profile behavior
 
-The profile API stores a one-time `referred_by` relationship for an eligible invite code. On subsequent profile syncs, it recalculates the inviter's `total_referrals` from saved relationships, so a missed counter update can be repaired without counting the same referred account twice. Referral codes are submitted only during the registration flow; a later sign-in or manual profile refresh does not silently attach a stale URL code. The referred account receives a boolean `referralLinked` status; its own `totalReferrals` remains the number of people it has invited.
+The profile API stores a one-time `referred_by` relationship for an eligible invite code. On subsequent profile syncs, it recalculates the inviter's `total_referrals` from saved relationships, so a missed counter update can be repaired without counting the same referred account twice. Referral codes may be submitted during registration or through the account's explicit one-time “Apply an invitation code” action while the profile has no inviter. A later sign-in or ordinary profile refresh does not silently attach a stale URL code. The referred account receives a boolean `referralLinked` status; its own `totalReferrals` remains the number of people it has invited.
 
 After changing `appwrite-function/index.js`, redeploy the existing **FundB Rewards API** function from this folder in Appwrite. A Cloudflare Pages deployment does not deploy this function automatically. Keep rewards disabled until a live Appwrite execution confirms the relationship and counter behavior.
