@@ -22,6 +22,7 @@ def main() -> int:
     manifest_path = ROOT / "app/src/main/AndroidManifest.xml"
     activity_path = ROOT / "app/src/main/java/com/fundb/mining/preview/MainActivity.kt"
     gradle_path = ROOT / "app/build.gradle.kts"
+    wallet_policy_path = ROOT / "wallet/SECURITY_DESIGN.md"
 
     manifest = ET.parse(manifest_path).getroot()
     permissions = {
@@ -86,6 +87,20 @@ def main() -> int:
     require("https://" in source,
             "The configured app origin must use HTTPS")
 
+    # Wallet remains design-only: no keys, mnemonics, or signing APIs may
+    # accidentally appear in the WebView host while the wallet is disabled.
+    for forbidden in ("PrivateKey", "SecretKey", "Mnemonic", "signTransaction", "eth_sendRawTransaction"):
+        require(forbidden not in source,
+                f"Wallet functionality is not approved in the WebView host: {forbidden}")
+    require(wallet_policy_path.is_file(),
+            "Wallet security design and release gates must be documented")
+    wallet_policy = wallet_policy_path.read_text(encoding="utf-8")
+    for required in ("design-only / wallet disabled", "Android Keystore",
+                     "never transmit it", "Independent review",
+                     "Explicitly disabled until every gate is passed"):
+        require(required in wallet_policy,
+                f"Wallet security policy is missing required safeguard: {required}")
+
     gradle = gradle_path.read_text(encoding="utf-8")
     require(re.search(r"minSdk\s*=\s*23", gradle) is not None,
             "Unexpected minimum Android SDK")
@@ -93,7 +108,7 @@ def main() -> int:
             "Target SDK must remain explicitly configured")
 
     print("FundB Android static safety checks: PASS")
-    print("Scope: manifest permissions, network policy, WebView boundaries, TLS handling, SDK levels")
+    print("Scope: manifest permissions, launcher icon, network policy, WebView boundaries, TLS handling, SDK levels, wallet-disabled policy")
     print("Note: static checks do not replace device testing or an independent security review.")
     return 0
 
