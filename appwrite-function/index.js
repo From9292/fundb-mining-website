@@ -172,6 +172,26 @@ module.exports = async ({ req, res, log, error }) => {
       bodyObjectPresent: Boolean(req.body && typeof req.body === 'object'),
       action: typeof requestBody.action === 'string' ? requestBody.action : 'profileSync'
     }));
+
+    // Explicit API action allowlist: unknown caller-controlled actions must
+    // never fall through into profile initialization or future handlers.
+    // An omitted action remains the existing profile-sync behavior.
+    const allowedActions = new Set([
+      'profileSync',
+      'transactionHistory',
+      'submitMission',
+      'myMissionSubmissions',
+      'adminMissionQueue',
+      'reviewMissionSubmission'
+    ]);
+    if (requestBody.action !== undefined &&
+        (typeof requestBody.action !== 'string' || !allowedActions.has(requestBody.action))) {
+      return json(res, 400, {
+        ok: false,
+        code: 'UNSUPPORTED_ACTION',
+        message: 'This FundB action is not available.'
+      }, origin);
+    }
     if (requestBody.action === 'transactionHistory') {
       // Resolve the dedicated ledger by its exact display name in the configured database.
       // The table's internal ID can differ from its display name; never guess it.
