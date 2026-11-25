@@ -5,6 +5,13 @@
   "display": "standalone",
   "background_color": "#090909",
   "theme_color": "#090909",
-  "description": "FundB Mining and FundB Media community preview",
-  "icons": [{"src":"assets/fundb-logo.png","sizes":"192x192","type":"image/png","purpose":"any"}]
+  "description": "FundB Mining and FundB Media testnet community app. Rewards and withdrawals are not enabled.",
+  "icons": [
+    {
+      "src": "assets/fundb-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
