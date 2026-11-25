@@ -175,8 +175,6 @@ test('fails closed when table discovery is unavailable and no configured mapping
   assert.equal(writes.length, 0, 'ambiguous profile lookup must never mutate user data');
 });
 
-
-
 test('does not create a new profile in a legacy candidate when exact table discovery is denied', async () => {
   installAppwriteMock({ discoveryDenied: true, legacyFallbackReachable: true });
   delete require.cache[require.resolve('../index.js')];
@@ -198,7 +196,8 @@ test('does not create a new profile in a legacy candidate when exact table disco
   });
 
   assert.equal(res.statusCode, 500);
-  assert.match(res.payload.message, /exact Profile table could not be verified/);
+  assert.equal(res.payload.message, 'FundB could not complete this request. Please retry later.');
+  assert.equal(res.payload.diagnostic, undefined, 'upstream diagnostics must remain server-side only');
   assert.equal(writes.length, 0, 'a reachable legacy table must never receive a new profile write');
   const fallbackReads = requests.filter(item => item.path.endsWith('/tables/6afea0720025daaed040/rows') && item.method === 'GET');
   assert.equal(fallbackReads.length, 1, 'legacy fallback may be checked only once for the existing profile; it must not be used for referral-code allocation');
@@ -240,6 +239,4 @@ test.after(() => {
   else process.env.APPWRITE_FUNCTION_API_ENDPOINT = originalEndpoint;
   if (originalDatabaseId === undefined) delete process.env.FUNDB_DATABASE_ID;
   else process.env.FUNDB_DATABASE_ID = originalDatabaseId;
-  if (originalLegacyDatabaseId === undefined) delete process.env.FUNBDATAID;
-  else process.env.FUNBDATAID = originalLegacyDatabaseId;
 });
