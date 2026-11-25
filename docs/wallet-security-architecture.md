@@ -25,10 +25,10 @@ FUNDB must be displayed as **Coming Soon** until the canonical token contract, s
 
 ## Architecture decision
 
-The current FundB product is a browser-based PWA. It is not an appropriate place to implement production-grade multi-chain private-key custody merely by adding JavaScript to index.html.
+The FundB Wallet is a first-party feature inside the FundB Mining app, not a separate wallet app or external-wallet redirect. The current FundB product is a browser-based PWA, which is not an appropriate place to implement production-grade multi-chain private-key custody merely by adding JavaScript to index.html. Secure custody therefore requires a native Android wallet module packaged inside the same FundB Android app; the PWA remains read-only until that native host exists.
 
 Preferred production architecture:
-- Android app: native Kotlin wallet module using Android Keystore and audited cryptographic libraries.
+- Android app: native Kotlin wallet module packaged inside the same FundB Mining application ID and release identity, using Android Keystore and audited cryptographic libraries.
 - iOS app (when built): native Swift wallet module using Keychain/Secure Enclave protections.
 - Shared chain logic: audited wallet-core implementation (evaluate Trust Wallet Core or another maintained library) behind a narrow, reviewed interface.
 - Web/PWA: read-only portfolio and public-address views only, unless a separately audited browser-wallet architecture is approved. Never expose a mnemonic or signing key to the existing PWA.
