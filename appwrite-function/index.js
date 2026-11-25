@@ -9,6 +9,8 @@ const PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const DATABASE_ID = process.env.FUNDB_DATABASE_ID || process.env.FUNBDATAID || 'fundB_database';
 const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || 'profile';
 const MISSION_SUBMISSIONS_TABLE_ID = process.env.FUNDB_MISSION_SUBMISSIONS_TABLE_ID || 'fundb_mission_submissions';
+const DEVICE_REGISTRY_TABLE_ID = process.env.FUNDB_DEVICE_REGISTRY_TABLE_ID || 'fundb_device_registry';
+const DEVICE_HMAC_SECRET = process.env.FUNDB_DEVICE_HMAC_SECRET || '';
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
 const ALLOWED_ORIGINS = new Set(
   (process.env.FUNDB_ALLOWED_ORIGIN ||
@@ -182,7 +184,8 @@ module.exports = async ({ req, res, log, error }) => {
       'submitMission',
       'myMissionSubmissions',
       'adminMissionQueue',
-      'reviewMissionSubmission'
+      'reviewMissionSubmission',
+      'deviceRegister'
     ]);
     if (requestBody.action !== undefined &&
         (typeof requestBody.action !== 'string' || !allowedActions.has(requestBody.action))) {
@@ -192,6 +195,57 @@ module.exports = async ({ req, res, log, error }) => {
         message: 'This FundB action is not available.'
       }, origin);
     }
+    if (requestBody.action === 'deviceRegister') {
+      // A browser-generated random installation token is HMACed on the server.
+      // Only the digest is stored; no browser fingerprint, IP address, or raw token.
+      const { digestInstallationToken } = require('./device-integrity');
+      const token = requestBody.installationToken;
+      if (!DEVICE_HMAC_SECRET || Buffer.byteLength(DEVICE_HMAC_SECRET, 'utf8') < 32) {
+        return json(res, 503, { ok: false, code: 'DEVICE_SECURITY_NOT_CONFIGURED', message: 'Device security is not configured yet.' }, origin);
+      }
+      let installationHash;
+      try { installationHash = digestInstallationToken(token, DEVICE_HMAC_SECRET); }
+      catch (_) {
+        return json(res, 400, { ok: false, code: 'INVALID_INSTALLATION_TOKEN', message: 'This device registration request is invalid.' }, origin);
+      }
+      const rowId = crypto.createHash('sha256')
+        .update(String(user.$id) + ':' + installationHash, 'utf8')
+        .digest('hex').slice(0, 36);
+      const registryPath = '/tablesdb/' + encodeURIComponent(DATABASE_ID) +
+        '/tables/' + encodeURIComponent(DEVICE_REGISTRY_TABLE_ID) + '/rows';
+      const now = new Date().toISOString();
+      const deviceHeaders = { 'X-Appwrite-Project': PROJECT_ID, 'X-Appwrite-Key': functionKey };
+      try {
+        const existing = await appwriteRequest(registryPath + '/' + encodeURIComponent(rowId), 'GET', deviceHeaders);
+        const updated = await appwriteRequest(
+          registryPath + '/' + encodeURIComponent(rowId),
+          'PATCH',
+          deviceHeaders,
+          { data: { lastSeenAt: now } }
+        );
+        return json(res, 200, {
+          ok: true,
+          registered: true,
+          existingPairing: true,
+          status: String(updated.status || existing.status || 'active')
+        }, origin);
+      } catch (lookupError) {
+        if (lookupError.statusCode !== 404 && lookupError.type !== 'row_not_found') throw lookupError;
+      }
+      await appwriteRequest(registryPath, 'POST', deviceHeaders, {
+        rowId,
+        data: {
+          userId: user.$id,
+          installationHash,
+          status: 'active',
+          firstSeenAt: now,
+          lastSeenAt: now
+        }
+      });
+      log('Registered a new device pairing for the authenticated account; only an HMAC digest was stored.');
+      return json(res, 200, { ok: true, registered: true, existingPairing: false, status: 'active' }, origin);
+    }
+
     if (requestBody.action === 'transactionHistory') {
       // Resolve the dedicated ledger by its exact display name in the configured database.
       // The table's internal ID can differ from its display name; never guess it.
