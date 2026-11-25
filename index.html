@@ -98,7 +98,7 @@ input,textarea,select{border-radius:14px!important}
 </nav>
 
 <section id="home">
-<div class="card"><div class="eyebrow">Your FUNDB balance</div><div class="balance" id="balance">FUNDB $0.00</div><div class="progress"><div class="bar" id="progress"></div></div><div class="row"><span class="muted" id="mineStatus">Mining is locked</span><span class="muted" id="timeLeft">24:00:00</span></div><p class="muted" id="adStatus" role="status">Mining will open when eligible ad verification, reward rules and account safeguards are ready. Standard website ads are separate and never affect your FUNDB balance.</p><button class="primary" style="width:100%" onclick="showTab('mining')">Go to mining</button></div>
+<div class="card"><div class="eyebrow">Your FUNDB balance · preview only</div><div class="balance" id="balance">FUNDB $0.00</div><div class="unit">Preview display only; not a live token balance, market price, or cash value.</div><div class="progress"><div class="bar" id="progress"></div></div><div class="row"><span class="muted" id="mineStatus">Mining is locked</span><span class="muted" id="timeLeft">24:00:00</span></div><p class="muted" id="adStatus" role="status">Mining will open when eligible ad verification, reward rules and account safeguards are ready. Standard website ads are separate and never affect your FUNDB balance.</p><button class="primary" style="width:100%" onclick="showTab('mining')">Go to mining</button></div>
 <div class="grid"><div class="stat"><span class="eyebrow">Today's FUNDB</span><strong id="today">0.00</strong></div><div class="stat"><span class="eyebrow">Daily check-ins</span><strong id="streak">0</strong></div><div class="stat"><span class="eyebrow">Ad progress</span><strong id="adCount">0 / 10</strong></div></div>
 <div class="card"><div class="eyebrow">Quick access</div><div class="two" style="margin-top:12px"><button class="primary" onclick="showTab('tasks')">✦ Explore missions</button><button class="secondary" onclick="showTab('media')">◎ Open FundB Media</button><button class="secondary" onclick="showTab('referral')">↗ Invite friends</button><button class="secondary" onclick="showTab('account')">♙ My account</button></div></div>
 <div class="card"><h2>Welcome to FundB Mining</h2><p class="muted">Welcome to FundB Mining — a global community built around learning, useful activities, community learning and the proposed FundB ecosystem. Explore missions, mining information, games and FundB Media to connect with members worldwide. Our goal is to make participation accessible and easy to understand.</p></div>
@@ -344,7 +344,7 @@ const syncCloudProfile = async (referralCodeOverride = '') => {
     }
     byId('cloudPoints').textContent = Number(result.profile.points || 0).toFixed(2);
      const fundbUnits = Math.max(0, Number(result.profile.points || 0));
-     ['balance','miningBalance','walletBalance'].forEach(id => { if (byId(id)) byId(id).textContent = 'Preview only'; });
+     ['balance','miningBalance','walletBalance'].forEach(id => { if (byId(id)) byId(id).textContent = 'FUNDB $0.00'; });
     byId('cloudReferral').textContent = result.profile.referralCode || 'Not assigned';
     byId('refCode').textContent = result.profile.referralCode || 'Not assigned';
     byId('copyBtn').disabled = !result.profile.referralCode;
