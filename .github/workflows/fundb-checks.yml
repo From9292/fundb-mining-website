@@ -165,6 +165,26 @@ jobs:
               raise SystemExit("Outdated or misleading preview wording remains: " + ", ".join(present))
           print("Preview earning, AdSense and points-reference wording is accurate.")
           PY
+      - name: Verify FUNDB zero-balance display after sign-in
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          required = [
+              '<div class="balance" id="balance">FUNDB $0.00</div>',
+              '<div class="unit">Preview display only; not a live token balance, market price, or cash value.</div>',
+              "byId(id).textContent = 'FUNDB $0.00';",
+              '<div class="balance" id="walletBalance">FUNDB $0.00</div>',
+              "Wallet services are not yet open."
+          ]
+          missing = [item for item in required if item not in html]
+          if missing:
+              raise SystemExit("Dashboard balance display check failed: " + ", ".join(missing))
+          if "byId(id).textContent = 'Preview only';" in html:
+              raise SystemExit("Profile sync must not hide the FUNDB $0.00 placeholder after sign-in.")
+          print("Dashboard and wallet keep the explicit zero placeholder after profile sync; preview-only disclosure remains visible.")
+          PY
+
       - name: Verify referral and CORS hardening
         run: |
           python3 - <<'PY'
