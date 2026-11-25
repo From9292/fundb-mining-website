@@ -126,9 +126,9 @@ jobs:
           required = [
               'id="adCount2">0 / 10',
               'id="mineBtn" style="width:100%" disabled',
-              'Rewarded ads are not connected.',
+              'Rewarded ads are not yet available.',
               'AdSense publisher account',
-              'Viewing or clicking those ads will never increase mining progress, points or account balances.',
+              'Viewing or clicking ordinary website ads will never increase mining progress or FUNDB balances.',
               'google-adsense-account" content="ca-pub-9800579782167167'
           ]
           missing = [item for item in required if item not in html]
@@ -141,7 +141,7 @@ jobs:
               raise SystemExit("Do not add live ad units before site approval and a valid ad-unit ID are confirmed.")
           print("Mining remains disabled; AdSense verification is installed, and no live ad units or incentivized ads are enabled.")
           PY
-      - name: Verify preview wording does not imply active earning or live AdSense units
+      - name: Verify current public programme disclosures and reward restrictions
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -150,8 +150,8 @@ jobs:
               "Explore missions",
               "AdSense publisher verification script is present",
               "no ad units are installed",
-              "No streaming points are currently offered or accruing",
-              "not cash or an exchange rate"
+              "No streaming rewards are currently issued",
+              "not a market price"
           ]
           missing = [item for item in required if item not in html]
           if missing:
@@ -242,7 +242,7 @@ jobs:
       - name: Check service-worker syntax
         run: node --check sw.js
 
-      - name: Verify public preview legal pages and app links
+      - name: Verify public legal pages and app links
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -250,11 +250,11 @@ jobs:
           privacy = Path("privacy.html")
           terms = Path("terms.html")
           if not privacy.is_file() or not terms.is_file():
-              raise SystemExit("Both preview legal pages must exist.")
+              raise SystemExit("Both legal pages must exist.")
           for link in ['href="./privacy.html"', 'href="./terms.html"']:
               if link not in html:
                   raise SystemExit("App navigation/footer is missing legal link: " + link)
-          if "cannot currently be redeemed or withdrawn" not in terms.read_text(encoding="utf-8"):
-              raise SystemExit("Terms must clearly disclose preview reward restrictions.")
+          if "Live FUNDB deposits, transfers, withdrawals and token claims are not available" not in terms.read_text(encoding="utf-8"):
+              raise SystemExit("Terms must clearly disclose that live wallet and token services are unavailable.")
           print("Privacy and terms files exist and are linked from the app source.")
           PY
