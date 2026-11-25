@@ -24,6 +24,9 @@ function responseHeaders(origin) {
   const headers = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-Appwrite-User-JWT',
+    'Cache-Control': 'no-store, private',
+    'Pragma': 'no-cache',
+    'X-Content-Type-Options': 'nosniff',
     'Vary': 'Origin'
   };
   // When an origin is configured, only echo that exact trusted website origin.
