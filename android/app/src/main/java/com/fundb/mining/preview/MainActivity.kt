@@ -1,9 +1,8 @@
 package com.fundb.mining.preview
 
-import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.webkit.SslErrorHandler
@@ -11,10 +10,9 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 
 /**
  * Thin Android host for the existing FundB PWA.
@@ -26,7 +24,7 @@ import androidx.appcompat.app.AppCompatActivity
  * - SSL certificate errors are always cancelled.
  * - Wallet keys and signing are deliberately not implemented in this host.
  */
-class MainActivity : AppCompatActivity() {
+class MainActivity : Activity() {
     private lateinit var webView: WebView
     private lateinit var progress: ProgressBar
     private lateinit var status: TextView
@@ -34,12 +32,11 @@ class MainActivity : AppCompatActivity() {
     private val appHost = "fundb-production-hardening.fundb-mining-website.pages.dev"
     private val appUrl = "https://$appHost/"
 
-    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val root = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setBackgroundColor(android.graphics.Color.rgb(12, 12, 12))
         }
         progress = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal)
@@ -50,12 +47,12 @@ class MainActivity : AppCompatActivity() {
             visibility = View.GONE
         }
         webView = WebView(this)
-        root.addView(progress, android.widget.LinearLayout.LayoutParams(
-            android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 4
+        root.addView(progress, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 4
         ))
         root.addView(status)
-        root.addView(webView, android.widget.LinearLayout.LayoutParams(
-            android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+        root.addView(webView, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
         ))
         setContentView(root)
 
@@ -116,12 +113,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             webView.restoreState(savedInstanceState)
         }
-
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (webView.canGoBack()) webView.goBack() else finish()
-            }
-        })
     }
 
     private fun showConnectionError(message: String) {
@@ -130,14 +121,25 @@ class MainActivity : AppCompatActivity() {
         status.visibility = View.VISIBLE
     }
 
+    @Deprecated("Use system back navigation when migrating to AndroidX")
+    override fun onBackPressed() {
+        if (::webView.isInitialized && webView.canGoBack()) {
+            webView.goBack()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         webView.saveState(outState)
         super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
-        webView.stopLoading()
-        webView.destroy()
+        if (::webView.isInitialized) {
+            webView.stopLoading()
+            webView.destroy()
+        }
         super.onDestroy()
     }
 }
