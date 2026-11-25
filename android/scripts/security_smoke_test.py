@@ -96,7 +96,7 @@ def main() -> int:
             "Wallet security design and release gates must be documented")
     wallet_policy = wallet_policy_path.read_text(encoding="utf-8")
     for required in ("design-only / wallet disabled", "Android Keystore",
-                     "never transmit it", "Independent review",
+                     "Never transmit it", "Independent review",
                      "Explicitly disabled until every gate is passed"):
         require(required in wallet_policy,
                 f"Wallet security policy is missing required safeguard: {required}")
