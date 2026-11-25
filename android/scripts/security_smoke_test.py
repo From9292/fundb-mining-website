@@ -76,9 +76,9 @@ def main() -> int:
             "The configured app origin must use HTTPS")
 
     gradle = gradle_path.read_text(encoding="utf-8")
-    require(re.search(r"minSdk\\s*=\\s*23", gradle) is not None,
+    require(re.search(r"minSdk\s*=\s*23", gradle) is not None,
             "Unexpected minimum Android SDK")
-    require(re.search(r"targetSdk\\s*=\\s*35", gradle) is not None,
+    require(re.search(r"targetSdk\s*=\s*35", gradle) is not None,
             "Target SDK must remain explicitly configured")
 
     print("FundB Android static safety checks: PASS")
