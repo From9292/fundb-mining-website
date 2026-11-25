@@ -102,6 +102,37 @@ jobs:
           print("Referral submission is explicit and both new/existing profile counts are reconciled")
           PY
 
+      - name: Verify FUNDB display contains no preview or illustrative dollar values
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          source = Path("index.html").read_text(encoding="utf-8")
+          required = [
+              'id="balance">FUNDB $0.00</div>',
+              "$('balance').textContent='FUNDB $'",
+              'id="miningBalance"',
+              'id="walletBalance"'
+          ]
+          missing = [item for item in required if item not in source]
+          if missing:
+              raise SystemExit("FUNDB balance display check failed; missing: " + ", ".join(missing))
+          forbidden = [
+              r"illustrative",
+              r"\bpreview\b",
+              r"REFERENCE_USD_PER_FUNDB",
+              r"balanceUsd|miningBalanceUsd|walletBalanceUsd",
+              r"\$0\.60",
+              r"5 FUNDB\s*=\s*\$3",
+              r"reference equivalent"
+          ]
+          found = [pattern for pattern in forbidden if re.search(pattern, source, re.I)]
+          if found:
+              raise SystemExit("Unwanted preview/illustrative value remains: " + ", ".join(found))
+          print("FUNDB balance display regression checks passed.")
+          PY
+
       - name: Package Appwrite manual deployment archive
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
