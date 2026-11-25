@@ -39,6 +39,17 @@ def main() -> int:
             "Cleartext network traffic must remain disabled")
     require(app.attrib.get(ANDROID_NS + "debuggable") != "true",
             "Do not enable debuggable in the manifest")
+    require(app.attrib.get(ANDROID_NS + "icon") == "@mipmap/ic_launcher",
+            "FundB launcher icon must be declared in the manifest")
+    icon_path = ROOT / "app/src/main/res/mipmap-anydpi/ic_launcher.xml"
+    adaptive_icon_path = ROOT / "app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml"
+    foreground_path = ROOT / "app/src/main/res/drawable/ic_launcher_foreground.xml"
+    require(icon_path.is_file() and adaptive_icon_path.is_file()
+            and foreground_path.is_file(),
+            "Legacy and adaptive FundB launcher icon resources must exist")
+    adaptive_icon = ET.parse(adaptive_icon_path).getroot()
+    require(adaptive_icon.tag == "adaptive-icon",
+            "Android 8+ launcher icon must use an adaptive-icon resource")
 
     activity = app.find("activity")
     require(activity is not None, "Launcher activity is missing")
