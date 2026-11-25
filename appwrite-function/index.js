@@ -1,3 +1,4 @@
+// FundB API deployment trigger: source-preserving commit to refresh the connected Appwrite VCS deployment.
 const https = require('https');
 const crypto = require('crypto');
 const { URL } = require('url');
