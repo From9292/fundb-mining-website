@@ -302,6 +302,35 @@ const account = new Account(client);
 const functions = new Functions(client);
 const FUNDB_FUNCTION_ID = 'FundBRewardsAPI';
 const byId = id => document.getElementById(id);
+const DEVICE_INSTALLATION_KEY = 'fundb_installation_token_v1';
+const getInstallationToken = () => {
+  let token = '';
+  try { token = localStorage.getItem(DEVICE_INSTALLATION_KEY) || ''; } catch (_) {}
+  if (/^[A-Za-z0-9_-]{32,128}$/.test(token)) return token;
+  if (!globalThis.crypto?.getRandomValues) throw new Error('Secure device registration is unavailable in this browser.');
+  const bytes = new Uint8Array(32);
+  globalThis.crypto.getRandomValues(bytes);
+  token = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+  try { localStorage.setItem(DEVICE_INSTALLATION_KEY, token); }
+  catch (_) { throw new Error('This browser could not securely save the device registration token.'); }
+  return token;
+};
+const registerFundBDevice = async () => {
+  const execution = await functions.createExecution(
+    FUNDB_FUNCTION_ID,
+    JSON.stringify({ action: 'deviceRegister', installationToken: getInstallationToken() }),
+    false,
+    '/',
+    'POST'
+  );
+  let result = {};
+  try { result = execution.responseBody ? JSON.parse(execution.responseBody) : {}; }
+  catch (_) { throw new Error('The device security service returned an unreadable response.'); }
+  if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+    throw new Error(result.message || 'Device registration could not be completed.');
+  }
+  return result;
+};
 const REFERRAL_SESSION_KEY = 'fundb_pending_referral_v1';
 const referralParams = new URLSearchParams(location.search);
 const referralFromUrl = (referralParams.get('ref') || referralParams.get('referral') || referralParams.get('referralCode') || '').trim().toUpperCase();
@@ -652,6 +681,15 @@ const showSignedIn = async (user, referralCode = '') => {
   byId('username').value = user.name || '';
   byId('profileStatus').textContent = user.name ? 'Display name loaded from your FundB account.' : 'Choose a display name and save it to your FundB account.';
   status('Your FundB account is connected.');
+  try {
+    await registerFundBDevice();
+    byId('profileStatus').textContent = (byId('profileStatus').textContent || '') + ' Device registration is active.';
+  } catch (deviceError) {
+    // Keep existing members able to sign in; never block or reset an account
+    // because this monitor-only security feature is temporarily unavailable.
+    byId('profileStatus').textContent = (byId('profileStatus').textContent || '') + ' Device security is temporarily unavailable; your account remains accessible.';
+    console.warn('FundB device registration unavailable:', deviceError?.message || 'unknown error');
+  }
   await syncCloudProfile(referralCode);
   await loadMyMissionSubmissions();
   await loadAdminMissionQueue();
