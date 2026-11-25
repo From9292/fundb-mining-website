@@ -36,6 +36,9 @@ jobs:
           packages: platform-tools
       - name: Install Android platform and build tools
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Run Android security smoke checks
+        working-directory: android
+        run: python3 scripts/security_smoke_test.py
       - name: Assemble preview APK
         working-directory: android
         run: gradle --no-daemon assembleDebug
