@@ -98,7 +98,7 @@ input,textarea,select{border-radius:14px!important}
 </nav>
 
 <section id="home">
-<div class="card"><div class="eyebrow">Your FUNDB balance</div><div class="balance" id="balance">0.00 FUNDB</div><div class="unit" id="balanceUsd">$0.00 estimated reference</div><div class="unit">Planning reference: 5 FUNDB = $3. This is not a market price, cash balance or withdrawal value.</div><div class="progress"><div class="bar" id="progress"></div></div><div class="row"><span class="muted" id="mineStatus">Mining is locked</span><span class="muted" id="timeLeft">24:00:00</span></div><p class="muted" id="adStatus" role="status">Mining will open when eligible ad verification, reward rules and account safeguards are ready. Standard website ads are separate and never affect your FUNDB balance.</p><button class="primary" style="width:100%" onclick="showTab('mining')">Go to mining</button></div>
+<div class="card"><div class="eyebrow">Your FUNDB balance</div><div class="balance" id="balance">FUNDB $0.00</div><div class="progress"><div class="bar" id="progress"></div></div><div class="row"><span class="muted" id="mineStatus">Mining is locked</span><span class="muted" id="timeLeft">24:00:00</span></div><p class="muted" id="adStatus" role="status">Mining will open when eligible ad verification, reward rules and account safeguards are ready. Standard website ads are separate and never affect your FUNDB balance.</p><button class="primary" style="width:100%" onclick="showTab('mining')">Go to mining</button></div>
 <div class="grid"><div class="stat"><span class="eyebrow">Today's FUNDB</span><strong id="today">0.00</strong></div><div class="stat"><span class="eyebrow">Planned mining rate</span><strong>3 FUNDB / 24h</strong></div><div class="stat"><span class="eyebrow">Daily check-ins</span><strong id="streak">0</strong></div><div class="stat"><span class="eyebrow">Ad progress</span><strong id="adCount">0 / 10</strong></div></div>
 <div class="card"><div class="eyebrow">Quick access</div><div class="two" style="margin-top:12px"><button class="primary" onclick="showTab('tasks')">✦ Explore missions</button><button class="secondary" onclick="showTab('media')">◎ Open FundB Media</button><button class="secondary" onclick="showTab('referral')">↗ Invite friends</button><button class="secondary" onclick="showTab('account')">♙ My account</button></div></div>
 <div class="card"><h2>Welcome to FundB Mining</h2><p class="muted">Welcome to FundB Mining — a global community built around learning, useful activities, community learning and the proposed FundB ecosystem. Explore missions, mining information, games and FundB Media to connect with members worldwide. Our goal is to make participation accessible and easy to understand.</p></div>
@@ -145,9 +145,7 @@ input,textarea,select{border-radius:14px!important}
 <div class="card">
   <div class="eyebrow">Your mining balance</div>
   <h2>Mining session</h2>
-  <div class="balance" id="miningBalance">0.00 FUNDB</div>
-  <div class="unit">5 FUNDB = $3 planning reference · illustrative only</div>
-  <p class="muted">The displayed dollar amount is illustrative only. FUNDB is not currently redeemable, transferable or withdrawable, and no market price is established. No mining rewards are accruing yet.</p>
+  <div class="balance" id="miningBalance">FUNDB $0.00</div>
   <div class="progress" role="progressbar" aria-label="Mining session progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" id="progress2"></div></div>
   <div class="row"><span class="muted" id="sessionLabel">Mining is not active</span><span class="muted" id="timeLeft2">Not started</span></div>
   <button class="primary" id="mineBtn" style="width:100%" disabled aria-disabled="true">Mining unavailable · secure rewards not enabled</button>
@@ -156,7 +154,7 @@ input,textarea,select{border-radius:14px!important}
 </section>
 
 <section id="wallet" hidden>
-<div class="card"><h2>FUNDB Wallet</h2><div class="balance" id="walletBalance">0.00 FUNDB</div><div class="unit">FUNDB community units · not a cash balance or live token</div>
+<div class="card"><h2>FUNDB Wallet</h2><div class="balance" id="walletBalance">FUNDB $0.00</div>
 <div class="notice"><strong>Wallet services are not yet open.</strong> FUNDB deposits, transfers and withdrawals are unavailable. No live deposit address is issued. Never send BNB or tokens to an address claiming to be your FundB wallet.</div>
 <div class="item"><h3>1. Receive address</h3><p class="muted">The FundB wallet is being prepared for secure token services. The public token contract and deposit address are not live. Do not send cryptocurrency to an unverified address.</p><button class="secondary" type="button" disabled aria-disabled="true">Receive address unavailable</button></div>
 <div class="item"><h3>2. Withdrawal address</h3><p class="muted">Target network: BNB Smart Chain (BEP-20), chain ID 56. Withdrawals remain disabled because FUNDB is not currently a live or withdrawable cryptocurrency and no verified token, payout signer/provider, fee policy or compliance checks are active. A future address form must validate BSC addresses and require an explicit network confirmation. Never enter a recovery phrase or private key.</p><button class="secondary" type="button" disabled aria-disabled="true">Add withdrawal address unavailable</button></div>
@@ -186,7 +184,7 @@ input,textarea,select{border-radius:14px!important}
 <p class="muted" style="margin-top:14px">Join a global community. Participate freely. Build toward the FundB ecosystem together. This whitepaper introduces our vision, roadmap and principles for recognizing genuine community activity.</p>
 <h3>1. Introduction — Participate today, build toward tomorrow</h3><p>FundB Mining is a community participation platform created to bring people from around the world together through digital activities, learning, community missions, referrals and the growing FundB ecosystem. Our vision is to make participation accessible: anyone eligible should be able to join without paying to participate in planned community reward activities.</p><p>FundB is building toward a future FundB Token launch targeted for <b>December 2028</b>. This target represents our ambition and development roadmap, not a guaranteed date. As FundB grows, we intend to recognize genuine members whose real participation and support help build the community.</p>
 <h3>2. Our vision and commitment</h3><p>We want FundB to grow into an accessible global community where genuine participation, learning, contribution and community support matter. Our guiding principles are free participation in eligible activities, fair verification, transparent rules, respect for participants and protection against abuse.</p><p>FundB is being developed step by step. We will communicate progress, publish programme rules and improve the platform as the community and infrastructure grow.</p>
-<h3>3. FUNDB community balance and reference value</h3><p>The app may display FUNDB community units to track eligible activity. For project planning, the current illustrative reference is <b>5 FUNDB = $3</b> (or $0.60 per FUNDB). This is not a market price, exchange rate, cash balance, token allocation or promise of redemption. No dollar amount shown in the app is money owed to a participant.</p>
+<h3>3. FUNDB community balance</h3><p>FUNDB balances are community tracking units only. They do not represent cash, a market value, a token allocation or a promise of payment.</p>
 <h3>4. The FundB Token vision</h3><p>The long-term goal is to prepare a FundB Token ecosystem that may recognize eligible genuine community participation. The intended target is December 2028. Token technical details, network, contract, supply, distribution rules and claim process will be published through official FundB channels when finalized and ready for verification.</p><p>FundB will work toward a transparent and responsible token design, with published criteria and safeguards. Participants should rely only on announcements from official FundB channels.</p>
 <h3>5. Participation and community reward direction</h3><p>FundB's intended community approach is to recognize genuine participants who contribute to the growth and support of the platform. Subject to final published programme rules, eligibility and verification, rewards are intended to be available to qualifying genuine participants across the community—not reserved solely for a small group of insiders.</p><p>The reward framework, eligibility period, activity measures, allocation and distribution method must be published before any reward distribution. Genuine activity matters: duplicate accounts, bots, fraud, manipulation or abusive activity may be excluded under those rules.</p>
 <h3>6. FUNDB Mining</h3><p>FundB Mining is a community rewards programme, not proof-of-work cryptocurrency mining. The planned rate is <b>3 FUNDB per verified 24-hour session</b>, after completion of the required 10 eligible rewarded ads. Mining and reward crediting are not active until the secure provider, verification, anti-fraud and ledger systems are ready.</p>
@@ -228,7 +226,7 @@ function showTab(id){document.querySelectorAll('[data-tab]').forEach(b=>b.classL
 window.showTab=showTab;
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 function render(){settle();let a=false,earned=0,total=0,pct=0;
-['balance','miningBalance','walletBalance'].forEach(id=>$(id).textContent=total.toFixed(2)+' FUNDB');['balanceUsd','miningBalanceUsd','walletBalanceUsd'].forEach(id=>{if($(id))$(id).textContent='$0.00 estimated reference';});$('today').textContent='0.00';$('streak').textContent=state.streak;$('adCount').textContent='0 / 10';$('adCount2').textContent='0 / 10';$('adProgress').style.width='0%';
+['balance','miningBalance','walletBalance'].forEach(id=>$(id).textContent='FUNDB $0.00');$('today').textContent='0.00';$('streak').textContent=state.streak;$('adCount').textContent='0 / 10';$('adCount2').textContent='0 / 10';$('adProgress').style.width='0%';
 $('mineStatus').textContent='Mining is not active yet';$('sessionLabel').textContent='Not started';$('mineBtn').disabled=true;$('mineBtn').textContent=a?'Session running':'Ad provider not connected';$('progress').style.width=pct+'%';$('progress2').style.width=pct+'%';
 let ms=a?state.end-Date.now():SESSION,h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),clock=[h,m,s].map(v=>String(v).padStart(2,'0')).join(':');$('timeLeft').textContent=clock;$('timeLeft2').textContent=clock;
 $('claimBtn').disabled=true;$('claimStatus').textContent='Daily rewards are paused until secure server-side reward verification is enabled.'}
@@ -297,9 +295,395 @@ const syncCloudProfile = async (referralCodeOverride = '') => {
     }
     byId('cloudPoints').textContent = Number(result.profile.points || 0).toFixed(2);
      const fundbUnits = Math.max(0, Number(result.profile.points || 0));
-     ['balance','miningBalance','walletBalance'].forEach(id => { if (byId(id)) byId(id).textContent = fundbUnits.toFixed(2) + ' FUNDB'; });
-     const fundbUsdReference = (fundbUnits * 0.60).toFixed(2);
-     ['balanceUsd','miningBalanceUsd','walletBalanceUsd'].forEach(id => { if (byId(id)) byId(id).textContent = '$' + fundbUsdReference + ' estimated reference'; });
+     ['balance','miningBalance','walletBalance'].forEach(id => { if (byId(id)) byId(id).textContent = 'FUNDB 
+    byId('cloudReferral').textContent = result.profile.referralCode || 'Not assigned';
+    byId('refCode').textContent = result.profile.referralCode || 'Not assigned';
+    byId('copyBtn').disabled = !result.profile.referralCode;
+    byId('copyBtn').textContent = result.profile.referralCode ? 'Copy invite link' : 'Referral code unavailable';
+    byId('cloudReferrals').textContent = String(result.profile.totalReferrals ?? 0);
+    byId('cloudReferralStatus').textContent = result.profile.referralLinked ? 'Referral status: Linked to an inviter.' : (referralCode ? 'Referral status: invitation code received, but no matching inviter was saved. Check the code and try again.' : 'Referral status: No inviter linked to this account.');
+    if (referralCode && result.profile.referralLinked) { try { sessionStorage.removeItem(REFERRAL_SESSION_KEY); } catch (_) {} }
+    cloudStatus.textContent = 'Saved cloud profile loaded. Reward earning is not enabled yet.';
+    await loadTransactionHistory();
+  } catch (err) {
+    byId('refCode').textContent = 'Code unavailable';
+    byId('copyBtn').disabled = true;
+    byId('copyBtn').textContent = 'Referral code unavailable';
+    cloudStatus.textContent = `Cloud profile could not load: ${err?.message || 'Please try again.'}`;
+  }
+}
+let transactionHistoryLoading = false;
+const loadTransactionHistory = async () => {
+  const statusEl = byId('transactionHistoryStatus');
+  const listEl = byId('transactionHistoryList');
+  const refreshBtn = byId('viewTransactionsBtn');
+  if (!statusEl || !listEl || transactionHistoryLoading) return;
+  transactionHistoryLoading = true;
+  if (refreshBtn) refreshBtn.disabled = true;
+  statusEl.textContent = 'Loading your secure transaction history…';
+  listEl.replaceChildren();
+  try {
+    // Use the signed-in Appwrite SDK session. Appwrite forwards the user's
+    // session JWT to the function; the server scopes the query to that user.
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ action: 'transactionHistory' }),
+      false,
+      '/',
+      'POST'
+    );
+    let result = {};
+    try { result = execution.responseBody ? JSON.parse(execution.responseBody) : {}; }
+    catch (_) { throw new Error('The transaction service returned an unreadable response.'); }
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+      throw new Error(result.message || ('Transaction history request failed (' + (execution.responseStatusCode || 'no response') + ').'));
+    }
+    const rows = Array.isArray(result.transactions) ? result.transactions : [];
+    if (!rows.length) {
+      statusEl.textContent = 'No transactions have been recorded for this account yet. Rewards, deposits and withdrawals are not active.';
+      return;
+    }
+    statusEl.textContent = 'Showing your latest ' + rows.length + ' transaction(s).';
+    rows.forEach(row => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const heading = document.createElement('strong');
+      const amount = Number(row.amount);
+      heading.textContent = String(row.type || 'Transaction') + ' · ' + (Number.isFinite(amount) ? amount.toFixed(2) : '0.00') + ' FUNDB units';
+      const detail = document.createElement('p');
+      detail.className = 'muted';
+      const date = row.createdAt ? new Date(row.createdAt) : null;
+      const dateText = date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : '';
+      detail.textContent = [String(row.status || 'Status unavailable'), String(row.reference || ''), String(row.description || ''), dateText].filter(Boolean).join(' · ');
+      item.append(heading, detail);
+      listEl.append(item);
+    });
+  } catch (err) {
+    statusEl.textContent = 'Transaction history could not be loaded: ' + (err?.message || 'Please try again.');
+  } finally {
+    transactionHistoryLoading = false;
+    if (refreshBtn) refreshBtn.disabled = false;
+  }
+};
+
+const missionIds = {
+  1: 'digital-safety-checklist',
+  2: 'community-contribution',
+  3: 'scam-awareness',
+  4: 'learning-reflection',
+  5: 'product-feedback'
+};
+const loadMyMissionSubmissions = async () => {
+  try {
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ action: 'myMissionSubmissions' }),
+      false,
+      '/',
+      'POST'
+    );
+    let result = {};
+    try { result = execution.responseBody ? JSON.parse(execution.responseBody) : {}; }
+    catch (_) { throw new Error('The mission service returned an unreadable response.'); }
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+      throw new Error(result.message || ('Mission history request failed (' + (execution.responseStatusCode || 'no response') + ').'));
+    }
+    const latest = new Map();
+    (Array.isArray(result.submissions) ? result.submissions : []).forEach(row => {
+      if (row && row.missionId && !latest.has(row.missionId)) latest.set(row.missionId, row);
+    });
+    Object.entries(missionIds).forEach(([number, missionId]) => {
+      const row = latest.get(missionId);
+      const statusEl = byId('missionStatus' + number);
+      const button = byId('submitMissionBtn' + number);
+      if (!statusEl) return;
+      if (!row) {
+        statusEl.textContent = 'No submission recorded yet.';
+        if (button) button.disabled = false;
+        return;
+      }
+      const state = String(row.status || 'pending').toLowerCase();
+      statusEl.textContent = state === 'rejected'
+        ? 'Your submission was rejected. Reviewer note: ' + (row.rejectionReason || 'No reason was provided.')
+        : 'Your submission is saved and pending review. No FUNDB rewards have been issued.';
+      if (button) button.disabled = true;
+    });
+  } catch (err) {
+    Object.keys(missionIds).forEach(number => {
+      const statusEl = byId('missionStatus' + number);
+      if (statusEl) statusEl.textContent = 'Could not load submission status: ' + (err?.message || 'Please try again.');
+    });
+  }
+};
+
+let fundbAdminMissionReviewLoading = false;
+const loadAdminMissionQueue = async () => {
+  if (fundbAdminMissionReviewLoading) return;
+  fundbAdminMissionReviewLoading = true;
+  try {
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ action: 'adminMissionQueue' }),
+      false,
+      '/',
+      'POST'
+    );
+    let result = {};
+    try { result = execution.responseBody ? JSON.parse(execution.responseBody) : {}; }
+    catch (_) { throw new Error('The reviewer service returned an unreadable response.'); }
+    if (execution.responseStatusCode === 403 || result.code === 'ADMIN_ONLY') return;
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+      throw new Error(result.message || 'The reviewer queue could not be loaded.');
+    }
+    const tasksSection = byId('tasks');
+    if (!tasksSection) return;
+    let panel = byId('fundbAdminMissionReview');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'fundbAdminMissionReview';
+      panel.className = 'card';
+      const heading = document.createElement('h2');
+      heading.textContent = 'Admin · Mission review';
+      const intro = document.createElement('p');
+      intro.className = 'muted';
+      intro.textContent = 'Authorized reviewer access confirmed by the server. Review evidence and reject only when necessary. Point approval and crediting are disabled.';
+      const refresh = document.createElement('button');
+      refresh.type = 'button';
+      refresh.className = 'secondary';
+      refresh.textContent = 'Refresh pending queue';
+      refresh.addEventListener('click', loadAdminMissionQueue);
+      const statusEl = document.createElement('p');
+      statusEl.id = 'fundbAdminMissionReviewStatus';
+      statusEl.className = 'muted';
+      statusEl.setAttribute('role', 'status');
+      const list = document.createElement('div');
+      list.id = 'fundbAdminMissionReviewList';
+      panel.append(heading, intro, refresh, statusEl, list);
+      tasksSection.append(panel);
+    }
+    const statusEl = byId('fundbAdminMissionReviewStatus');
+    const list = byId('fundbAdminMissionReviewList');
+    if (!statusEl || !list) return;
+    list.replaceChildren();
+    const submissions = Array.isArray(result.submissions) ? result.submissions : [];
+    statusEl.textContent = submissions.length
+      ? submissions.length + ' pending submission(s).'
+      : 'No submissions are waiting for review.';
+    submissions.forEach(submission => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const title = document.createElement('h3');
+      const missionName = Object.values(missionIds).includes(submission.missionId)
+        ? submission.missionId : 'Unknown mission';
+      title.textContent = missionName + ' · Pending';
+      const meta = document.createElement('p');
+      meta.className = 'muted';
+      const date = submission.submittedAt ? new Date(submission.submittedAt) : null;
+      meta.textContent = 'User ID: ' + String(submission.userId || 'Unavailable') +
+        (date && !Number.isNaN(date.getTime()) ? ' · Submitted: ' + date.toLocaleString() : '');
+      const evidenceLabel = document.createElement('p');
+      evidenceLabel.className = 'muted';
+      evidenceLabel.textContent = 'Submitted evidence:';
+      const evidence = document.createElement('p');
+      evidence.className = 'notice';
+      evidence.style.whiteSpace = 'pre-wrap';
+      evidence.style.overflowWrap = 'anywhere';
+      evidence.textContent = String(submission.evidence || '');
+      const reasonLabel = document.createElement('label');
+      reasonLabel.textContent = 'Reason for rejection (required, max 500 characters)';
+      const reason = document.createElement('textarea');
+      reason.maxLength = 500;
+      reason.placeholder = 'Explain what needs to be corrected...';
+      const reject = document.createElement('button');
+      reject.type = 'button';
+      reject.className = 'secondary';
+      reject.textContent = 'Reject submission';
+      const feedback = document.createElement('p');
+      feedback.className = 'muted';
+      feedback.setAttribute('role', 'status');
+      reject.addEventListener('click', async () => {
+        const rejectionReason = reason.value.trim();
+        if (!rejectionReason) {
+          feedback.textContent = 'Enter a clear reason before rejecting.';
+          reason.focus();
+          return;
+        }
+        reject.disabled = true;
+        feedback.textContent = 'Saving review decision…';
+        try {
+          const review = await functions.createExecution(
+            FUNDB_FUNCTION_ID,
+            JSON.stringify({
+              action: 'reviewMissionSubmission',
+              submissionId: submission.id,
+              decision: 'reject',
+              rejectionReason
+            }),
+            false,
+            '/',
+            'POST'
+          );
+          let reviewResult = {};
+          try { reviewResult = review.responseBody ? JSON.parse(review.responseBody) : {}; }
+          catch (_) { throw new Error('The review service returned an unreadable response.'); }
+          if (review.responseStatusCode < 200 || review.responseStatusCode >= 300 || !reviewResult.ok) {
+            throw new Error(reviewResult.message || 'The review decision could not be saved.');
+          }
+          feedback.textContent = 'Submission rejected and the reason was saved. No FUNDB rewards were issued.';
+          await loadAdminMissionQueue();
+          await loadMyMissionSubmissions();
+        } catch (err) {
+          feedback.textContent = err?.message || 'Could not save this review decision.';
+          reject.disabled = false;
+        }
+      });
+      item.append(title, meta, evidenceLabel, evidence, reasonLabel, reason, reject, feedback);
+      list.append(item);
+    });
+  } catch (err) {
+    const statusEl = byId('fundbAdminMissionReviewStatus');
+    if (statusEl) statusEl.textContent = 'Reviewer queue unavailable: ' + (err?.message || 'Please try again.');
+  } finally {
+    fundbAdminMissionReviewLoading = false;
+  }
+};
+
+window.submitMissionLive = async number => {
+  const missionId = missionIds[number];
+  const evidenceBox = byId('missionProof' + number);
+  const statusEl = byId('missionStatus' + number);
+  const button = byId('submitMissionBtn' + number);
+  if (!missionId || !evidenceBox || !statusEl) return;
+  const evidence = evidenceBox.value.trim();
+  if (evidence.length < 30) {
+    statusEl.textContent = 'Please provide a fuller response (at least 30 characters) before submitting.';
+    evidenceBox.focus();
+    return;
+  }
+  try {
+    try { await account.get(); } catch (_) {
+      statusEl.textContent = 'Please sign in to your FundB account before submitting a mission.';
+      showTab('account');
+      return;
+    }
+    if (button) button.disabled = true;
+    statusEl.textContent = 'Sending your mission evidence securely…';
+    const execution = await functions.createExecution(
+      FUNDB_FUNCTION_ID,
+      JSON.stringify({ action: 'submitMission', missionId, evidence }),
+      false,
+      '/',
+      'POST'
+    );
+    let result = {};
+    try { result = execution.responseBody ? JSON.parse(execution.responseBody) : {}; }
+    catch (_) { throw new Error('The mission service returned an unreadable response.'); }
+    if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300 || !result.ok) {
+      throw new Error(result.message || ('Submission failed (' + (execution.responseStatusCode || 'no response') + ').'));
+    }
+    statusEl.textContent = result.duplicate
+      ? 'This mission was already submitted. Current status: ' + (result.submission?.status || 'pending') + '.'
+      : 'Your submission was saved securely and is pending review. No FUNDB rewards have been issued.';
+    await loadMyMissionSubmissions();
+  } catch (err) {
+    statusEl.textContent = (err?.message || 'Could not submit this mission. Please sign in and try again.');
+    if (button) button.disabled = false;
+  }
+};
+const showSignedIn = async (user, referralCode = '') => {
+  byId('authGate').hidden=true; byId('appShell').hidden=false;
+  byId('authForm').hidden=true; byId('signedInPanel').hidden=false;
+  byId('accountDetails').textContent=`Signed in as ${user.name || 'FundB member'} · ${user.email}`;
+  const pendingInvite = getPendingReferralCode();
+  if (pendingInvite && byId('existingReferralCode')) byId('existingReferralCode').value = pendingInvite;
+  // A saved URL/session code is shown for review, but must never be silently
+  // applied to an already-existing account during sign-in or session restore.
+  // Existing accounts submit it only through the explicit Link button.
+  try { sessionStorage.removeItem(REFERRAL_SESSION_KEY); } catch (_) {}
+  byId('username').value = user.name || '';
+  byId('profileStatus').textContent = user.name ? 'Display name loaded from your FundB account.' : 'Choose a display name and save it to your FundB account.';
+  status('Your FundB account is connected.');
+  await syncCloudProfile(referralCode);
+  await loadMyMissionSubmissions();
+  await loadAdminMissionQueue();
+  showTab('home');
+};
+const showSignedOut = () => {
+  byId('authGate').hidden=false; byId('appShell').hidden=true; Object.keys(missionIds).forEach(number => { const statusEl = byId('missionStatus' + number); const button = byId('submitMissionBtn' + number); if (statusEl) statusEl.textContent = 'Sign in to submit missions and view your submission status.'; if (button) button.disabled = false; }); byId('refCode').textContent='Sign in to view your code'; byId('copyBtn').disabled=true; byId('copyBtn').textContent='Sign in to copy referral code'; byId('authForm').hidden=false; byId('signedInPanel').hidden=true; byId('cloudPoints').textContent='—'; byId('cloudReferral').textContent='—'; byId('cloudReferrals').textContent='—'; byId('cloudReferralStatus').textContent='Referral status: —'; byId('cloudProfileStatus').textContent='Sign in to load your saved profile.'; };
+const getError = e => e?.message || 'Something went wrong. Please try again.';
+try { const user=await account.get(); await showSignedIn(user); }
+catch(e){ showSignedOut(); status('Appwrite is ready. Create an account or sign in.', false); byId('gateAuthStatus').textContent='Your secure FundB connection is ready. Create an account or sign in to continue.'; }
+const gateStatus=(message,bad=false)=>{const el=byId('gateAuthStatus');el.textContent=message;el.style.borderColor=bad?'#9b4545':'#6b5423';};
+const gateBusy=busy=>['gateRegisterBtn','gateLoginBtn','gateResetBtn'].forEach(id=>byId(id).disabled=busy);
+byId('gateRegisterBtn').addEventListener('click',async()=>{
+ const name=byId('gateAuthName').value.trim(),email=byId('gateAuthEmail').value.trim(),password=byId('gateAuthPassword').value;
+ if(!name||!email||password.length<8){gateStatus('Enter your display name, a valid email and a password of at least 8 characters.',true);return;}
+ try{gateBusy(true);gateStatus('Creating your secure FundB account…');const referralCode=getPendingReferralCode();await account.create(ID.unique(),email,password,name);await account.createEmailPasswordSession(email,password);const user=await account.get();await showSignedIn(user,referralCode);byId('gateAuthPassword').value='';}
+ catch(e){gateStatus(getError(e),true);}finally{gateBusy(false);}
+});
+byId('gateLoginBtn').addEventListener('click',async()=>{
+ const email=byId('gateAuthEmail').value.trim(),password=byId('gateAuthPassword').value;
+ if(!email||!password){gateStatus('Enter your email and password to sign in.',true);return;}
+ try{gateBusy(true);gateStatus('Signing in securely…');await account.createEmailPasswordSession(email,password);const user=await account.get();await showSignedIn(user);byId('gateAuthPassword').value='';}
+ catch(e){gateStatus(getError(e),true);}finally{gateBusy(false);}
+});
+byId('gateResetBtn').addEventListener('click',async()=>{
+ const email=byId('gateAuthEmail').value.trim();if(!email){gateStatus('Enter your email address first.',true);return;}
+ try{gateBusy(true);await account.createRecovery(email,location.origin+location.pathname);gateStatus('Password reset email requested. Check your inbox and spam folder.');}
+ catch(e){gateStatus(getError(e),true);}finally{gateBusy(false);}
+});
+
+const setAuthBusy=(busy,label='Please wait…')=>{['registerBtn','loginBtn','resetPasswordBtn'].forEach(id=>{const b=byId(id);if(b){b.disabled=busy;if(busy&&id==='registerBtn')b.dataset.old=b.textContent;b.textContent=busy&&id==='registerBtn'?label:(busy?'Please wait…':(b.dataset.old||b.textContent));}});};
+byId('registerBtn').addEventListener('click', async()=>{
+  const name=byId('authName').value.trim(); const email=byId('authEmail').value.trim(); const password=byId('authPassword').value;
+  if(!name || !email || password.length<8){status('Enter your display name, a valid email and a password of at least 8 characters.',true);return;}
+  try { setAuthBusy(true,'Creating account…'); const referralCode = getPendingReferralCode(); status(referralCode ? 'Creating your account with the invitation code…' : 'Creating your secure account…'); await account.create(ID.unique(),email,password,name); await account.createEmailPasswordSession(email,password); const user=await account.get(); await showSignedIn(user, referralCode); byId('authPassword').value=''; byId('signupReferralCode').value=''; }
+  catch(e){status(getError(e),true);}
+});
+byId('loginBtn').addEventListener('click', async()=>{
+  const email=byId('authEmail').value.trim(); const password=byId('authPassword').value;
+  if(!email || !password){status('Enter your email and password to sign in.',true);return;}
+  try {status('Signing in…'); await account.createEmailPasswordSession(email,password); const user=await account.get(); showSignedIn(user); byId('authPassword').value='';}
+  catch(e){status(getError(e),true);}
+});
+byId('refreshCloudProfileBtn').addEventListener('click', () => syncCloudProfile());
+byId('viewTransactionsBtn').addEventListener('click', loadTransactionHistory);
+byId('applyReferralBtn').addEventListener('click', async () => {
+  const code = String(byId('existingReferralCode').value || '').trim().toUpperCase();
+  if (!isValidReferralCode(code)) { status('Enter a valid FundB invitation code (FB followed by 8 letters or numbers).', true); return; }
+  try {
+    status('Checking and linking your invitation…');
+    await syncCloudProfile(code);
+    const linked = byId('cloudReferralStatus').textContent.includes('Linked to an inviter');
+    status(linked ? 'Your invitation has been linked successfully.' : 'The invitation was not linked. Check that the code belongs to another FundB account and that this account has no inviter yet.', !linked);
+    if (linked) { try { sessionStorage.removeItem(REFERRAL_SESSION_KEY); } catch (_) {} }
+  } catch (err) { status(err?.message || 'Could not link the invitation.', true); }
+});
+byId('saveName').addEventListener('click', async()=>{
+  const name = byId('username').value.trim().slice(0,30);
+  const profileStatus = byId('profileStatus');
+  if (!name) {
+    profileStatus.textContent = 'Enter a display name before saving.';
+    byId('username').focus();
+    return;
+  }
+  try {
+    const user = await account.get();
+    await account.updateName(name);
+    byId('accountDetails').textContent = `Signed in as ${name} · ${user.email}`;
+    profileStatus.textContent = 'Display name saved to your FundB account and this device.';
+    status('Your FundB account is connected.');
+    toast('Display name saved to your account');
+  } catch (err) {
+    profileStatus.textContent = `Could not save to your FundB account: ${getError(err)}. Your device copy may still be saved.`;
+  }
+});
+byId('logoutBtn').addEventListener('click', async()=>{try{await account.deleteSession('current');showSignedOut();status('You have signed out.');}catch(e){status(getError(e),true);}});
+byId('resetPasswordBtn').addEventListener('click', async()=>{
+  const email=byId('authEmail').value.trim(); if(!email){status('Enter your email address first.',true);return;}
+  try{await account.createRecovery(email,location.origin+location.pathname);status('Password reset email requested. Check your inbox and spam folder.');}catch(e){status(getError(e),true);}
+});
+</script></body></html> + (fundbUnits * 0).toFixed(2); });
     byId('cloudReferral').textContent = result.profile.referralCode || 'Not assigned';
     byId('refCode').textContent = result.profile.referralCode || 'Not assigned';
     byId('copyBtn').disabled = !result.profile.referralCode;
