@@ -111,22 +111,9 @@ jobs:
           source = Path("index.html").read_text(encoding="utf-8")
           required = [
               'id="balance">FUNDB $0.00</div>',
-              "$('balance').textContent='FUNDB 
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          tar -czf "$RUNNER_TEMP/fundb-rewards-api.tar.gz" -C appwrite-function .
-          tar -tzf "$RUNNER_TEMP/fundb-rewards-api.tar.gz"
-      - name: Upload Appwrite manual deployment archive
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
-        with:
-          name: fundb-appwrite-function-manual-deployment
-          path: ${{ runner.temp }}/fundb-rewards-api.tar.gz
-          if-no-files-found: error
-          retention-days: 7
-",
-              "id=\"miningBalance\"",
-              "id=\"walletBalance\""
+              "$('balance').textContent='FUNDB $'",
+              'id="miningBalance"',
+              'id="walletBalance"'
           ]
           missing = [item for item in required if item not in source]
           if missing:
@@ -143,7 +130,7 @@ jobs:
           found = [pattern for pattern in forbidden if re.search(pattern, source, re.I)]
           if found:
               raise SystemExit("Unwanted preview/illustrative value remains: " + ", ".join(found))
-          print("Dashboard shows FUNDB $0.00; mining/wallet balances have no illustrative USD conversion.")
+          print("FUNDB balance display regression checks passed.")
           PY
 
       - name: Package Appwrite manual deployment archive
