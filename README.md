@@ -1,4 +1,4 @@
-# FundB Mining — V2.2 Community Preview
+# FundB Mining — V2.3 Community Testnet
 
 FundB Mining is a mobile-friendly web app prototype. This repository contains the front-end site and the Appwrite profile API source.
 
@@ -20,7 +20,7 @@ These version numbers refer to different parts of the project and must not be tr
 
 ## Current project status
 
-The interface is a preview, not a live earning or payment platform. Browser-only mining credits and daily local claims are disabled. The app must not describe preview points as cash, cryptocurrency, or withdrawable funds.
+The interface is a community testnet prototype, not a live earning or payment platform. Browser-only mining credits and daily local claims are disabled. The app must not describe preview points as cash, cryptocurrency, or withdrawable funds.
 
 The Appwrite profile function verifies a signed-in account and loads or initializes a zero-point profile. It does not yet issue rewards. The following are not production-enabled:
 
@@ -35,7 +35,7 @@ Do not promise users earnings, guaranteed token value, or withdrawals until thos
 
 ## Deployment notes
 
-The Cloudflare Pages site is connected to this repository. Work on `fundb-production-hardening` is a development preview and should be reviewed before merging into `main`.
+The repository's `main` branch contains the current app source. Cloudflare Pages production-branch and domain settings are managed in the Cloudflare dashboard and must be verified there; a successful GitHub merge alone does not prove the public site has updated.
 
 The Appwrite function source is separate from the static Pages deployment. Use the existing Appwrite function **FundB Rewards API**; configure its root directory as `appwrite-function`, entrypoint as `index.js`, build command as `npm install`, and grant only the required dynamic API key scopes (`rows.read`, `rows.write`). The function's `userId` profile attribute must be indexed. Do not create a duplicate project, database, or profile table.
 
