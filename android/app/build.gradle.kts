@@ -23,7 +23,7 @@ if (releaseRequested) {
         .all { !it.isNullOrBlank() }) {
         "Release blocked: configure all FUNDB_RELEASE_* signing secrets in GitHub Actions."
     }
-    require(java.io.File(releaseStoreFile!!).isFile) {
+    require(file(releaseStoreFile!!).isFile) {
         "Release blocked: signing keystore file was not found."
     }
 }
