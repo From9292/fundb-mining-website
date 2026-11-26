@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - fundb-android-foundation
+      - fundb-android-release-gate
     paths:
       - "android/**"
       - ".github/workflows/android-build.yml"

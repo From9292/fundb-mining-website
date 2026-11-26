@@ -22,3 +22,8 @@ Open this `android/` directory in Android Studio with JDK 17 and Android SDK Pla
 - This is a WebView host preview, not a native wallet or a Play Store-ready production release.
 - Never add private keys, recovery phrases, Appwrite function keys, or other secrets to this repository.
 - Real wallet functions require a separate security-reviewed implementation using Android Keystore and audited cryptographic libraries. The web page must not receive wallet secrets.
+
+
+## Release candidate workflow
+
+The separate manual workflow at `.github/workflows/fundb-android-release.yml` builds a signed Android App Bundle only after the final package ID and owner-controlled signing secrets are configured. It does not publish to Google Play. See `android/RELEASE_SIGNING.md` for the required GitHub Actions variable and secrets. The preview APK workflow remains separate.
