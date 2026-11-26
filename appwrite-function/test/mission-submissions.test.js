@@ -83,7 +83,7 @@ function installMock({ account = verifiedUser, rows = [], postStatus = 201 } = {
         payload = createdRow || rows[0] || {
           $id: call.path.split('/').pop(),
           userId: verifiedUser.$id,
-          missionId: 'rate-app',
+          missionId: 'digital-safety-checklist',
           status: 'pending',
           submittedAt: '2026-11-22T00:00:00.000Z'
         };
@@ -137,7 +137,7 @@ test('submission derives ownership and reward fields from verified server values
   const calls = installMock();
   const res = await invoke(loadHandler(), verifiedUser, {
     action: 'submitMission',
-    missionId: 'rate-app',
+    missionId: 'digital-safety-checklist',
     evidence: 'https://example.com/proof',
     userId: 'attacker-user',
     status: 'approved',
@@ -165,7 +165,7 @@ test('duplicate submission retries return the existing deterministic row without
   const calls = installMock({ postStatus: 409 });
   const res = await invoke(loadHandler(), verifiedUser, {
     action: 'submitMission',
-    missionId: 'rate-app',
+    missionId: 'digital-safety-checklist',
     evidence: 'proof'
   });
 
@@ -176,11 +176,30 @@ test('duplicate submission retries return the existing deterministic row without
   assert.equal(calls.filter(call => call.method === 'GET' && /\/rows\/[a-f0-9]{32}$/.test(call.path)).length, 1);
 });
 
+test('accepts only the five published mission IDs', async () => {
+  const allowed = [
+    'digital-safety-checklist',
+    'community-contribution',
+    'scam-awareness',
+    'learning-reflection',
+    'product-feedback'
+  ];
+  for (const missionId of allowed) {
+    installMock();
+    const res = await invoke(loadHandler(), verifiedUser, {
+      action: 'submitMission', missionId, evidence: 'valid evidence'
+    });
+    assert.equal(res.statusCode, 201, missionId);
+    assert.equal(res.payload.submission.missionId, missionId);
+    assert.equal(res.payload.rewardsEnabled, false);
+  }
+});
 test('invalid mission IDs and oversized or missing evidence are rejected', async () => {
   for (const input of [
     { missionId: 'bad mission', evidence: 'proof' },
-    { missionId: 'rate-app', evidence: '' },
-    { missionId: 'rate-app', evidence: 'x'.repeat(2001) }
+    { missionId: 'rate-app', evidence: 'proof' },
+    { missionId: 'digital-safety-checklist', evidence: '' },
+    { missionId: 'digital-safety-checklist', evidence: 'x'.repeat(2001) }
   ]) {
     const calls = installMock();
     const res = await invoke(loadHandler(), verifiedUser, { action: 'submitMission', ...input });
@@ -190,7 +209,7 @@ test('invalid mission IDs and oversized or missing evidence are rejected', async
 });
 
 test('personal submission history is filtered by Appwrite-verified identity', async () => {
-  const rows = [{ $id: 'row-1', userId: verifiedUser.$id, missionId: 'rate-app', status: 'pending', submittedAt: '2026-11-22T00:00:00.000Z' }];
+  const rows = [{ $id: 'row-1', userId: verifiedUser.$id, missionId: 'digital-safety-checklist', status: 'pending', submittedAt: '2026-11-22T00:00:00.000Z' }];
   const calls = installMock({ rows });
   const res = await invoke(loadHandler(), verifiedUser, {
     action: 'myMissionSubmissions',
@@ -215,7 +234,7 @@ test('non-admin cannot access the review queue or modify a submission', async ()
 });
 
 test('admin queue returns only pending rows', async () => {
-  const rows = [{ $id: 'row-1', userId: verifiedUser.$id, missionId: 'rate-app', status: 'pending', submittedAt: '2026-11-22T00:00:00.000Z' }];
+  const rows = [{ $id: 'row-1', userId: verifiedUser.$id, missionId: 'digital-safety-checklist', status: 'pending', submittedAt: '2026-11-22T00:00:00.000Z' }];
   const calls = installMock({ account: adminUser, rows });
   const res = await invoke(loadHandler(), adminUser, { action: 'adminMissionQueue' });
 
