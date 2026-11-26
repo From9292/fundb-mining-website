@@ -51,7 +51,7 @@ jobs:
           from pathlib import Path
           readme = Path("appwrite-function/README.md").read_text(encoding="utf-8")
           source = Path("appwrite-function/index.js").read_text(encoding="utf-8")
-          expected = "Function execution access: `Users` (authenticated Appwrite users only; never `Any`)
+          expected = 'Function execution access: `Users` (authenticated Appwrite users only; never `Any`)'
           if expected not in readme:
               raise SystemExit("Appwrite function execution must be documented for authenticated users only.")
           if "Function execution access: `Any`" in readme:
