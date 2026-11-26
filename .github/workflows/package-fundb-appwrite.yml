@@ -1,0 +1,33 @@
+name: Package FundB Appwrite function
+on:
+  push:
+    branches:
+      - fundb-appwrite-package
+  pull_request:
+    branches:
+      - fundb-production-hardening
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Build Appwrite upload archive
+        run: |
+          test -f appwrite-function/index.js
+          test -f appwrite-function/package.json
+          mkdir -p dist
+          tar -czf dist/fundb-appwrite-function.tar.gz -C appwrite-function index.js package.json
+          tar -tzf dist/fundb-appwrite-function.tar.gz
+          test "$(tar -tzf dist/fundb-appwrite-function.tar.gz | wc -l)" -eq 2
+          test "$(stat -c%s dist/fundb-appwrite-function.tar.gz)" -lt 30000000
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: fundb-appwrite-function-archive
+          path: dist/fundb-appwrite-function.tar.gz
+          if-no-files-found: error
+          retention-days: 7
