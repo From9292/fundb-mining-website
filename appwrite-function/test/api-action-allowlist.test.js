@@ -80,6 +80,9 @@ test('rejects unknown and non-string API actions before any profile or ledger op
     const res = await invoke({ action, userId: 'attacker', points: 999999, balance: 999999 });
     assert.equal(res.statusCode, 400);
     assert.equal(res.payload.code, 'UNSUPPORTED_ACTION');
+    assert.equal(res.headers['Cache-Control'], 'no-store, private');
+    assert.equal(res.headers['Pragma'], 'no-cache');
+    assert.equal(res.headers['X-Content-Type-Options'], 'nosniff');
     assert.deepEqual(calls.map(call => call.path), ['/v1/account']);
   }
 });
@@ -89,6 +92,9 @@ test('rejects an untrusted browser origin before authenticating or accessing App
   const res = await invoke({ action: 'transactionHistory' }, 'https://attacker.example');
   assert.equal(res.statusCode, 403);
   assert.equal(res.payload.ok, false);
+  assert.equal(res.headers['Cache-Control'], 'no-store, private');
+  assert.equal(res.headers['Pragma'], 'no-cache');
+  assert.equal(res.headers['X-Content-Type-Options'], 'nosniff');
   assert.equal(calls.length, 0);
 });
 
