@@ -20,7 +20,7 @@ def require(condition: bool, message: str) -> None:
 
 def main() -> int:
     manifest_path = ROOT / "app/src/main/AndroidManifest.xml"
-    activity_path = ROOT / "app/src/main/java/com/fundb/mining/preview/MainActivity.kt"
+    activity_path = ROOT / "app/src/main/java/com/fundb/mining/MainActivity.kt"
     gradle_path = ROOT / "app/build.gradle.kts"
     wallet_policy_path = ROOT / "wallet/SECURITY_DESIGN.md"
 
