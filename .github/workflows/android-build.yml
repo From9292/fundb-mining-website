@@ -21,8 +21,10 @@ jobs:
   debug-build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out source
+      - name: Check out production Android source
         uses: actions/checkout@v5
+        with:
+          ref: fundb-production-hardening
       - name: Set up Java 17
         uses: actions/setup-java@v5
         with:
@@ -84,7 +86,9 @@ jobs:
           test -n "$ANDROID_KEYSTORE_PASSWORD"
           test -n "$ANDROID_KEY_ALIAS"
           test -n "$ANDROID_KEY_PASSWORD"
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/fundb-release-key.jks"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d ' \t\r\n' | base64 --decode > "$RUNNER_TEMP/fundb-release-key.jks"
+          test -s "$RUNNER_TEMP/fundb-release-key.jks"
+          keytool -list -keystore "$RUNNER_TEMP/fundb-release-key.jks" -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" >/dev/null
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/fundb-release-key.jks" >> "$GITHUB_ENV"
       - name: Run Android security smoke checks
         working-directory: android
