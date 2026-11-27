@@ -69,10 +69,6 @@ class MainActivity : Activity() {
             LinearLayout.LayoutParams.MATCH_PARENT, 4
         ))
         root.addView(status)
-        root.addView(webView, LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
-        ))
-
         // Test-only UI is present in debug APKs, never in release builds.
         if (BuildConfig.DEBUG) {
             val testPanel = LinearLayout(this).apply {
@@ -81,13 +77,13 @@ class MainActivity : Activity() {
                 setBackgroundColor(android.graphics.Color.rgb(24, 24, 24))
             }
             adStatus = TextView(this).apply {
-                text = "AdMob test: initializing…"
+                text = "FUNDB ADMOB TEST — DEBUG BUILD"
                 setTextColor(android.graphics.Color.LTGRAY)
                 textSize = 12f
                 setPadding(4, 2, 4, 8)
             }
             testAdButton = Button(this).apply {
-                text = "Load test rewarded ad"
+                text = "Load Google test rewarded ad"
                 isEnabled = false
                 setOnClickListener { showTestRewardedAd() }
             }
@@ -98,6 +94,13 @@ class MainActivity : Activity() {
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ))
         }
+
+        root.addView(webView, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+        ))
+
+
+
 
         setContentView(root)
 
