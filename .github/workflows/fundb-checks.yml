@@ -45,6 +45,21 @@ jobs:
                   subprocess.run(["node", "--check", handle.name], check=True)
               print(f"Embedded script {number}: syntax OK")
           PY
+      - name: Verify Appwrite function execution is authenticated-only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          readme = Path("appwrite-function/README.md").read_text(encoding="utf-8")
+          source = Path("appwrite-function/index.js").read_text(encoding="utf-8")
+          expected = 'Function execution access: `Users` (authenticated Appwrite users only; never `Any`)'
+          if expected not in readme:
+              raise SystemExit("Appwrite function execution must be documented for authenticated users only.")
+          if "Function execution access: `Any`" in readme:
+              raise SystemExit("Public function execution must not be recommended.")
+          if "x-appwrite-user-jwt" not in source or "'/account'" not in source:
+              raise SystemExit("Server-side Appwrite JWT verification must remain enabled.")
+          print("Authenticated-only function execution and server-side JWT verification are documented.")
+          PY
       - name: Verify authenticated mission submission UI
         run: |
           python3 - <<'PY'

@@ -10,7 +10,7 @@ Use the existing Appwrite function **FundB Rewards API**. Do not create another 
 - Function root directory: `appwrite-function`
 - Entrypoint: `index.js`
 - Build command: `npm install`
-- Function execution access: `Any` (the endpoint itself requires a valid signed-in user's JWT)
+- Function execution access: `Users` (authenticated Appwrite users only; never `Any`). The website calls this function only after an authenticated session exists, and the function independently verifies the signed-in user's JWT against Appwrite's Account endpoint.
 - Dynamic API key scopes: `rows.read`, `rows.write`, and `tables.read`. `tables.read` is required for read-only discovery of the exact Profile and FundB Transactions tables; `rows.read` supports profile, referral, mission and transaction-history lookups; `rows.write` supports the existing profile, referral-attribution and mission-submission writes. The transaction-history action itself is read-only.
 
 The source folder is in this repository at [appwrite-function](https://github.com/From9292/fundb-mining-website/tree/fundb-production-hardening/appwrite-function).
