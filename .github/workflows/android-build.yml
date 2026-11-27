@@ -8,6 +8,7 @@ on:
       - ".github/workflows/android-build.yml"
   push:
     branches:
+      - main
       - fundb-android-foundation
       - fundb-production-hardening
     paths:
