@@ -7,6 +7,10 @@ android {
     namespace = "com.fundb.mining"
     compileSdk = 35
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.fundb.mining"
         minSdk = 24
