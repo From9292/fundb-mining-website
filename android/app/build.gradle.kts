@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.fundb.mining"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 35
         versionCode = 3
         versionName = "1.0.1"
