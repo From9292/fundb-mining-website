@@ -11,8 +11,8 @@ android {
         applicationId = "com.fundb.mining"
         minSdk = 23
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.0"
+        versionCode = 3
+        versionName = "1.0.1"
     }
 
     signingConfigs {
@@ -41,4 +41,8 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+}
+
+dependencies {
+    implementation("com.google.android.gms:play-services-ads:25.5.0")
 }
