@@ -102,8 +102,8 @@ def main() -> int:
                 f"Wallet security policy is missing required safeguard: {required}")
 
     gradle = gradle_path.read_text(encoding="utf-8")
-    require(re.search(r"minSdk\s*=\s*23", gradle) is not None,
-            "Unexpected minimum Android SDK")
+    require(re.search(r"minSdk\s*=\s*24", gradle) is not None,
+            "Minimum Android SDK must remain 24 for Google Mobile Ads compatibility")
     require(re.search(r"targetSdk\s*=\s*35", gradle) is not None,
             "Target SDK must remain explicitly configured")
 
