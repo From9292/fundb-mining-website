@@ -58,8 +58,10 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out source
+      - name: Check out production Android source
         uses: actions/checkout@v5
+        with:
+          ref: fundb-production-hardening
       - name: Set up Java 17
         uses: actions/setup-java@v5
         with:
