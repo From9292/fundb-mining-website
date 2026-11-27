@@ -8,6 +8,9 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="false"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-9800579782167167~3127537731" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
