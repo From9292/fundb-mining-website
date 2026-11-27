@@ -45,7 +45,7 @@ The website's transaction-history refresh calls the authenticated `transactionHi
 
 The authenticated API supports four actions:
 
-- `submitMission`: accepts a mission ID and evidence text (maximum 2,000 characters). The user ID is always taken from the verified Appwrite session. The server sets `status=pending`, `approvedPoints=0`, and the submission timestamp; it ignores caller-supplied reviewer, status, points, and user ID.
+- `submitMission`: accepts only the five published mission IDs (`digital-safety-checklist`, `community-contribution`, `scam-awareness`, `learning-reflection`, `product-feedback`) and evidence text (maximum 2,000 characters). Adding a mission requires updating the server allowlist and tests. The user ID is always taken from the verified Appwrite session. The server sets `status=pending`, `approvedPoints=0`, and the submission timestamp; it ignores caller-supplied reviewer, status, points, and user ID. Existing submissions remain readable and are not changed.
 - `myMissionSubmissions`: returns only the signed-in user's submissions.
 - `adminMissionQueue`: returns pending submissions only to user IDs explicitly listed in `FUNDB_ADMIN_USER_IDS`.
 - `reviewMissionSubmission`: currently supports rejection with a required reason. Approval and point crediting remain disabled until a server-side rewards ledger and atomic credit flow are implemented and tested.

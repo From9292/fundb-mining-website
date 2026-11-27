@@ -11,6 +11,13 @@ const PROFILE_TABLE_ID = process.env.FUNDB_PROFILE_TABLE_ID || 'profile';
 const MISSION_SUBMISSIONS_TABLE_ID = process.env.FUNDB_MISSION_SUBMISSIONS_TABLE_ID || 'fundb_mission_submissions';
 const DEVICE_REGISTRY_TABLE_ID = process.env.FUNDB_DEVICE_REGISTRY_TABLE_ID || 'fundb_device_registry';
 const DEVICE_HMAC_SECRET = process.env.FUNDB_DEVICE_HMAC_SECRET || '';
+const ALLOWED_MISSION_IDS = new Set([
+  'digital-safety-checklist',
+  'community-contribution',
+  'scam-awareness',
+  'learning-reflection',
+  'product-feedback'
+]);
 const API_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://nyc.cloud.appwrite.io/v1';
 const ALLOWED_ORIGINS = new Set(
   (process.env.FUNDB_ALLOWED_ORIGIN ||
@@ -315,7 +322,7 @@ module.exports = async ({ req, res, log, error }) => {
       if (requestBody.action === 'submitMission') {
         const missionId = String(requestBody.missionId || '').trim();
         const evidence = String(requestBody.evidence || '').trim();
-        if (!/^[A-Za-z0-9_-]{1,64}$/.test(missionId)) {
+        if (!ALLOWED_MISSION_IDS.has(missionId)) {
           return json(res, 400, {
             ok: false, code: 'INVALID_MISSION_ID',
             message: 'A valid mission ID is required.'
