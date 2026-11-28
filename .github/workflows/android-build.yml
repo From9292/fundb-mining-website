@@ -85,7 +85,7 @@ jobs:
           test -n "$ANDROID_KEYSTORE_PASSWORD"
           test -n "$ANDROID_KEY_ALIAS"
           test -n "$ANDROID_KEY_PASSWORD"
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/fundb-release-key.jks"
+          printf "%s" "$ANDROID_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 --decode > "$RUNNER_TEMP/fundb-release-key.jks"
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/fundb-release-key.jks" >> "$GITHUB_ENV"
       - name: Run Android security smoke checks
         working-directory: android
