@@ -101,11 +101,47 @@ def main() -> int:
         require(required in wallet_policy,
                 f"Wallet security policy is missing required safeguard: {required}")
 
+    # Keep the native AdMob test panel in debug builds only and use Google's
+    # official sample rewarded-ad unit. A test callback must never credit users.
+    test_ad_unit = "ca-app-pub-3940256099942544/5224354917"
+    require(test_ad_unit in source,
+            "Android preview must use Google's official sample rewarded-ad unit")
+    require("if (BuildConfig.DEBUG)" in source
+            and "FUNDB ADMOB TEST — DEBUG BUILD" in source,
+            "AdMob test controls must be visibly restricted to debug builds")
+    require("if (!BuildConfig.DEBUG) return" in source,
+            "Rewarded test ads must not load in release builds")
+    require("Intentionally no points, wallet balance, or mining credit" in source,
+            "Google test ad callbacks must never credit FundB rewards")
+    ad_unit_ids = set(re.findall(r"ca-app-pub-[0-9]+/[0-9]+", source))
+    require(ad_unit_ids == {test_ad_unit},
+            f"Only Google's sample rewarded-ad unit may appear in Android source: {sorted(ad_unit_ids)}")
+    app_id_meta = app.find("meta-data[@android:name='com.google.android.gms.ads.APPLICATION_ID']", {"android": "http://schemas.android.com/apk/res/android"})
+    require(app_id_meta is not None
+            and re.fullmatch(r"ca-app-pub-[0-9]+~[0-9]+",
+                             app_id_meta.attrib.get(ANDROID_NS + "value", "")) is not None,
+            "Google Mobile Ads application ID must be declared in the manifest")
+
     gradle = gradle_path.read_text(encoding="utf-8")
+    require('implementation("com.google.android.gms:play-services-ads:' in gradle,
+            "Google Mobile Ads SDK dependency must be present")
     require(re.search(r"minSdk\s*=\s*24", gradle) is not None,
             "Minimum Android SDK must remain 24 for Google Mobile Ads compatibility")
     require(re.search(r"targetSdk\s*=\s*35", gradle) is not None,
             "Target SDK must remain explicitly configured")
+
+    # Guard the product decisions the owner explicitly asked us to preserve.
+    website_path = ROOT.parent / "index.html"
+    require(website_path.is_file(), "FundB website entry point must exist")
+    website = website_path.read_text(encoding="utf-8")
+    require('id="balance">FUNDB $0.00' in website,
+            "Dashboard must continue to display FUNDB $0.00")
+    require("FundB Points" not in website,
+            "Do not expose a FundB Points label on the dashboard")
+    wallet_marker = '<h2>FundB Wallet · unavailable</h2>'
+    require(wallet_marker in website
+            and "No live deposit address is issued" in website,
+            "Do not present the planned wallet as live or issue a fake deposit address")
 
     print("FundB Android static safety checks: PASS")
     print("Scope: manifest permissions, launcher icon, network policy, WebView boundaries, TLS handling, SDK levels, wallet-disabled policy")
