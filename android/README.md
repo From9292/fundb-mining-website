@@ -1,24 +1,54 @@
-# FundB Mining — Android preview host
+# FundB Mining — Android WebView host
 
-This is a separate Android application shell around the existing FundB Mining PWA. It is intentionally isolated under `android/`; the website files, dashboard, Appwrite data and production-hardening branch are not modified by this work.
+This Android project is a thin native host for the existing FundB Mining Progressive Web App (PWA). The website, dashboard, Appwrite user records, referrals, and balances remain owned by the existing web application and backend.
 
-## Current scope
+## Current Android configuration
+
+The current Gradle configuration defines:
+
+- Application ID: `com.fundb.mining`
+- Version name: `1.0.1`
+- Version code: `3`
+- Minimum Android SDK: `24`
+- Target Android SDK: `35`
+- Java/Kotlin target: `17`
+- Web app origin: `https://fundb-production-hardening.fundb-mining-website.pages.dev/`
+
+The Application ID above is the value currently in Gradle. It must be kept unchanged for updates to installs signed with the matching original signing key. Confirm it against the already-installed app and Play Console before any public Play Store release; do not change it casually.
+
+## Current scope and security boundaries
 
 - Kotlin Android application using a WebView to display the existing HTTPS FundB PWA.
 - WebView navigation is restricted to the configured FundB Pages hostname.
 - External HTTP(S) links open outside the app.
-- Cleartext traffic, file access, content access and mixed content are disabled.
+- Cleartext traffic, file access, content access, and mixed content are disabled.
 - TLS certificate errors are rejected.
-- No JavaScript-to-native bridge, wallet key storage, seed phrase handling, signing, deposits, transfers or withdrawals.
+- No JavaScript-to-native bridge is exposed.
+- No wallet private-key storage, seed phrase handling, transaction signing, deposits, transfers, or withdrawals are implemented in this Android host.
+- The debug-only rewarded-ad panel uses Google's official test ad unit. It does not credit FundB points or start mining.
+- A real reward-crediting flow requires server-side reward verification and a policy-compliant reward implementation. A client-side ad callback alone must never change a user's balance.
 
-## Build
+## Build and CI
 
-Open this `android/` directory in Android Studio with JDK 17 and Android SDK Platform 35 installed, then sync and build the `app` debug variant. CI also runs `gradle assembleDebug` on pull requests touching this directory.
+Use JDK 17 and Android SDK Platform 35. From this directory:
 
-## Important release notes
+```bash
+gradle --no-daemon assembleDebug
+```
 
-- Application ID `com.fundb.mining.preview` is a preview identity, not a confirmed Play Store release identity. Confirm the final package name before publishing.
-- The app currently points to the existing production-hardening Pages hostname. A change to that endpoint must be reviewed and tested before release.
-- This is a WebView host preview, not a native wallet or a Play Store-ready production release.
-- Never add private keys, recovery phrases, Appwrite function keys, or other secrets to this repository.
+GitHub Actions runs the preview/debug build and Android security smoke checks. The separate production release job builds both a signed APK and AAB only after all four repository Actions secrets are correctly configured:
+
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+The Base64 secret must contain the complete Base64-encoded bytes of the original release keystore, not a command, filename, partial value, or a newly generated key. The workflow validates the encoded value and checks the keystore before attempting the release build.
+
+## Release safeguards
+
+- Preserve the original signing keystore and alias for continuity with existing signed installations and any future Play Console registration.
+- Never commit a keystore, password, private key, recovery phrase, Appwrite function key, or other secret to this repository.
+- Do not distribute a debug/preview APK as the production release.
+- A successful build is not by itself proof that the app's wallet, mining, or rewards are production-ready. Those features require their own backend, security, policy, and end-to-end verification.
 - Real wallet functions require a separate security-reviewed implementation using Android Keystore and audited cryptographic libraries. The web page must not receive wallet secrets.
